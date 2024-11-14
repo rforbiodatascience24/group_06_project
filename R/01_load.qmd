@@ -4,18 +4,23 @@ format: html
 editor: visual
 ---
 
+```{r}
+library(tidyverse)
+```
+
 # Loading Data
 
-##### This code is directly copied from lab 4 - but we can be inspired as a framework 
+##### This code is directly copied from lab 4 - but we can be inspired as a framework
 
 ```{r}
 # Create the data directory programmatically
-dir.create(path = "data")
+#dir.create(path = "data")
 
 # Retrieve the data directly
-diabetes_data <- read_csv(file = "https://hbiostat.org/data/repo/diabetes.csv")
+clp_csv <- read_csv2("Project_data/group6_data_CLP_Report.csv")
+
 
 # Write the data to disk
-write_csv(x = diabetes_data,
-          file = "data/diabetes.csv")
+#write_csv(x = diabetes_data,
+ #         file = "data/diabetes.csv")
 ```

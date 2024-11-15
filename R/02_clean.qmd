@@ -51,3 +51,95 @@ df_ful <- setNames(df_ful, c("ProteinGroups",
                              "GMP_rep_3",
                              "GMP_rep_4"))
 ```
+
+#### 3. Log2-transform the data
+
+```{r}
+
+# Log2-transform every numeric value in the df with pseudo-count of 1 (to avoid zeros and negative values), to compress the range of intensities and achieve a log-normal distribution
+
+df_log <- df_ful |> 
+  mutate(across(where(is.numeric), ~log2(. +1)))
+```
+
+#### 4. Normalize the data
+
+```{r}
+
+## Check if normalization is necessary: plot intensity distribution of each sample
+
+# plot intensity densities of samples in one plot
+df_log |> 
+  pivot_longer(cols=-c("ProteinGroups", "Genes"), 
+               names_to = "Sample",
+               values_to = "Intensity") |> 
+  ggplot(aes(x=Intensity, colour=Sample)) +
+  geom_density() +
+  theme_classic()
+```
+
+```{r}
+
+## The median shifts over the samples, so normalization is necessary. We will use normalization to the median of each sample
+
+# Make function and apply with dplyr::mutate()
+
+NormOnMedian <- function(x){
+  # divides values by median of column
+  column_median <- median(x, na.rm=TRUE)
+  return(x/column_median)
+}
+
+df_norm <- df_log |> 
+  mutate(across(.cols = -c(ProteinGroups, Genes),
+                .fns = NormOnMedian))
+```
+
+```{r}
+
+# Test normalization with density plot --> medians are equal now
+
+df_norm |> 
+  pivot_longer(cols=-c("ProteinGroups", "Genes"), 
+               names_to = "Sample",
+               values_to = "Intensity") |> 
+  ggplot(aes(x=Intensity, colour=Sample)) +
+  geom_density() +
+  theme_classic()
+
+```
+
+#### 5. Impute missing values
+
+```{r}
+
+## Use left-censor method to impute missing values. Work sample-wise.
+
+# Make function and apply with dplyr::mutate()
+
+NaIsMindet <- function(x){
+  # replaces NA with 1st percentile of column values
+  col_mean <- mean(x, na.rm=TRUE)
+  col_sd <- sd(x, na.rm=TRUE)
+  firstperc <- col_mean - 3.090 * col_sd # -3.090 is Z-score for 0.1st percentile
+  x[is.na(x)] <- firstperc
+  return(x)
+}
+
+df_nona <- df_norm |> 
+  mutate(across(.cols = -c(ProteinGroups, Genes),
+                .fns = NaIsMindet))
+
+```
+
+```{r}
+# Check density -> Not ideal, many NA's distort distribution. Feature-wise would be ideal, b ut couldn't figure out how to operate NaIsMindet row-wise
+
+df_nona |> 
+  pivot_longer(cols=-c("ProteinGroups", "Genes"), 
+               names_to = "Sample",
+               values_to = "Intensity") |> 
+  ggplot(aes(x=Intensity, colour=Sample)) +
+  geom_density() +
+  theme_classic()
+```

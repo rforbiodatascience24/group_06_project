@@ -17,9 +17,9 @@ library(here)
 
 # read in csv files for all cell populations
 
-df_hsc <- read.csv2(here("local_data/group6_data_HSC_Report.csv"))
-df_cmp <- read.csv2(here("local_data/group6_data_CMP_Report.csv"))
-df_clp <- read.csv2(here("local_data/group6_data_CLP_Report.csv"))
-df_mep <- read.csv2(here("local_data/group6_data_MEP_Report.csv"))
-df_gmp <- read.csv2(here("local_data/group6_data_GMP_Report.csv"))
+df_hsc <- read.csv2(here("local_data/group6_data_HSC_Report.csv"), na.strings = "NaN")
+df_cmp <- read.csv2(here("local_data/group6_data_CMP_Report.csv"), na.strings = "NaN")
+df_clp <- read.csv2(here("local_data/group6_data_CLP_Report.csv"), na.strings = "NaN")
+df_mep <- read.csv2(here("local_data/group6_data_MEP_Report.csv"), na.strings = "NaN")
+df_gmp <- read.csv2(here("local_data/group6_data_GMP_Report.csv"), na.strings = "NaN")
 ```

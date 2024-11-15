@@ -6,21 +6,20 @@ editor: visual
 
 ```{r}
 library(tidyverse)
+library(here)
 ```
 
 # Loading Data
 
-##### This code is directly copied from lab 4 - but we can be inspired as a framework
+##### Before sharepoint API issue is resolved, load data directly from local machine
 
 ```{r}
-# Create the data directory programmatically
-#dir.create(path = "data")
 
-# Retrieve the data directly
-clp_csv <- read_csv2("Project_data/group6_data_CLP_Report.csv")
+# read in csv files for all cell populations
 
-
-# Write the data to disk
-#write_csv(x = diabetes_data,
- #         file = "data/diabetes.csv")
+df_hsc <- read.csv2(here("local_data/group6_data_HSC_Report.csv"))
+df_cmp <- read.csv2(here("local_data/group6_data_CMP_Report.csv"))
+df_clp <- read.csv2(here("local_data/group6_data_CLP_Report.csv"))
+df_mep <- read.csv2(here("local_data/group6_data_MEP_Report.csv"))
+df_gmp <- read.csv2(here("local_data/group6_data_GMP_Report.csv"))
 ```

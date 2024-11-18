@@ -108,6 +108,15 @@ df_log_long |>
   summarize(median(intensity, na.rm = TRUE))
 ```
 
+Testing if the log transformed intensities present a normal distributed curve
+
+```{r}
+# Creating a simple density plot
+df_log_long |> 
+  ggplot(mapping = aes(x = intensity)) +
+  geom_density()
+```
+
 ```{r}
 #Normalize data
 df_norm_long <- df_log_long |> 

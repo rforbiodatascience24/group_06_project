@@ -1,0 +1,72 @@
+---
+title: "Magdas_version"
+format: html
+editor: visual
+---
+
+```{r}
+library("tidyverse")
+```
+
+```{r}
+df_hsc <- read_csv2("local_data/group6_data_HSC_Report.csv", na = ("NaN"))
+df_clp <- read_csv2("local_data/group6_data_CLP_Report.csv", na = ("NaN"))
+df_cmp <- read_csv2("local_data/group6_data_CMP_Report.csv", na = ("NaN"))
+df_gmp <- read_csv2("local_data/group6_data_GMP_Report.csv", na = ("NaN"))
+df_mep <- read_csv2("local_data/group6_data_MEP_Report.csv", na = ("NaN"))
+```
+
+```{r}
+#renaming colnames
+df_hsc <- df_hsc |> 
+  rename(x1 = X.1..HSC_mBM_500c_49.raw.PG.Quantity,
+         x2 = X.2..HSC_mBM_500c_50.raw.PG.Quantity,
+         x3 = X.3..HSC_mBM_500c_51.raw.PG.Quantity,
+         x4 = X.4..HSC_mBM_500c_56.raw.PG.Quantity)
+```
+
+```{r}
+#renaming colnames as a function
+rename_cols <- function(data) {
+  data |> 
+    rename(x1 = starts_with("X.1"),
+         x2 = starts_with("X.2"),
+         x3 = starts_with("X.3"),
+         x4 = starts_with("X.4"),
+         x5 = starts_with("X.5"))
+}
+```
+
+```{r}
+#pivot longer the data
+df_hsc_long <- df_hsc |> 
+  pivot_longer(
+    cols = !starts_with("PG"), 
+    names_to = "replicate", 
+    values_to = "intensity"
+  )
+
+
+```
+
+```{r}
+#function that pivots longer the data
+proteomics_pivot_longer <- function(data){
+  data |> 
+    pivot_longer(
+    cols = !starts_with("PG"), 
+    names_to = "replicate", 
+    values_to = "intensity"
+}
+```
+
+```{r}
+#joining dataframes after renaming columns and pivoting longer
+#you've lost the fact that intensities should be different for each cell type
+#Ive lost the gmp , hsc etc info... Maybe in the pivot_longer I could str_c or something like that...
+full <- full_join(proteomics_pivot_longer(rename_cols(df_clp)),
+           proteomics_pivot_longer(rename_cols(df_gmp))) |> 
+  full_join(proteomics_pivot_longer(rename_cols(df_cmp))) |> 
+  full_join(proteomics_pivot_longer(rename_cols(df_mep))) |> 
+  full_join(proteomics_pivot_longer(rename_cols(df_hsc)))
+```

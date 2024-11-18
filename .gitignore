@@ -3,4 +3,5 @@
 .RData
 .Ruserdata
 .Project_data
+.local_data
 /local_data/*

@@ -8,6 +8,8 @@ editor: visual
 library("tidyverse")
 ```
 
+### Loading data
+
 ```{r}
 #loading data
 df_hsc <- read_csv2("local_data/group6_data_HSC_Report.csv", na = ("NaN"))
@@ -16,6 +18,8 @@ df_cmp <- read_csv2("local_data/group6_data_CMP_Report.csv", na = ("NaN"))
 df_gmp <- read_csv2("local_data/group6_data_GMP_Report.csv", na = ("NaN"))
 df_mep <- read_csv2("local_data/group6_data_MEP_Report.csv", na = ("NaN"))
 ```
+
+### Column names
 
 ```{r}
 #renaming colnames
@@ -37,6 +41,8 @@ rename_cols <- function(data) {
          x5 = starts_with("X.5"))
 }
 ```
+
+### Pivoting data
 
 ```{r}
 #pivot longer the data
@@ -82,10 +88,16 @@ proteomics_pivot_longer <- function(data){
   data |> 
     pivot_longer(
     cols = !starts_with("PG"), 
+<<<<<<< HEAD
+    names_to = "replicate", 
+    values_to = "intensity"
+    }
+=======
     names_to = "replicate",
     values_to = "intensity") |> 
     mutate(celltype = )
 }
+>>>>>>> 1a7028cdf0adfcfd2eca8913d170b85978f05a8d
 ```
 
 ```{r}

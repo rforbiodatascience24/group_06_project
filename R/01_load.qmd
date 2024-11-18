@@ -16,10 +16,19 @@ library(here)
 ```{r}
 
 # read in csv files for all cell populations
+setwd("/home/people/s215025/Projects/group_6_project")
 
-df_hsc <- read.csv2(here("local_data/group6_data_HSC_Report.csv"), na.strings = "NaN")
-df_cmp <- read.csv2(here("local_data/group6_data_CMP_Report.csv"), na.strings = "NaN")
-df_clp <- read.csv2(here("local_data/group6_data_CLP_Report.csv"), na.strings = "NaN")
-df_mep <- read.csv2(here("local_data/group6_data_MEP_Report.csv"), na.strings = "NaN")
-df_gmp <- read.csv2(here("local_data/group6_data_GMP_Report.csv"), na.strings = "NaN")
+df_hsc <- read_csv2(file = "local_data/group6_data_HSC_Report.csv", na= "NaN")
+df_mep <- read_csv2(file = "local_data/group6_data_MEP_Report.csv", na= "NaN")
+df_gmp <- read_csv2(file = "local_data/group6_data_GMP_Report.csv", na= "NaN")
+df_clp <- read_csv2(file = "local_data/group6_data_CLP_Report.csv", na= "NaN")
+df_cmp <- read_csv2(file = "local_data/group6_data_CMP_Report.csv", na= "NaN")
+
+#| echo: false
+#| eval: false
+
+```
+
+```{r}
+# There should be a module added now, that loads the data from an online service - and writes it back in a compressed and more easily accesible format for R, like the TSV files.
 ```

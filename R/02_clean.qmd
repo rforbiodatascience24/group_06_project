@@ -54,12 +54,21 @@ df_ful <- setNames(df_ful, c("ProteinGroups",
 
 #### 3. Log2-transform the data
 
+The data is Log2 transformed for every numeric value in the dataframe with pseudo-count of 1 (to avoid zeros and negative values), to compress the range of intensities and achieve a log-normal distribution.
+
 ```{r}
 
-# Log2-transform every numeric value in the df with pseudo-count of 1 (to avoid zeros and negative values), to compress the range of intensities and achieve a log-normal distribution
+# 
 
 df_log <- df_ful |> 
   mutate(across(where(is.numeric), ~log2(. +1)))
+```
+
+Checking on transformation: For plotting the log2 density we need to categorise the data in long format
+
+```{r}
+df_log |> 
+  ggplot(mapping = aes(x = ))
 ```
 
 #### 4. Normalize the data

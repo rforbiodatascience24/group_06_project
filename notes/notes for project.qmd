@@ -1,0 +1,25 @@
+---
+title: "notes_code_project"
+format: html
+editor: visual
+---
+
+## Load data
+
+## Tidy data:)
+
+### Format for smooth data anlysis
+
+From the very small bit of visualisation I wanted to do, I could see that the replicates should actually be in 1 column (points to Magda). The reason being, that when ggplot calls for data input, it will recognize the variable as the column. *I cannot plot the measured intensities, because they have seperate x values*.
+
+## Data analysis
+
+### Ideal plots for proteomics
+
+#### Lasse
+
+Showcase that the data is gausian/normal distributed? - prove nice data
+
+Proteome coverage of the analyzed populations. A bar plot of the population counting the average protein group number.
+
+Column diagrams or densitograms for the expression of the cell

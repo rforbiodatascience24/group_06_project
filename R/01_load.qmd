@@ -17,9 +17,11 @@ library(here)
 
 # read in csv files for all cell populations
 
-df_hsc <- read.csv2(here("local_data/group6_data_HSC_Report.csv"), na.strings = "NaN")
-df_cmp <- read.csv2(here("local_data/group6_data_CMP_Report.csv"), na.strings = "NaN")
-df_clp <- read.csv2(here("local_data/group6_data_CLP_Report.csv"), na.strings = "NaN")
-df_mep <- read.csv2(here("local_data/group6_data_MEP_Report.csv"), na.strings = "NaN")
-df_gmp <- read.csv2(here("local_data/group6_data_GMP_Report.csv"), na.strings = "NaN")
+df_hsc <- read.csv2(file="https://raw.githubusercontent.com/rforbiodatascience24/group06/refs/heads/main/group6_data_HSC_Report.csv", na.strings = "NaN")
+
+df_cmp <- read.csv2(file = "https://raw.githubusercontent.com/rforbiodatascience24/group06/refs/heads/main/group6_data_CMP_Report.csv", na.strings = "NaN")
+df_clp <- read.csv2(file="https://raw.githubusercontent.com/rforbiodatascience24/group06/main/group6_data_CLP_Report.csv", na.strings = "NaN")
+
+df_mep <- read.csv2(file="https://raw.githubusercontent.com/rforbiodatascience24/group06/refs/heads/main/group6_data_MEP_Report.csv", na.strings = "NaN")
+df_gmp <- read.csv2(file="https://raw.githubusercontent.com/rforbiodatascience24/group06/refs/heads/main/group6_data_GMP_Report.csv", na.strings = "NaN")
 ```

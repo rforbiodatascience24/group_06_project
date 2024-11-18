@@ -89,6 +89,15 @@ rename_cols <- function(data) {
 }
 ```
 
+## Log transforming the data
+
+```{r}
+#log transform long dataframe
+df_log_long <- df_long |> 
+  mutate(across(where(is.numeric), ~log2(. +1)))
+
+```
+
 ### Grouping the data
 
 Testing how the group_by function works - when I group by "sample" it is the same like having 20 different columns as in Arnes case

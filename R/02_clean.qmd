@@ -52,6 +52,20 @@ df_ful <- setNames(df_ful, c("ProteinGroups",
                              "GMP_rep_4"))
 ```
 
+#### Optionally pivot longer the data
+
+```{r}
+df_long <- df_ful |> 
+  pivot_longer(
+    #all the replicate columns will be stored in an intensity column and a sample column
+    cols = !starts_with(c("Protein","Genes")), 
+    names_to = "sample", 
+    values_to = "intensity"
+  )
+```
+
+We notice that the df_ful has 3763 observations (rows) of 23 variables and the df_long has 79023 observations of 4 variables.
+
 #### 3. Log2-transform the data
 
 ```{r}
@@ -62,12 +76,18 @@ df_log <- df_ful |>
   mutate(across(where(is.numeric), ~log2(. +1)))
 ```
 
+```{r}
+#log transform long dataframe
+df_log_long <- df_long |> 
+  mutate(across(where(is.numeric), ~log2(. +1)))
+```
+
 #### 4. Normalize the data
 
 ```{r}
 
 ## Check if normalization is necessary: plot intensity distribution of each sample
-
+#Here we use the long format of the data
 # plot intensity densities of samples in one plot
 df_log |> 
   pivot_longer(cols=-c("ProteinGroups", "Genes"), 

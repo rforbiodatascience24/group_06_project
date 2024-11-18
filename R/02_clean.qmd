@@ -77,7 +77,6 @@ df_log <- df_ful |>
   mutate(across(where(is.numeric), ~log2(. +1)))
 ```
 
-
 ```{r}
 #log transform long dataframe
 df_log_long <- df_long |> 

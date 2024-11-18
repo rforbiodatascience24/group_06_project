@@ -9,6 +9,7 @@ library("tidyverse")
 ```
 
 ```{r}
+#loading data
 df_hsc <- read_csv2("local_data/group6_data_HSC_Report.csv", na = ("NaN"))
 df_clp <- read_csv2("local_data/group6_data_CLP_Report.csv", na = ("NaN"))
 df_cmp <- read_csv2("local_data/group6_data_CMP_Report.csv", na = ("NaN"))
@@ -26,7 +27,7 @@ df_hsc <- df_hsc |>
 ```
 
 ```{r}
-#renaming colnames as a function
+#Create a function to rename colnames
 rename_cols <- function(data) {
   data |> 
     rename(x1 = starts_with("X.1"),
@@ -39,34 +40,68 @@ rename_cols <- function(data) {
 
 ```{r}
 #pivot longer the data
-df_hsc_long <- df_hsc |> 
+#Tried making a function for this but I realized they need to have different variable names based on the cell type
+
+df_long_hsc <- rename_cols(df_hsc) |> 
   pivot_longer(
     cols = !starts_with("PG"), 
     names_to = "replicate", 
-    values_to = "intensity"
+    values_to = "hsc_intensity"
+  )
+df_long_clp <- rename_cols(df_clp) |> 
+  pivot_longer(
+    cols = !starts_with("PG"), 
+    names_to = "replicate", 
+    values_to = "clp_intensity"
+  )
+df_long_mep <- rename_cols(df_mep) |> 
+  pivot_longer(
+    cols = !starts_with("PG"), 
+    names_to = "replicate", 
+    values_to = "mep_intensity"
+  )
+df_long_gmp <- rename_cols(df_gmp) |> 
+  pivot_longer(
+    cols = !starts_with("PG"), 
+    names_to = "replicate", 
+    values_to = "gmp_intensity"
+  )
+df_long_cmp <- rename_cols(df_cmp) |> 
+  pivot_longer(
+    cols = !starts_with("PG"), 
+    names_to = "replicate", 
+    values_to = "cmp_intensity"
   )
 
 
 ```
 
 ```{r}
-#function that pivots longer the data
+#function that pivots longer the data - problem with this function is how to make the intensity unique based on the type of cell...
 proteomics_pivot_longer <- function(data){
   data |> 
     pivot_longer(
     cols = !starts_with("PG"), 
-    names_to = "replicate", 
-    values_to = "intensity"
+    names_to = "replicate",
+    values_to = "intensity") |> 
+    mutate(celltype = )
 }
 ```
 
 ```{r}
 #joining dataframes after renaming columns and pivoting longer
-#you've lost the fact that intensities should be different for each cell type
-#Ive lost the gmp , hsc etc info... Maybe in the pivot_longer I could str_c or something like that...
-full <- full_join(proteomics_pivot_longer(rename_cols(df_clp)),
-           proteomics_pivot_longer(rename_cols(df_gmp))) |> 
-  full_join(proteomics_pivot_longer(rename_cols(df_cmp))) |> 
-  full_join(proteomics_pivot_longer(rename_cols(df_mep))) |> 
-  full_join(proteomics_pivot_longer(rename_cols(df_hsc)))
+#This is assuming that replicat x1 is the same sample for the five different cell types...
+#Arne said the replicates have nothing to do with oneanother which makes this dataframe useless
+df_ful <- df_long_hsc |> 
+  full_join(df_long_clp, by=c("PG.ProteinGroups", "PG.Genes")) |> 
+  full_join(df_long_cmp, by=c("PG.ProteinGroups", "PG.Genes")) |> 
+  full_join(df_long_mep, by=c("PG.ProteinGroups", "PG.Genes")) |>
+  full_join(df_long_gmp, by=c("PG.ProteinGroups", "PG.Genes")) |> 
+  pivot_longer(
+    cols = ends_with("intensity"),
+    names_to = "cell_type",
+    values_to = "intensity"
+  )
 ```
+
+#I would like to create a variable called "cell type" that contains either cmp gmp etc depending on cell type.

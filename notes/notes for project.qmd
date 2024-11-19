@@ -36,7 +36,27 @@ From the very small bit of visualisation I wanted to do, I could see that the re
 
 #### Lasse
 
-Showcase that the data is gausian/normal distributed? - prove nice data
+#### Volcano plot: Lasse + Antonio
+
+Calculate the fold change of the log mean values between samples of the defined pairwise.
+
+Calculate the false disocvery rate for proteomics data? Found in the paper?
+
+-   FDR = FP / (FP + TP)
+
+-   FP = false positives
+
+-   TP = True positives
+
+-   [false discovery rate guide](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-019-1716-1)
+
+The volcano plot is plotted as the log10(false_discovery rate) against on the y axis against the log2(fold change)
+
+Simpler method is to plot the p-value instead of the log10(FDR) and we can use a cutoff value of 1% or even different ones.
+
+-   
+
+-   Showcase that the data is gausian/normal distributed? - prove nice data
 
 Proteome coverage of the analyzed populations. A bar plot of the population counting the average protein group number.
 

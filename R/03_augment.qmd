@@ -25,23 +25,27 @@ For each observation (a replicate of a particular cell type) we wish to nomalize
 ```{r}
 #Check that the grouping gives 21 median values
 df_log_long |> 
-  group_by(sample) |> 
+  group_by(cell_type,replicate_n) |> 
   summarize(median(intensity, na.rm = TRUE))
 ```
+
+Normalize data to impute missing values for NA.
 
 ```{r}
 #Normalize data
 df_norm_long <- df_log_long |> 
-  group_by(sample) |> 
+  group_by(cell_type, replicate_n) |> 
   #normalizing by dividing each intensity value with the median intensity of all proteins from that sample
   mutate(intensity = intensity/median(intensity, na.rm = TRUE))
 ```
 
+Imputing missing values/NAs
+
 ```{r}
 #Have a secon opinion on this code
 #replace NA with 1st percentile of sample type
-df_nona_long <- df_norm_long |> 
-  group_by(sample) |> 
+df_no_na_long <- df_norm_long |> 
+  group_by(cell_type,replicate_n) |> 
   mutate(intensity = case_when(
     #if an NA is detected the value is transformed to 1st percentile of that samples group
     #-3.090 is Z-score for 0.1st percentile
@@ -52,4 +56,21 @@ df_nona_long <- df_norm_long |>
     #is.na(intensity) ~ quantile(intensity, probs = 0.01, na.rm = TRUE),
     .default = intensity
   ))
+
+```
+
+### Getting mean values and standard deviation for volcano plot
+
+The mean value between each replicate of the cell samples are estimated along with the standard deviation, to create a new tibble which is used to create a volcano plot for the fold change.
+
+```{r}
+
+# create a tibble with mean values and standard deviation
+df_mean_intensitities <- df_no_na_long |> 
+  group_by(protein_groups,cell_type) |> # take the mean/sd of of the replicates for the protein groups and cell types.
+  summarise(
+    mean = mean(intensity),
+    sd = sd(intensity)
+    )
+
 ```

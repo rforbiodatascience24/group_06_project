@@ -1,13 +1,13 @@
 ```{r}
 library(tidyr)
 library('ggbiplot')
-
+library(sjmisc) #Unofficial tidyverse package that follows the tidyverse syntax
 
 #Data without rows with N/A
-df_norm_tidy <- df_norm |> na.omit() 
+df_norm_tidy <- df_norm[, -(1:2)] |> na.omit() |> rotate_df()
 
 #Projecting data unto principal components (pc), excluding nonnumeric columns (-1:2)
-pc <- prcomp(df_norm_tidy[, -(1:2)], center = FALSE, scale = FALSE)
+pc <- prcomp(df_norm_tidy, center = FALSE, scale = FALSE)
 
 #Gives overview of variability of PC
 print(pc)

@@ -6,6 +6,12 @@ editor: visual
 
 ## Describe Data
 
+-   What do these data show?
+
+-   How many observations? How many rows and columns?
+
+-   What is intensity?
+
 ## Normalization plot before removing NAs
 
 ```{r}
@@ -28,3 +34,7 @@ df_nona_long |>
   geom_density() +
   theme_classic()
 ```
+
+## Summary Statistics / descriptive plots
+
+-   here we could have some scatter plots, density plots etc.

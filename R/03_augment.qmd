@@ -65,21 +65,12 @@ The mean value between each replicate of the cell samples are estimated along wi
 
 ```{r}
 
+# create a tibble with mean values and standard deviation
 df_mean_intensitities <- df_no_na_long |> 
-  group_by(protein_groups,cell_type) |> 
+  group_by(protein_groups,cell_type) |> # take the mean/sd of of the replicates for the protein groups and cell types.
   summarise(
     mean = mean(intensity),
     sd = sd(intensity)
     )
-#df_no_na_long |> 
-  #mutate()
 
-
-#group_by()
-
-#df_no_na_long |> 
-  #summarise(
-    #mean = mean(intensity),
-    #sd = sd(intensity)
-    #)
 ```

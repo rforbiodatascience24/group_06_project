@@ -72,5 +72,6 @@ df_mean_intensitities <- df_no_na_long |>
     mean = mean(intensity),
     sd = sd(intensity)
     )
+df_mean_intensitities
 
 ```

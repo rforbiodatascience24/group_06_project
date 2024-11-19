@@ -77,6 +77,22 @@ df_long <- df_ful |>
   )
 ```
 
+Seperating the samples column into replicate number and cell type
+
+```{r}
+df_long <- df_long |> 
+  separate(sample, into = c("cell_type","replicate_n"), sep = "_rep_")
+  
+
+```
+
+### Present table of sample values
+
+```{r}
+sample_n(df_long,10)
+
+```
+
 ## Conclusion
 
 Now the data is tidied - meaning each cell has only one value, each observation is in its own row and each variable is in a column. Now the data needs to be log-transformed, normalized and NA's must be dealt with based on the normalization, which will all happen in the augment.

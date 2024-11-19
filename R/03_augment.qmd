@@ -29,6 +29,8 @@ df_log_long |>
   summarize(median(intensity, na.rm = TRUE))
 ```
 
+Normalize data to impute missing values for NA.
+
 ```{r}
 #Normalize data
 df_norm_long <- df_log_long |> 
@@ -37,10 +39,12 @@ df_norm_long <- df_log_long |>
   mutate(intensity = intensity/median(intensity, na.rm = TRUE))
 ```
 
+Imputing missing values/NAs
+
 ```{r}
 #Have a secon opinion on this code
 #replace NA with 1st percentile of sample type
-df_nona_long <- df_norm_long |> 
+df_no_na_long <- df_norm_long |> 
   group_by(sample) |> 
   mutate(intensity = case_when(
     #if an NA is detected the value is transformed to 1st percentile of that samples group
@@ -52,4 +56,23 @@ df_nona_long <- df_norm_long |>
     #is.na(intensity) ~ quantile(intensity, probs = 0.01, na.rm = TRUE),
     .default = intensity
   ))
+
+```
+
+### Getting mean values and standard deviation for volcano plot
+
+The mean value between each replicate of the cell samples are estimated along with the standard deviation, to create a new tibble which is used to create a volcano plot for the fold change.
+
+```{r}
+df_no_na_long |> 
+  mutate()
+
+
+group_by()
+
+df_no_na_long |> 
+  summarise(
+    mean = mean(intensity),
+    sd = sd(intensity)
+    )
 ```

@@ -11,6 +11,7 @@ editor: visual
 ```{r}
 
 # do full join to preserve data. The combination of PG.ProteinGroups and PG.Genes is the same for all data frames, so we join by both columns
+#
 
 df_ful <- df_hsc |> 
   full_join(df_clp, by=c("PG.ProteinGroups", "PG.Genes")) |> 
@@ -78,9 +79,6 @@ df_log <- df_ful |>
 ```
 
 ```{r}
-#log transform long dataframe
-df_log_long <- df_long |> 
-  mutate(across(where(is.numeric), ~log2(. +1)))
 
 
 

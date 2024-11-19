@@ -16,7 +16,10 @@ library(here)
 ```{r}
 
 # read in csv files for all cell populations
-setwd("/home/people/s215025/Projects/group_6_project")
+#loading data
+#setwd(getwd())
+setwd("/home/people/s194428/projects/project_group6")
+#setwd("/home/people/s215025/Projects/group_6_project")
 
 df_hsc <- read_csv2(file = "local_data/group6_data_HSC_Report.csv", na= "NaN")
 df_mep <- read_csv2(file = "local_data/group6_data_MEP_Report.csv", na= "NaN")

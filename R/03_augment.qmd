@@ -4,4 +4,52 @@ format: html
 editor: visual
 ---
 
-## Augment Data
+## Log Transforming the Data
+
+Proteomics data must be log 2 transformed to have a more compatible scale.
+
+```{r}
+#log transform long dataframe
+df_log_long <- df_long |> 
+  #only apply this to non-NA data
+  mutate(across(where(is.numeric), ~log2(. +1)))
+
+```
+
+## Deal with Missing Values by Normalization of Intensity 
+
+The data contains many missing values. The reason values are missing is because they are below the detection limit of the intensity measurer. NA's should not be replaced by 0, instead they should be replaced with the 1st percentile of the normalized distribution of each cell type replicate (sample group).
+
+For each observation (a replicate of a particular cell type) we wish to nomalize the intensity compared to all proteomics observation of that cell type. This is why we group the data by sample (fx hsc_rep_1 is one group and clp_rep_2 is another group). We then normalize the data by dividing individual intensities with the median of the sample group. We then use the normalized data to replace missing values.
+
+```{r}
+#Check that the grouping gives 21 median values
+df_log_long |> 
+  group_by(sample) |> 
+  summarize(median(intensity, na.rm = TRUE))
+```
+
+```{r}
+#Normalize data
+df_norm_long <- df_log_long |> 
+  group_by(sample) |> 
+  #normalizing by dividing each intensity value with the median intensity of all proteins from that sample
+  mutate(intensity = intensity/median(intensity, na.rm = TRUE))
+```
+
+```{r}
+#Have a secon opinion on this code
+#replace NA with 1st percentile of sample type
+df_nona_long <- df_norm_long |> 
+  group_by(sample) |> 
+  mutate(intensity = case_when(
+    #if an NA is detected the value is transformed to 1st percentile of that samples group
+    #-3.090 is Z-score for 0.1st percentile
+    is.na(intensity) ~ mean(intensity, na.rm = TRUE) - 3.090 * sd(intensity, na.rm = TRUE),
+    #if an NA is not detected the original value is preserved
+    #alternatively I believe the built-in r function quantile(x,0.01) can be used to find the 1st percentile
+    #THis does not yield the same result but I am not sure why
+    #is.na(intensity) ~ quantile(intensity, probs = 0.01, na.rm = TRUE),
+    .default = intensity
+  ))
+```

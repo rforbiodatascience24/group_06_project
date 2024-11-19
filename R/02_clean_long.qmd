@@ -8,18 +8,15 @@ editor: visual
 library("tidyverse")
 ```
 
-### Loading data
+## Missing in this document
 
-```{r}
-#loading data
-df_hsc <- read_csv2("local_data/group6_data_HSC_Report.csv", na = ("NaN"))
-df_clp <- read_csv2("local_data/group6_data_CLP_Report.csv", na = ("NaN"))
-df_cmp <- read_csv2("local_data/group6_data_CMP_Report.csv", na = ("NaN"))
-df_gmp <- read_csv2("local_data/group6_data_GMP_Report.csv", na = ("NaN"))
-df_mep <- read_csv2("local_data/group6_data_MEP_Report.csv", na = ("NaN"))
-```
+-   write to tsv.gz
 
-## Full join
+-   deal with redundant protein and gene ID's
+
+## Joining Dataframes
+
+There are five dataframes, one for each of the five cell types: hsc, clp, cmp, mep, gmp. They must be joined together into one. We use full join because we wish to preserve all data points.
 
 ```{r}
 
@@ -32,130 +29,54 @@ df_ful <- df_hsc |>
   full_join(df_gmp, by=c("PG.ProteinGroups", "PG.Genes")) 
 ```
 
-### Column names
+## Changing Variable Names
+
+For increased readability variable names are changed to define the cell type and specify the replicate.
 
 ```{r}
 # get column names
 print(colnames(df_ful))
 
-# We can easily see how many replicates we have per cell type. Change all column names at once
-df_ful <- setNames(df_ful, c("ProteinGroups",
-                             "Genes",
-                             "HSC_rep_1",
-                             "HSC_rep_2",
-                             "HSC_rep_3",
-                             "HSC_rep_4",
-                             "CLP_rep_1",
-                             "CLP_rep_2",
-                             "CLP_rep_3",
-                             "CLP_rep_4",
-                             "CLP_rep_5",
-                             "CMP_rep_1",
-                             "CMP_rep_2",
-                             "CMP_rep_3",
-                             "CMP_rep_4",
-                             "MEP_rep_1",
-                             "MEP_rep_2",
-                             "MEP_rep_3",
-                             "MEP_rep_4",
-                             "GMP_rep_1",
-                             "GMP_rep_2",
-                             "GMP_rep_3",
-                             "GMP_rep_4"))
+# We have four replicates per cell type. Change all column names at once for easier readability.
+df_ful <- setNames(df_ful, c("protein_groups",
+                             "genes",
+                             "hsc_rep_1",
+                             "hsc_rep_2",
+                             "hsc_rep_3",
+                             "hsc_rep_4",
+                             "clp_rep_1",
+                             "clp_rep_2",
+                             "clp_rep_3",
+                             "clp_rep_4",
+                             "clp_rep_5",
+                             "cmp_rep_1",
+                             "cmp_rep_2",
+                             "cmp_rep_3",
+                             "cmp_rep_4",
+                             "mep_rep_1",
+                             "mep_rep_2",
+                             "mep_rep_3",
+                             "mep_rep_4",
+                             "gmp_rep_1",
+                             "gmp_rep_2",
+                             "gmp_rep_3",
+                             "gmp_rep_4"))
 ```
 
-## Pivot longer the data
+## Lengthening the Data
+
+There are four or five replicates of each cell type, that are currently stored as 21 variables all with measures of intensity. We use pivot_longer to lengthen the data so that there is one intensity column and one 'sample' column specifying which replicate and which cell type is referred to.
 
 ```{r}
 df_long <- df_ful |> 
   pivot_longer(
     #all the replicate columns will be stored in an intensity column and a sample column
-    cols = !starts_with(c("Protein","Genes")), 
+    cols = !starts_with(c("protein","genes")), 
     names_to = "sample", 
     values_to = "intensity"
   )
 ```
 
-```{r}
-#I ended up not using this but did not quite yet feel like deleting it...
-#Create a function to rename colnames
-rename_cols <- function(data) {
-  data |> 
-    rename(x1 = starts_with("X.1"),
-         x2 = starts_with("X.2"),
-         x3 = starts_with("X.3"),
-         x4 = starts_with("X.4"),
-         x5 = starts_with("X.5"))
-}
-```
 
-## Log transforming the data
-
-```{r}
-#log transform long dataframe
-df_log_long <- df_long |> 
-  mutate(across(where(is.numeric), ~log2(. +1)))
-
-```
-
-### Grouping the data
-
-Testing how the group_by function works - when I group by "sample" it is the same like having 20 different columns as in Arnes case
-
-```{r}
-df_log_long |> 
-  group_by(sample) |> 
-  summarize(median(intensity, na.rm = TRUE))
-```
-
-Testing if the log transformed intensities present a normal distributed curve
-
-```{r}
-# Creating a simple density plot
-df_log_long |> 
-  ggplot(mapping = aes(x = intensity)) +
-  geom_density()
-```
-
-```{r}
-#Normalize data
-df_norm_long <- df_log_long |> 
-  group_by(sample) |> 
-  #normalizing by dividing each intensity value with the median intensity of all proteins from that sample
-  mutate(intensity = intensity/median(intensity, na.rm = TRUE))
-```
-
-```{r}
-# Test normalization with density plot --> medians are equal now
-
-df_norm_long |> 
-  ggplot(aes(x=intensity, colour=sample)) +
-  geom_density() +
-  theme_classic()
-
-```
-
-```{r}
-#replace NA with 1st percentile of sample type
-df_nona_long <- df_norm_long |> 
-  group_by(sample) |> 
-  mutate(intensity = case_when(
-    #if an NA is detected the value is transformed to 1st percentile of that samples group
-    #-3.090 is Z-score for 0.1st percentile
-    is.na(intensity) ~ mean(intensity, na.rm = TRUE) - 3.090 * sd(intensity, na.rm = TRUE),
-    #if an NA is not detected the original value is preserved
-    #alternatively I believe the built-in r function quantile(x,0.01) can be used to find the 1st percentile
-    #THis does not yield the same result but I am not sure why
-    #is.na(intensity) ~ quantile(intensity, probs = 0.01, na.rm = TRUE),
-    .default = intensity
-  ))
-```
-
-```{r}
-# Check density -> Not ideal, many NA's distort distribution. Feature-wise would be ideal, b ut couldn't figure out how to operate NaIsMindet row-wise
-
-df_nona_long |> 
-  ggplot(aes(x=intensity, colour=sample)) +
-  geom_density() +
-  theme_classic()
-```
+## Conclusion
+Now the data is tidied - meaning each cell has only one value, each observation is in its own row and each variable is in a column. Now the data needs to be log-transformed, normalized and NA's must be dealt with based on the normalization, which will all happen in the augment.

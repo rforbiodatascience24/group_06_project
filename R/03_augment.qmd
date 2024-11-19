@@ -16,7 +16,7 @@ df_log_long <- df_long |>
 
 ```
 
-## Deal with Missing Values by Normalization of Intensity 
+## Deal with Missing Values by Normalization of Intensity
 
 The data contains many missing values. The reason values are missing is because they are below the detection limit of the intensity measurer. NA's should not be replaced by 0, instead they should be replaced with the 1st percentile of the normalized distribution of each cell type replicate (sample group).
 

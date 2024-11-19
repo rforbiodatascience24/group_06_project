@@ -18,7 +18,7 @@ df_norm_long |>
 
 ```
 
-## Density Plot 
+## Density Plot
 
 ```{r}
 # Check density -> Not ideal, many NA's distort distribution. Feature-wise would be ideal, b ut couldn't figure out how to operate NaIsMindet row-wise

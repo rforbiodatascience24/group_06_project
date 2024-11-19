@@ -1,17 +1,26 @@
 ---
-title: "02_clean"
+title: "Magdas_version"
 format: html
 editor: visual
 ---
 
-## Clean Data
+```{r}
+library("tidyverse")
+```
 
-#### 1. Combine data frames into one
+## Missing in this document
+
+-   write to tsv.gz
+
+-   deal with redundant protein and gene ID's
+
+## Joining Dataframes
+
+There are five dataframes, one for each of the five cell types: hsc, clp, cmp, mep, gmp. They must be joined together into one. We use full join because we wish to preserve all data points.
 
 ```{r}
 
 # do full join to preserve data. The combination of PG.ProteinGroups and PG.Genes is the same for all data frames, so we join by both columns
-#
 
 df_ful <- df_hsc |> 
   full_join(df_clp, by=c("PG.ProteinGroups", "PG.Genes")) |> 
@@ -20,150 +29,79 @@ df_ful <- df_hsc |>
   full_join(df_gmp, by=c("PG.ProteinGroups", "PG.Genes")) 
 ```
 
-#### 2. Change column names for readability
+## Changing Variable Names
+
+For increased readability variable names are changed to define the cell type and specify the replicate.
 
 ```{r}
-
 # get column names
 print(colnames(df_ful))
 
-# We can easily see how many replicates we have per cell type. Change all column names at once
-df_ful <- setNames(df_ful, c("ProteinGroups",
-                             "Genes",
-                             "HSC_rep_1",
-                             "HSC_rep_2",
-                             "HSC_rep_3",
-                             "HSC_rep_4",
-                             "CLP_rep_1",
-                             "CLP_rep_2",
-                             "CLP_rep_3",
-                             "CLP_rep_4",
-                             "CLP_rep_5",
-                             "CMP_rep_1",
-                             "CMP_rep_2",
-                             "CMP_rep_3",
-                             "CMP_rep_4",
-                             "MEP_rep_1",
-                             "MEP_rep_2",
-                             "MEP_rep_3",
-                             "MEP_rep_4",
-                             "GMP_rep_1",
-                             "GMP_rep_2",
-                             "GMP_rep_3",
-                             "GMP_rep_4"))
+# We have four replicates per cell type. Change all column names at once for easier readability.
+df_ful <- setNames(df_ful, c("protein_groups",
+                             "genes",
+                             "hsc_rep_1",
+                             "hsc_rep_2",
+                             "hsc_rep_3",
+                             "hsc_rep_4",
+                             "clp_rep_1",
+                             "clp_rep_2",
+                             "clp_rep_3",
+                             "clp_rep_4",
+                             "clp_rep_5",
+                             "cmp_rep_1",
+                             "cmp_rep_2",
+                             "cmp_rep_3",
+                             "cmp_rep_4",
+                             "mep_rep_1",
+                             "mep_rep_2",
+                             "mep_rep_3",
+                             "mep_rep_4",
+                             "gmp_rep_1",
+                             "gmp_rep_2",
+                             "gmp_rep_3",
+                             "gmp_rep_4"))
 ```
 
-#### Optionally pivot longer the data
+## Shortening Protein and Gene Names to Contain One String per Cell
+
+The variables protein_groups and genes in some cases contain multiple names. The reason for this is that if a cell contains more than one protein name (fx "Q8BSP2;Q8BSP2-2;Q8BSP2-3") it is because they are protein isomers, and there is no means of discerning which of protein isomers is actually measured. For the purpose of tidy data we decide to keep only the first name in that column, and a `_group`*\`* is added to signify that more isomers were there in the original dataset (fx "Q8BSP2_group"). The same procedure is applied to the 'genes' variable.
+
+```{r}
+  #str_split_i splits the protein isomers separated by the delimiter ; and keeps only the "first protein isomer_group"
+df_ful <- df_ful |> 
+    mutate(
+      protein_groups = case_when(
+        #returns TRUE when the delimiter ; is detected
+      str_detect(protein_groups,pattern = ";") ~
+        #in which case only the first string is kept and _group is added
+      str_c(str_split_i(protein_groups,";",1), "_group"),
+      #if the delimiter ; was not detected the original string value is kept
+      .default = protein_groups
+      ),
+      #the same as above is repeated for genes variable
+      genes = case_when(
+        str_detect(genes,pattern = ";") ~
+        str_c(str_split_i(genes,";",1), "_group"),
+        .default = genes
+        )
+    )
+```
+
+## Lengthening the Data
+
+There are four or five replicates of each cell type, that are currently stored as 21 variables all with measures of intensity. We use pivot_longer to lengthen the data so that there is one intensity column and one 'sample' column specifying which replicate and which cell type is referred to.
 
 ```{r}
 df_long <- df_ful |> 
   pivot_longer(
     #all the replicate columns will be stored in an intensity column and a sample column
-    cols = !starts_with(c("Protein","Genes")), 
+    cols = !starts_with(c("protein","genes")), 
     names_to = "sample", 
     values_to = "intensity"
   )
 ```
 
-We notice that the df_ful has 3763 observations (rows) of 23 variables and the df_long has 79023 observations of 4 variables.
+## Conclusion
 
-#### 3. Log2-transform the data
-
-```{r}
-
-# The data is Log2 transformed for every numeric value in the dataframe with pseudo-count of 1 (to avoid zeros and negative values), to compress the range of intensities and achieve a log-normal distribution.
-
-
-df_log <- df_ful |> 
-  mutate(across(where(is.numeric), ~log2(. +1)))
-```
-
-```{r}
-
-
-
-df_log |> 
-  ggplot(mapping = aes(x = ))
-```
-
-#### 4. Normalize the data
-
-```{r}
-
-## Check if normalization is necessary: plot intensity distribution of each sample
-#Here we use the long format of the data
-# plot intensity densities of samples in one plot
-df_log |> 
-  pivot_longer(cols=-c("ProteinGroups", "Genes"), 
-               names_to = "Sample",
-               values_to = "Intensity") |> 
-  ggplot(aes(x=Intensity, colour=Sample)) +
-  geom_density() +
-  theme_classic()
-```
-
-```{r}
-
-## The median shifts over the samples, so normalization is necessary. We will use normalization to the median of each sample
-
-# Make function and apply with dplyr::mutate()
-
-NormOnMedian <- function(x){
-  # divides values by median of column
-  column_median <- median(x, na.rm=TRUE)
-  return(x/column_median)
-}
-
-df_norm <- df_log |> 
-  mutate(across(.cols = -c(ProteinGroups, Genes),
-                .fns = NormOnMedian))
-```
-
-```{r}
-
-# Test normalization with density plot --> medians are equal now
-
-df_norm |> 
-  pivot_longer(cols=-c("ProteinGroups", "Genes"), 
-               names_to = "Sample",
-               values_to = "Intensity") |> 
-  ggplot(aes(x=Intensity, colour=Sample)) +
-  geom_density() +
-  theme_classic()
-
-```
-
-#### 5. Impute missing values
-
-```{r}
-
-## Use left-censor method to impute missing values. Work sample-wise.
-
-# Make function and apply with dplyr::mutate()
-
-NaIsMindet <- function(x){
-  # replaces NA with 1st percentile of column values
-  col_mean <- mean(x, na.rm=TRUE)
-  col_sd <- sd(x, na.rm=TRUE)
-  firstperc <- col_mean - 3.090 * col_sd # -3.090 is Z-score for 0.1st percentile
-  x[is.na(x)] <- firstperc
-  return(x)
-}
-
-df_nona <- df_norm |> 
-  mutate(across(.cols = -c(ProteinGroups, Genes),
-                .fns = NaIsMindet))
-
-```
-
-```{r}
-# Check density -> Not ideal, many NA's distort distribution. Feature-wise would be ideal, b ut couldn't figure out how to operate NaIsMindet row-wise
-
-df_nona |> 
-  pivot_longer(cols=-c("ProteinGroups", "Genes"), 
-               names_to = "Sample",
-               values_to = "Intensity") |> 
-  ggplot(aes(x=Intensity, colour=Sample)) +
-  geom_density() +
-  theme_classic()
-```
+Now the data is tidied - meaning each cell has only one value, each observation is in its own row and each variable is in a column. Now the data needs to be log-transformed, normalized and NA's must be dealt with based on the normalization, which will all happen in the augment.

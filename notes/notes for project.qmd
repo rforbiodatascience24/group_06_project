@@ -1,0 +1,43 @@
+---
+title: "notes_code_project"
+format: html
+editor: visual
+---
+
+## Load data
+
+## Tidy data:)
+
+### Long format for smooth data anlysis
+
+From the very small bit of visualisation I wanted to do, I could see that the replicates should actually be in 1 column (points to Magda). The reason being, that when ggplot calls for data input, it will recognize the variable as the column. *I cannot plot the measured intensities, because they have seperate x values*.
+
+### Naming conventions of strings and column names
+
+**Magda:** Throughout the course we mostly used the naming convention snake_case (meaning lowercase letters separated by underscore). I suggest we change all of our variable names to snake_case.
+
+### Name redundancy in protein and gene columns
+
+**Magda:** Some cells in the columns protein and genes contain more than one name separated by a semicolon ;. We discussed it w Arne, and he says it is 'biologically' correct to have multiple names because we can't in reality know which protein it is, but for the purpose of tidy data I think we should shorten those names to only contain one name.
+
+### Small things to remember
+
+-   Remember to write cleaned/augmented files to .tsv.gz
+
+-   remember quatation signs "" when loading libraries
+
+##### 
+
+##  
+
+## Data analysis
+
+### Ideal plots for proteomics
+
+#### Lasse
+
+Showcase that the data is gausian/normal distributed? - prove nice data
+
+Proteome coverage of the analyzed populations. A bar plot of the population counting the average protein group number.
+
+Column diagrams or densitograms for the expression of the cell

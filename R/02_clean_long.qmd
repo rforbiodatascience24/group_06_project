@@ -1,0 +1,161 @@
+---
+title: "Magdas_version"
+format: html
+editor: visual
+---
+
+```{r}
+library("tidyverse")
+```
+
+### Loading data
+
+```{r}
+#loading data
+df_hsc <- read_csv2("local_data/group6_data_HSC_Report.csv", na = ("NaN"))
+df_clp <- read_csv2("local_data/group6_data_CLP_Report.csv", na = ("NaN"))
+df_cmp <- read_csv2("local_data/group6_data_CMP_Report.csv", na = ("NaN"))
+df_gmp <- read_csv2("local_data/group6_data_GMP_Report.csv", na = ("NaN"))
+df_mep <- read_csv2("local_data/group6_data_MEP_Report.csv", na = ("NaN"))
+```
+
+## Full join
+
+```{r}
+
+# do full join to preserve data. The combination of PG.ProteinGroups and PG.Genes is the same for all data frames, so we join by both columns
+
+df_ful <- df_hsc |> 
+  full_join(df_clp, by=c("PG.ProteinGroups", "PG.Genes")) |> 
+  full_join(df_cmp, by=c("PG.ProteinGroups", "PG.Genes")) |> 
+  full_join(df_mep, by=c("PG.ProteinGroups", "PG.Genes")) |>
+  full_join(df_gmp, by=c("PG.ProteinGroups", "PG.Genes")) 
+```
+
+### Column names
+
+```{r}
+# get column names
+print(colnames(df_ful))
+
+# We can easily see how many replicates we have per cell type. Change all column names at once
+df_ful <- setNames(df_ful, c("ProteinGroups",
+                             "Genes",
+                             "HSC_rep_1",
+                             "HSC_rep_2",
+                             "HSC_rep_3",
+                             "HSC_rep_4",
+                             "CLP_rep_1",
+                             "CLP_rep_2",
+                             "CLP_rep_3",
+                             "CLP_rep_4",
+                             "CLP_rep_5",
+                             "CMP_rep_1",
+                             "CMP_rep_2",
+                             "CMP_rep_3",
+                             "CMP_rep_4",
+                             "MEP_rep_1",
+                             "MEP_rep_2",
+                             "MEP_rep_3",
+                             "MEP_rep_4",
+                             "GMP_rep_1",
+                             "GMP_rep_2",
+                             "GMP_rep_3",
+                             "GMP_rep_4"))
+```
+
+## Pivot longer the data
+
+```{r}
+df_long <- df_ful |> 
+  pivot_longer(
+    #all the replicate columns will be stored in an intensity column and a sample column
+    cols = !starts_with(c("Protein","Genes")), 
+    names_to = "sample", 
+    values_to = "intensity"
+  )
+```
+
+```{r}
+#I ended up not using this but did not quite yet feel like deleting it...
+#Create a function to rename colnames
+rename_cols <- function(data) {
+  data |> 
+    rename(x1 = starts_with("X.1"),
+         x2 = starts_with("X.2"),
+         x3 = starts_with("X.3"),
+         x4 = starts_with("X.4"),
+         x5 = starts_with("X.5"))
+}
+```
+
+## Log transforming the data
+
+```{r}
+#log transform long dataframe
+df_log_long <- df_long |> 
+  mutate(across(where(is.numeric), ~log2(. +1)))
+
+```
+
+### Grouping the data
+
+Testing how the group_by function works - when I group by "sample" it is the same like having 20 different columns as in Arnes case
+
+```{r}
+df_log_long |> 
+  group_by(sample) |> 
+  summarize(median(intensity, na.rm = TRUE))
+```
+
+Testing if the log transformed intensities present a normal distributed curve
+
+```{r}
+# Creating a simple density plot
+df_log_long |> 
+  ggplot(mapping = aes(x = intensity)) +
+  geom_density()
+```
+
+```{r}
+#Normalize data
+df_norm_long <- df_log_long |> 
+  group_by(sample) |> 
+  #normalizing by dividing each intensity value with the median intensity of all proteins from that sample
+  mutate(intensity = intensity/median(intensity, na.rm = TRUE))
+```
+
+```{r}
+# Test normalization with density plot --> medians are equal now
+
+df_norm_long |> 
+  ggplot(aes(x=intensity, colour=sample)) +
+  geom_density() +
+  theme_classic()
+
+```
+
+```{r}
+#replace NA with 1st percentile of sample type
+df_nona_long <- df_norm_long |> 
+  group_by(sample) |> 
+  mutate(intensity = case_when(
+    #if an NA is detected the value is transformed to 1st percentile of that samples group
+    #-3.090 is Z-score for 0.1st percentile
+    is.na(intensity) ~ mean(intensity, na.rm = TRUE) - 3.090 * sd(intensity, na.rm = TRUE),
+    #if an NA is not detected the original value is preserved
+    #alternatively I believe the built-in r function quantile(x,0.01) can be used to find the 1st percentile
+    #THis does not yield the same result but I am not sure why
+    #is.na(intensity) ~ quantile(intensity, probs = 0.01, na.rm = TRUE),
+    .default = intensity
+  ))
+```
+
+```{r}
+# Check density -> Not ideal, many NA's distort distribution. Feature-wise would be ideal, b ut couldn't figure out how to operate NaIsMindet row-wise
+
+df_nona_long |> 
+  ggplot(aes(x=intensity, colour=sample)) +
+  geom_density() +
+  theme_classic()
+```

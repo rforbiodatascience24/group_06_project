@@ -5,3 +5,26 @@ editor: visual
 ---
 
 ## Describe Data
+
+## Normalization plot before removing NAs
+
+```{r}
+# Test normalization with density plot --> medians are equal now
+#This plot should be in the describe
+df_norm_long |> 
+  ggplot(aes(x=intensity, colour=sample)) +
+  geom_density() +
+  theme_classic()
+
+```
+
+## Density Plot 
+
+```{r}
+# Check density -> Not ideal, many NA's distort distribution. Feature-wise would be ideal, b ut couldn't figure out how to operate NaIsMindet row-wise
+
+df_nona_long |> 
+  ggplot(aes(x=intensity, colour=sample)) +
+  geom_density() +
+  theme_classic()
+```

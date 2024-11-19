@@ -18,8 +18,9 @@ library(here)
 # read in csv files for all cell populations
 #loading data
 #setwd(getwd())
-setwd("/home/people/s194428/projects/project_group6")
+#setwd("/home/people/s194428/projects/project_group6")
 #setwd("/home/people/s215025/Projects/group_6_project")
+setwd("/Users/cxm393/Projects/R_for_Bioscience/group_6_project")
 
 df_hsc <- read_csv2(file = "local_data/group6_data_HSC_Report.csv", na= "NaN")
 df_mep <- read_csv2(file = "local_data/group6_data_MEP_Report.csv", na= "NaN")

@@ -63,15 +63,29 @@ df_ful <- setNames(df_ful, c("protein_groups",
                              "gmp_rep_4"))
 ```
 
-## Shortening Protein and Gene Names
+## Shortening Protein and Gene Names to Contain One String per Cell
 
-The variables protein_groups and genes in some cases contain multiple names. The reason for this is that if a cell contains more than one protein name (fx Q8BSP2;Q8BSP2-2;Q8BSP2-3) it is because they are protein isomers, and there is no means of discerning which of protein isomers is actually measured. For the prupose of tidy data we decide to keep only the first name in that column, and an \_group is added to signify that more isomers were there in the original dataset.
+The variables protein_groups and genes in some cases contain multiple names. The reason for this is that if a cell contains more than one protein name (fx "Q8BSP2;Q8BSP2-2;Q8BSP2-3") it is because they are protein isomers, and there is no means of discerning which of protein isomers is actually measured. For the purpose of tidy data we decide to keep only the first name in that column, and a `_group`*\`* is added to signify that more isomers were there in the original dataset (fx "Q8BSP2_group"). The same procedure is applied to the 'genes' variable.
 
 ```{r}
-df_ful |> 
- # select(protein_groups) |> 
- # str_detect(protein_groups,";")
-    mutate(protein_groups = str_split_1(protein_groups,";"))[1] 
+  #str_split_i splits the protein isomers separated by the delimiter ; and keeps only the "first protein isomer_group"
+df_ful <- df_ful |> 
+    mutate(
+      protein_groups = case_when(
+        #returns TRUE when the delimiter ; is detected
+      str_detect(protein_groups,pattern = ";") ~
+        #in which case only the first string is kept and _group is added
+      str_c(str_split_i(protein_groups,";",1), "_group"),
+      #if the delimiter ; was not detected the original string value is kept
+      .default = protein_groups
+      ),
+      #the same as above is repeated for genes variable
+      genes = case_when(
+        str_detect(genes,pattern = ";") ~
+        str_c(str_split_i(genes,";",1), "_group"),
+        .default = genes
+        )
+    )
 ```
 
 ## Lengthening the Data

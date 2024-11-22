@@ -4,11 +4,6 @@ format: html
 editor: visual
 ---
 
-```{r}
-library(purrr)
-library(broom)
-```
-
 ## Data Analysis
 
 ### PCA
@@ -60,14 +55,14 @@ df_no_na_long_nested |>
 ```
 
 ```{r}
-df_no_na_long_nested <- df_no_na_long_nested |> 
+#df_no_na_long_nested <- df_no_na_long_nested |> 
   #I'm not really sure what this group_by() changes, as I thought we were working with nested data by gene anyways... We need the group_by() to define which variable holds the elements to each of which we want to map
-  group_by(genes) |> 
+ # group_by(genes) |> 
   ##create a new variable model_object using mutate, which will contain the result of the map function. Then map that to the data we apply a linear function where expresion level is a function of early metastasis
   #here .x=data refers to the data inside the mapped gene tibbles
-  mutate(model_object = map(.x = data,
-                     .f = ~lm(formula = intensity ~early_metastasis,
-                            data = .x)))
+  #mutate(model_object = map(.x = data,
+  #                   .f = ~lm(formula = intensity ~early_metastasis,
+  #                          data = .x)))
 ```
 
 I want to know whether all genes in hsc are also present in gmp.
@@ -190,32 +185,24 @@ df_no_na_long |>
 df_mean_intensitities
 
 
-flot <- df_no_na_long |> 
-  filter(replicate_n != 5)
-  
 
 
-wide <- flot |> 
-  pivot_wider(names_from = cell_type,
-              values_from = intensity,
-              values_fn = mean) # the pivot_wider finds duplicate values for intentcity, this is a way to mitigate that issue.
+
+
+
+
+#flot <- df_no_na_long |> 
+ # pivot_wider(names_from = cell_type, values_from = intensity)
+
+#View(flot)
+
+#flot |> filter(replicate_n != 5) |> 
+#  group_by(genes) |> 
+#  summarise(mean = mean(clp))
   
 ```
 
 ```{r}
-
-#wide |> 
-  group_by(genes) |>
-  mutate(ttest = map(.x = hsc,
-                     .f = ~ t.test(.x,
-                                   alternative = c("two.sided",
-                                                   "less",
-                                                   "greater"),
-                                   conf.level = 0.99)))
-
-```
-
-
 
 test_plot <- df_mean_intensitities |> 
 pivot_wider(names_from = cell_type, values_from = c(mean, sd)) |> 
@@ -227,18 +214,13 @@ pivot_wider(names_from = cell_type, values_from = c(mean, sd)) |>
 
   
 
-<<<<<<< HEAD
-view(wide)
 ```
 
 ```{r}
 
-krap <-df_mean_intensitities |> 
-  select(!sd) |> 
-  pivot_wider(names_from = cell_type, values_from = mean) |> 
-  select(!gmp & !hsc & !mep) |> 
-  mutate(fold = cmp/clp) 
-  
+ggplot(test_plot, aes(x=fold))+
+  geom_histogram()+
+  scale_x_continuous(limits = c(0.9, 1.1))
 ```
 
 ```{r}
@@ -261,3 +243,5 @@ test_plot |>
         plot.title = element_text(hjust = 1),
         plot.subtitle = element_text(hjust = 1))+
   geom_hline(yintercept = 2)
+
+```

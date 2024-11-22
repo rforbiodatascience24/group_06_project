@@ -64,7 +64,7 @@ ggplot(pca_data, aes(x = PC1, y = PC2)) +
 
 # Filter for two specific groups, e.g., hsc and mep
 df_fc <- df_long |> 
-  filter(cell_type %in% c("hsc", "mep")) |> 
+  filter(cell_type %in% c("hsc", "gmp")) |> 
   group_by(protein_groups) |> 
   summarise(
     # Calculate log2 fold change (log2FC) between hsc and mep
@@ -74,9 +74,9 @@ df_fc <- df_long |>
     # Calculate p-value using t-test for differences between groups
     p_value = ifelse(
       sum(!is.na(log_intensity[cell_type == "hsc"])) > 1 & 
-      sum(!is.na(log_intensity[cell_type == "mep"])) > 1,
+      sum(!is.na(log_intensity[cell_type == "gmp"])) > 1,
       t.test(log_intensity[cell_type == "hsc"], 
-             log_intensity[cell_type == "mep"])$p.value,
+             log_intensity[cell_type == "gmp"])$p.value,
       NA  # Assign NA if there are insufficient observations
     )
   )

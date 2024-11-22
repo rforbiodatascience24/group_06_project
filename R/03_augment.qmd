@@ -57,6 +57,7 @@ df_no_na_long <- df_norm_long |>
     .default = intensity
   ))
 
+
 ```
 
 ### Getting mean values and standard deviation for volcano plot
@@ -73,5 +74,7 @@ df_mean_intensitities <- df_no_na_long |>
     sd = sd(intensity)
     )
 df_mean_intensitities
+
+summary(df_no_na_long)
 
 ```

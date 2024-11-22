@@ -4,6 +4,11 @@ format: html
 editor: visual
 ---
 
+```{r}
+library(purrr)
+library(broom)
+```
+
 ## Data Analysis
 
 ### PCA
@@ -185,24 +190,32 @@ df_no_na_long |>
 df_mean_intensitities
 
 
+flot <- df_no_na_long |> 
+  filter(replicate_n != 5)
+  
 
 
-
-
-
-
-#flot <- df_no_na_long |> 
- # pivot_wider(names_from = cell_type, values_from = intensity)
-
-#View(flot)
-
-#flot |> filter(replicate_n != 5) |> 
-#  group_by(genes) |> 
-#  summarise(mean = mean(clp))
+wide <- flot |> 
+  pivot_wider(names_from = cell_type,
+              values_from = intensity,
+              values_fn = mean) # the pivot_wider finds duplicate values for intentcity, this is a way to mitigate that issue.
   
 ```
 
 ```{r}
+
+#wide |> 
+  group_by(genes) |>
+  mutate(ttest = map(.x = hsc,
+                     .f = ~ t.test(.x,
+                                   alternative = c("two.sided",
+                                                   "less",
+                                                   "greater"),
+                                   conf.level = 0.99)))
+
+```
+
+
 
 test_plot <- df_mean_intensitities |> 
 pivot_wider(names_from = cell_type, values_from = c(mean, sd)) |> 
@@ -214,6 +227,18 @@ pivot_wider(names_from = cell_type, values_from = c(mean, sd)) |>
 
   
 
+<<<<<<< HEAD
+view(wide)
+```
+
+```{r}
+
+krap <-df_mean_intensitities |> 
+  select(!sd) |> 
+  pivot_wider(names_from = cell_type, values_from = mean) |> 
+  select(!gmp & !hsc & !mep) |> 
+  mutate(fold = cmp/clp) 
+  
 ```
 
 ```{r}
@@ -236,5 +261,3 @@ test_plot |>
         plot.title = element_text(hjust = 1),
         plot.subtitle = element_text(hjust = 1))+
   geom_hline(yintercept = 2)
-
-```

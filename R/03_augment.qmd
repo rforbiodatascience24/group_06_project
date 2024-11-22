@@ -75,4 +75,6 @@ df_mean_intensitities <- df_no_na_long |>
     )
 df_mean_intensitities
 
+summary(df_no_na_long)
+
 ```

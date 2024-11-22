@@ -157,4 +157,14 @@ pval <- function(mu1,mu2,n1,n2,s1,s2){
 
 ```
 
-h
+```{r}
+df_mean_intensitities |> 
+  filter(cell_type == "hsc" | cell_type == "gmp") |> 
+  filter(protein_groups == "A1L314") |> 
+  mutate(pval = pval(mean[1],mean[2],4,4,sd[1],sd[2]))
+#ok so this works but how can I let it be mean[gmp] instead of mean[1]. ie a programatical solution...
+  mutate(across(matches(".I|.V"), ~ if_else(row_number() %in% grep("in %", name), ./100, .)))
+  mutate(pval2 = case_when(
+  ID %in% Status1$ID ~ "Status1"
+  ))
+```

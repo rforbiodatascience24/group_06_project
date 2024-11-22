@@ -4,6 +4,11 @@ format: html
 editor: visual
 ---
 
+```{r}
+library(purrr)
+library(broom)
+```
+
 ## Data Analysis
 
 ### PCA
@@ -20,12 +25,26 @@ df_no_na_long |>
 #There is no such thing as Cd150??
 ```
 
-First of all we want to subset the data so we only work with two cell types. In this case hsc and gmp as they appear to be the most different
+First of all we want to subset the data so we only work with two cell types. In this case hsc and gmp as they appear to be the most different.
+
+```{r}
+#subset the data to only hsc or gmp
+df_no_na_long |> 
+  filter(cell_type == "hsc" | cell_type == "gmp") |> 
+  ggplot(aes(x = genes, y = intensity, color = cell_type))+
+  geom_point()
+```
+
+```{r}
+df_mean_intensitities |> 
+  filter(cell_type == "hsc" | cell_type == "gmp") |> 
+  ggplot(aes(x = protein_groups, y = mean, colour = cell_type))+
+  geom_point()
+```
 
 Grouping data
 
 ```{r}
-# 
 df_no_na_long_nested <- df_no_na_long |> 
   #then there will be a tibble for each gene-cell-type combo which will contain all the replicates
   group_by(genes, cell_type) |> 
@@ -41,14 +60,14 @@ df_no_na_long_nested |>
 ```
 
 ```{r}
-#df_no_na_long_nested <- df_no_na_long_nested |> 
+df_no_na_long_nested <- df_no_na_long_nested |> 
   #I'm not really sure what this group_by() changes, as I thought we were working with nested data by gene anyways... We need the group_by() to define which variable holds the elements to each of which we want to map
- # group_by(genes) |> 
+  group_by(genes) |> 
   ##create a new variable model_object using mutate, which will contain the result of the map function. Then map that to the data we apply a linear function where expresion level is a function of early metastasis
   #here .x=data refers to the data inside the mapped gene tibbles
-  #mutate(model_object = map(.x = data,
-  #                   .f = ~lm(formula = intensity ~early_metastasis,
-  #                          data = .x)))
+  mutate(model_object = map(.x = data,
+                     .f = ~lm(formula = intensity ~early_metastasis,
+                            data = .x)))
 ```
 
 I want to know whether all genes in hsc are also present in gmp.
@@ -126,14 +145,14 @@ this |>
   pull(data)
 ```
 
-Creating a function that finds the p-value based on the students t.test
-
 ```{r}
 #no of replicates
-n <- 4
-
+#n <- 4
+##Compute the observed test statistic under the null hypothesis that there is no difference between mu1 and mu2
+#tobs <- ((mu1-mu2)-0)/sqrt((sd1^2)/n1+(sd2^2)/n2)
+#tobs
 ##Compute the p-value as a tail propability in the t-distribution. pvalue=2*P(T>|tobs|). pt is the cdf distribution, so the propability that T is smaller than or equal to tobs is given by
-
+#pvalue <- 2*(1-pt(abs(tobs), df=n-1))
 pval <- function(mu1,mu2,n1,n2,s1,s2){
   tobs <- ((mu1-mu2)-0)/sqrt((s1^2)/n1+(s2^2)/n2)
   df <- (((s1^2)/n1+(s2^2)/n2)^2)/((((s1^2)/n1)^2)/(n1-1)+(((s2^2)/n2)^2)/(n2-1))
@@ -142,8 +161,6 @@ pval <- function(mu1,mu2,n1,n2,s1,s2){
   }
 
 ```
-
-Testing the function to get functionality
 
 ```{r}
 df_mean_intensitities |> 
@@ -161,17 +178,10 @@ s
   ID %in% Status1$ID ~ "Status1"
   ))
 
-  
-  
 h
 
 T-test
-```
 
-Lasse is testing methods to apply the t.test
-
-```{r}
-# Lasse stuff
 
 df_no_na_long |> 
   group_by(protein_groups, cell_type)
@@ -185,50 +195,31 @@ df_no_na_long |>
 df_mean_intensitities
 
 
+flot <- df_no_na_long |> 
+  filter(replicate_n != 5)
+  
 
 
-<<<<<<< HEAD
 wide <- flot |> 
   pivot_wider(names_from = cell_type,
               values_from = intensity,
               values_fn = mean) # the pivot_wider finds duplicate values for intentcity, this is a way to mitigate that issue.
+  
+```
 
-# Lasse tried to map the p-value t.test in a cool way
-wide |> 
-group_by(genes) |>
+```{r}
+
+#wide |> 
+  group_by(genes) |>
   mutate(ttest = map(.x = hsc,
                      .f = ~ t.test(.x,
                                    alternative = c("two.sided",
                                                    "less",
                                                    "greater"),
                                    conf.level = 0.99)))
-```
-
-```{r}
-# Antonio pivoted wider and creatd a log2foldchange
-df_mean_intensitities |> 
-  select(!sd) |> 
-  pivot_wider(names_from = cell_type, values_from = mean) |> 
-  select(!gmp & !hsc & !mep) |> 
-  mutate(fold = cmp/clp) 
-  
-=======
 
 
 
-
-#flot <- df_no_na_long |> 
- # pivot_wider(names_from = cell_type, values_from = intensity)
-
-#View(flot)
-
-#flot |> filter(replicate_n != 5) |> 
-#  group_by(genes) |> 
-#  summarise(mean = mean(clp))
-  
-```
-
-```{r}
 
 #test_plot <- df_mean_intensitities |> 
 #pivot_wider(names_from = cell_type, values_from = c(mean, sd)) |> 
@@ -243,41 +234,17 @@ df_mean_intensitities |>
 ```
 
 ```{r}
-# Histogram that shows distribution of the fold
-ggplot(test_plot, aes(x=fold))+
-  geom_histogram()+
-  scale_x_continuous(limits = c(0.75, 1.25))
+
+krap <-df_mean_intensitities |> 
+  select(!sd) |> 
+  pivot_wider(names_from = cell_type, values_from = mean) |> 
+  select(!gmp & !hsc & !mep) |> 
+  mutate(fold = cmp/clp) 
+  
 ```
 
 ```{r}
 
->>>>>>> 2a93b03949a5d5041af44341cbace2f2f93c28fc
 ```
 
-```{r}
-#creating a new label-variable which takes values for gene for significant genes only and otherwise leaves it as "" otherwise there would be waaaay too many (>2000) gene names 
-
-test_plot <- df_mean_intensitities |> 
-pivot_wider(names_from = cell_type, values_from = c(mean, sd)) |> 
-  select(mean_gmp, mean_hsc, sd_gmp, sd_hsc) |> 
-  mutate(fold = mean_gmp/mean_hsc) |> 
-  mutate(pval = pval(mean_gmp,mean_hsc,4,4,sd_gmp,sd_hsc)) |> 
-  select(protein_groups,fold,pval)
-
-
-library(ggrepel) 
-test_plot |>
-  mutate(label = case_when(fold > 1 ~ protein_groups, fold < 1 ~ "")) |>
-  ggplot(aes(x = log2(fold), y = desc(log10(pval))))+
-  geom_point(size=1, alpha = 0.5)+
-  geom_text_repel(aes(label = label), size = 3)+
-  theme_minimal()+ labs(title = "GMP/HSC", subtitle = "Proteins that were more expressed in GMP are highlighted", x = "fold", y = "-log10(p)", caption = "proteomics data")+
-  theme(legend.position = "none", plot.title = element_text(hjust = 1), plot.subtitle = element_text(hjust = 1))+
-  geom_hline(yintercept = 2)
-
-```
-<<<<<<< HEAD
-
-\`\`\`
-=======
->>>>>>> 2a93b03949a5d5041af44341cbace2f2f93c28fc
+\`\`\`{r} #creating a new label-variable which takes values for gene for significant genes only and otherwise leaves it as "" otherwise there would be waaaay too many (\>2000) gene names library(ggrepel) test_plot \|\> mutate(label = case_when(fold \> 1 \~ protein_groups, fold \< 1 \~ "")) \|\> ggplot(aes(x = log2(fold), y = desc(log10(pval))))+ geom_point(size=1, alpha = 0.5)+ geom_text_repel(aes(label = label), size = 3)+ theme_minimal()+ labs(title = "GMP/HSC", subtitle = "Proteins that were more expressed in GMP are highlighted", x = "fold", y = "-log10(p)", caption = "proteomics data")+ theme(legend.position = "none", plot.title = element_text(hjust = 1), plot.subtitle = element_text(hjust = 1))+ geom_hline(yintercept = 2)

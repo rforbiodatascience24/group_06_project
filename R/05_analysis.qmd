@@ -221,14 +221,11 @@ df_mean_intensitities
 
 ```
 
-
-  
-
 ```{r}
-
+# Histogram that shows distribution of the fold
 ggplot(test_plot, aes(x=fold))+
   geom_histogram()+
-  scale_x_continuous(limits = c(0.9, 1.1))
+  scale_x_continuous(limits = c(0.75, 1.25))
 ```
 
 ```{r}

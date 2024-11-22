@@ -102,7 +102,6 @@ df_long <- df_ful |>
   )
 ```
 
-<<<<<<< HEAD
 Separating the samples column into replicate number and cell type
 
 ```{r}

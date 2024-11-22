@@ -1,0 +1,44 @@
+---
+title: "05_analysis_Lasse"
+format: html
+editor: visual
+---
+
+## Library
+
+```{r}
+library(tidyverse)
+library(broom)
+library(purrr)
+library(rstatix)
+
+```
+
+### Calculating the p-value between sets
+
+```{r}
+?t.test()
+df_no_na_long |> 
+  group_by(protein_groups,
+           genes,
+           cell_type) |> 
+  summarise(mean = mean(intensity))
+
+
+
+```
+
+Perform a welch student t-test to compare the cell types. The function from rstatix is a wrapper function for stats::t.test, which is now optimized for piping data. The data is stored in a tibble
+
+```{r}
+
+#Perform a pairwise t-test using the wrapper function rstatix::pairwise_t_test.
+df_no_na_long |>
+  group_by(genes,
+           protein_groups) |> 
+  pairwise_t_test(intensity ~ cell_type,
+                  p.adjust.method = "bonferroni",
+                  conf.level = 0.99)
+
+### It should be relatively easy now to have a function that filters and only takes the correct combinations.
+```

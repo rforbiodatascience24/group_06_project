@@ -222,7 +222,7 @@ library(ggrepel)
 test_plot |> 
   mutate(label = case_when(fold > 1 ~ protein_groups,
                            fold < 1 ~ "")) |> 
-  ggplot(aes(x = fold, 
+  ggplot(aes(x = log2(fold), 
              y = desc(log10(pval))))+
   geom_point(size=1, alpha = 0.5)+
   geom_text_repel(aes(label = label), size = 3)+

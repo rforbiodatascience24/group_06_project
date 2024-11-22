@@ -161,8 +161,7 @@ s
   ID %in% Status1$ID ~ "Status1"
   ))
 
-  
-  
+
 h
 
 T-test
@@ -184,10 +183,6 @@ df_no_na_long |>
     )
 df_mean_intensitities
 
-
-
-
-<<<<<<< HEAD
 wide <- flot |> 
   pivot_wider(names_from = cell_type,
               values_from = intensity,
@@ -211,34 +206,6 @@ df_mean_intensitities |>
   pivot_wider(names_from = cell_type, values_from = mean) |> 
   select(!gmp & !hsc & !mep) |> 
   mutate(fold = cmp/clp) 
-  
-=======
-
-
-
-
-#flot <- df_no_na_long |> 
- # pivot_wider(names_from = cell_type, values_from = intensity)
-
-#View(flot)
-
-#flot |> filter(replicate_n != 5) |> 
-#  group_by(genes) |> 
-#  summarise(mean = mean(clp))
-  
-```
-
-```{r}
-
-#test_plot <- df_mean_intensitities |> 
-#pivot_wider(names_from = cell_type, values_from = c(mean, sd)) |> 
-  #select(mean_gmp, mean_hsc, sd_gmp, sd_hsc) |> 
-  #mutate(fold = mean_gmp/mean_hsc) |> 
-  #mutate(pval = pval(mean_gmp,mean_hsc,4,4,sd_gmp,sd_hsc)) |> 
-  #select(protein_groups,fold,pval)
-
-
-
 
 ```
 
@@ -247,11 +214,6 @@ df_mean_intensitities |>
 ggplot(test_plot, aes(x=fold))+
   geom_histogram()+
   scale_x_continuous(limits = c(0.75, 1.25))
-```
-
-```{r}
-
->>>>>>> 2a93b03949a5d5041af44341cbace2f2f93c28fc
 ```
 
 ```{r}
@@ -276,8 +238,3 @@ test_plot |>
   geom_hline(yintercept = 2)
 
 ```
-<<<<<<< HEAD
-
-\`\`\`
-=======
->>>>>>> 2a93b03949a5d5041af44341cbace2f2f93c28fc

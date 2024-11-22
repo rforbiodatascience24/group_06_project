@@ -10,7 +10,46 @@ editor: visual
 
 ### Volcano plots (pairwise)
 
+T-test
+
 ```{r}
+
+df_no_na_long |> 
+  group_by(protein_groups, cell_type)
+
+# create a tibble with mean values and standard deviation
+df_no_na_long |> 
+  group_by(protein_groups, cell_type) |> # take the mean/sd of of the replicates for the protein groups and cell types.
+  summarise(
+    p_value = t.test()
+    )
+df_mean_intensitities
+
+
+
+
+
+
+
+
+flot <- df_no_na_long |> 
+  pivot_wider(names_from = cell_type, values_from = intensity)
+
+View(flot)
+
+flot |> filter(replicate_n != 5) |> 
+  group_by(genes)
+  
+  |> 
+  summarise(mean = mean(clp)))
+  
+```
+
+```{r}
+
+
+
+
 df_mean_intensitities |> 
   select(!sd) |> 
   pivot_wider(names_from = cell_type, values_from = mean) |> 

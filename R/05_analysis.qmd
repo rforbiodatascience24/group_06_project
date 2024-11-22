@@ -32,28 +32,25 @@ df_mean_intensitities
 
 
 
-flot <- df_no_na_long |> 
-  pivot_wider(names_from = cell_type, values_from = intensity)
+#flot <- df_no_na_long |> 
+ # pivot_wider(names_from = cell_type, values_from = intensity)
 
-View(flot)
+#View(flot)
 
-flot |> filter(replicate_n != 5) |> 
-  group_by(genes)
-  
-  |> 
-  summarise(mean = mean(clp)))
+#flot |> filter(replicate_n != 5) |> 
+#  group_by(genes) |> 
+#  summarise(mean = mean(clp))
   
 ```
 
 ```{r}
 
-
-
-
 df_mean_intensitities |> 
-  select(!sd) |> 
-  pivot_wider(names_from = cell_type, values_from = mean) |> 
-  select(!gmp & !hsc & !mep) |> 
-  mutate(fold = cmp/clp) 
+
+pivot_wider(names_from = cell_type, values_from = c(mean, sd)) |> 
+  select(mean_clp, mean_cmp, sd_clp, sd_cmp) |> 
+  mutate(fold = mean_clp/mean_clp) |> 
+  
+
   
 ```

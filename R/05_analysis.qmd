@@ -8,24 +8,6 @@ editor: visual
 
 ### PCA
 
-### Volcano plots (pairwise)
-
-## Function that computes p-value
-
-Creating a function that finds the p-value based on the two sample students t.test
-
-```{r}
-##Compute the p-value as a tail propability in the t-distribution. pvalue=2*P(T>|tobs|). pt is the cdf distribution, so the propability that T is smaller than or equal to tobs is given by
-#mu is mean. n is no of replicates. s is standard deviation. 
-pval <- function(mu1,mu2,n1,n2,s1,s2){
-  tobs <- ((mu1-mu2)-0)/sqrt((s1^2)/n1+(s2^2)/n2)
-  df <- (((s1^2)/n1+(s2^2)/n2)^2)/((((s1^2)/n1)^2)/(n1-1)+(((s2^2)/n2)^2)/(n2-1))
-  pvalue <- 2*(1-pt(abs(tobs), df=df))
-  return(pvalue)
-  }
-
-```
-
 ## Lasse is testing methods to apply the t.test
 
 ```{r}
@@ -76,6 +58,26 @@ ggplot(test_plot, aes(x=fold))+
   geom_histogram()+
   scale_x_continuous(limits = c(0.75, 1.25))
 ```
+
+## Function that computes p-value
+
+Creating a function that finds the p-value based on the two sample students t.test. Propably the function should end up going to its own document. This function is used for the volcano plots.
+
+```{r}
+##Compute the p-value as a tail propability in the t-distribution. pvalue=2*P(T>|tobs|). pt is the cdf distribution, so the propability that T is smaller than or equal to tobs is given by
+#mu is mean. n is no of replicates. s is standard deviation. 
+pval <- function(mu1,mu2,n1,n2,s1,s2){
+  tobs <- ((mu1-mu2)-0)/sqrt((s1^2)/n1+(s2^2)/n2)
+  df <- (((s1^2)/n1+(s2^2)/n2)^2)/((((s1^2)/n1)^2)/(n1-1)+(((s2^2)/n2)^2)/(n2-1))
+  pvalue <- 2*(1-pt(abs(tobs), df=df))
+  return(pvalue)
+  }
+
+```
+
+## 
+
+## Volcano Plots
 
 ```{r}
 #creating a new label-variable which takes values for gene for significant genes only and otherwise leaves it as "" otherwise there would be waaaay too many (>2000) gene names 

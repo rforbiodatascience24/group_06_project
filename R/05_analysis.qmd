@@ -50,6 +50,24 @@ df_mean_intensitities |>
 
 ```
 
+## Creating a test data set in wide format based on means only 
+
+This test dataset makes it possible for us to plot volcano plots and histograms. But we don't think it is the most elegant format. It would be better if we could keep the long format with all replicates, but we experienced difficulty in then creating a 2logfold variable and a p.value variable for each two cell-types that are compared. The reason we experienced this difficulty is because we could not find a tidyverse method to make these new variables columns.
+
+```{r}
+#In order to plot we use the mean_intensities data frame
+#We pivot wider to be able to create gmp and hsc columns, but this is not an elegant solution... 
+test_plot <- df_mean_intensitities |> 
+pivot_wider(names_from = cell_type, values_from = c(mean, sd)) |> 
+  select(mean_gmp, mean_hsc, sd_gmp, sd_hsc) |> 
+  #Here we make a fold column. But should the fold be created by division or substratction? 
+  mutate(fold = mean_gmp/mean_hsc) |> 
+  #Using our pvalue function
+  mutate(pval = pval(mean_gmp,mean_hsc,4,4,sd_gmp,sd_hsc)) |> 
+  select(protein_groups,fold,pval)
+
+```
+
 ## Histogram
 
 ```{r}
@@ -80,15 +98,8 @@ pval <- function(mu1,mu2,n1,n2,s1,s2){
 ## Volcano Plots
 
 ```{r}
+
 #creating a new label-variable which takes values for gene for significant genes only and otherwise leaves it as "" otherwise there would be waaaay too many (>2000) gene names 
-
-test_plot <- df_mean_intensitities |> 
-pivot_wider(names_from = cell_type, values_from = c(mean, sd)) |> 
-  select(mean_gmp, mean_hsc, sd_gmp, sd_hsc) |> 
-  mutate(fold = mean_gmp/mean_hsc) |> 
-  mutate(pval = pval(mean_gmp,mean_hsc,4,4,sd_gmp,sd_hsc)) |> 
-  select(protein_groups,fold,pval)
-
 
 library(ggrepel) 
 test_plot |>

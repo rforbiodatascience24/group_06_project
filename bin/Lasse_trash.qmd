@@ -45,3 +45,33 @@ wide <- flot |>
               values_fn = mean) # the pivot_wider finds duplicate values for intentcity, this is a way to mitigate that issue.
 
 # Lasse tried to map the p-value t.test in a cool way
+
+
+{r}
+# Lasse stuff
+
+df_no_na_long |> 
+  group_by(protein_groups, cell_type)
+
+# create a tibble with mean values and standard deviation
+df_no_na_long |> 
+  group_by(protein_groups, cell_type) |> # take the mean/sd of of the replicates for the protein groups and cell types.
+  summarise(
+    p_value = t.test()
+    )
+df_mean_intensitities
+
+wide <- flot |> 
+  pivot_wider(names_from = cell_type,
+              values_from = intensity,
+              values_fn = mean) # the pivot_wider finds duplicate values for intentcity, this is a way to mitigate that issue.
+
+# Lasse tried to map the p-value t.test in a cool way
+wide |> 
+group_by(genes) |>
+  mutate(ttest = map(.x = hsc,
+                     .f = ~ t.test(.x,
+                                   alternative = c("two.sided",
+                                                   "less",
+                                                   "greater"),
+                                   conf.level = 0.99)))

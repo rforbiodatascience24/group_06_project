@@ -36,7 +36,7 @@ Perform a welch student t-test to compare the cell types. The function from rsta
 df_no_na_long |>
   group_by(genes,
            protein_groups) |> 
-  pairwise_t_test(intensity ~ cell_type,
+  t_test(intensity ~ cell_type,
                   p.adjust.method = "bonferroni",
                   conf.level = 0.99)
 

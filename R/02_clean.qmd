@@ -104,11 +104,6 @@ df_long <- df_ful |>
 
 <<<<<<< HEAD
 Separating the samples column into replicate number and cell type
-=======
-## Separating Sample variable into two Variables
-
-Seperating the samples column into replicate number and cell type
->>>>>>> 22f7f95b51e9e9339c59e34b1e6bf043111c4f30
 
 ```{r}
 df_long <- df_long |> 

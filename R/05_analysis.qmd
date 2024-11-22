@@ -15,9 +15,168 @@ library(broom)
 
 ### Volcano plots (pairwise)
 
-T-test
+Select hsc where protein starts with c
 
 ```{r}
+df_no_na_long |> 
+#  filter(cell_type == "hsc") |> 
+ # select(genes, intensity) |> 
+  filter(str_detect(genes, "^Cd1"))
+#There is no such thing as Cd150??
+```
+
+First of all we want to subset the data so we only work with two cell types. In this case hsc and gmp as they appear to be the most different.
+
+```{r}
+#subset the data to only hsc or gmp
+df_no_na_long |> 
+  filter(cell_type == "hsc" | cell_type == "gmp") |> 
+  ggplot(aes(x = genes, y = intensity, color = cell_type))+
+  geom_point()
+```
+
+```{r}
+df_mean_intensitities |> 
+  filter(cell_type == "hsc" | cell_type == "gmp") |> 
+  ggplot(aes(x = protein_groups, y = mean, colour = cell_type))+
+  geom_point()
+```
+
+Grouping data
+
+```{r}
+df_no_na_long_nested <- df_no_na_long |> 
+  #then there will be a tibble for each gene-cell-type combo which will contain all the replicates
+  group_by(genes, cell_type) |> 
+  nest() |> 
+  ungroup()
+```
+
+```{r}
+df_no_na_long_nested |> 
+  ##Looking at what the data looks like. But where did the cell type go?
+  filter(genes == "Gprin1") |> 
+  pull(data)
+```
+
+```{r}
+df_no_na_long_nested <- df_no_na_long_nested |> 
+  #I'm not really sure what this group_by() changes, as I thought we were working with nested data by gene anyways... We need the group_by() to define which variable holds the elements to each of which we want to map
+  group_by(genes) |> 
+  ##create a new variable model_object using mutate, which will contain the result of the map function. Then map that to the data we apply a linear function where expresion level is a function of early metastasis
+  #here .x=data refers to the data inside the mapped gene tibbles
+  mutate(model_object = map(.x = data,
+                     .f = ~lm(formula = intensity ~early_metastasis,
+                            data = .x)))
+```
+
+I want to know whether all genes in hsc are also present in gmp.
+
+How can I figure this out?
+
+I also don't think we should consider the protein column. Is the amount of protein_groups the same as the amount of genes? If we subset the data again, by grouping for cell_type, what is then the lenght of them? How do I figure out how many unique genes there are?
+
+```{r}
+df_no_na_long |> 
+  group_by(cell_type) |> 
+  summarize(n = n())
+#We can see that there are equally many cmp, gmp, hsc and mep but there are more clp's which is due to the no of replicates
+```
+
+```{r}
+df_no_na_long |> 
+  ungroup() |> 
+  select(genes) |> 
+  distinct()
+#There are 3623 different genes
+df_no_na_long |> 
+  ungroup() |> 
+  select(protein_groups) |> 
+  distinct()
+#There are 3724 different protein groups 
+#why is the number of genes and number of proteins not the same??
+#And how do we figure out if the same genes are present in all of the cell types?
+
+```
+
+```{r}
+df_no_na_long |> 
+  ungroup() |> 
+  select(genes, cell_type) |> 
+  group_by(cell_type) |> 
+  summarize(n = n())
+```
+
+```{r}
+df_no_na_long |> 
+  filter(cell_type == "hsc" | cell_type == "gmp") |> 
+  distinct()
+```
+
+Now lets try to work with hsc and gmp.
+
+I want to create a new variable that shows me the ration between hsc and gmp.
+
+```{r}
+df_no_na_long_sample |> 
+  ungroup() |> 
+  select(cell_type, replicate_n, genes, intensity) |> 
+  filter(cell_type == "hsc" | cell_type == "gmp") |> 
+  group_by(cell_type) |> 
+  mutate(ratio = case_when(cell_type == "hsc" ~ 1,
+                           cell_type == "gmp" ~ 0))
+```
+
+```{r}
+this <- df_no_na_long |> 
+  ungroup() |> 
+  select(cell_type, replicate_n, genes, intensity) |> 
+  pivot_wider(names_from = cell_type,
+              values_from = intensity) |> 
+  filter(replicate_n != 5) |> 
+  group_by(genes) |> 
+  nest() |> 
+  ungroup()
+```
+
+```{r}
+this |> 
+  filter(genes == "Gprin1") |> 
+  pull(data)
+```
+
+```{r}
+#no of replicates
+#n <- 4
+##Compute the observed test statistic under the null hypothesis that there is no difference between mu1 and mu2
+#tobs <- ((mu1-mu2)-0)/sqrt((sd1^2)/n1+(sd2^2)/n2)
+#tobs
+##Compute the p-value as a tail propability in the t-distribution. pvalue=2*P(T>|tobs|). pt is the cdf distribution, so the propability that T is smaller than or equal to tobs is given by
+#pvalue <- 2*(1-pt(abs(tobs), df=n-1))
+pval <- function(mu1,mu2,n1,n2,s1,s2){
+  tobs <- ((mu1-mu2)-0)/sqrt((s1^2)/n1+(s2^2)/n2)
+  df <- (((s1^2)/n1+(s2^2)/n2)^2)/((((s1^2)/n1)^2)/(n1-1)+(((s2^2)/n2)^2)/(n2-1))
+  pvalue <- 2*(1-pt(abs(tobs), df=df))
+  return(pvalue)
+  }
+
+```
+
+```{r}
+df_mean_intensitities |> 
+  filter(cell_type == "hsc" | cell_type == "gmp") |> 
+  filter(protein_groups == "A1L314") |> 
+  mutate(pval = pval(mean[1],mean[2],4,4,sd[1],sd[2]))
+#ok so this works but how can I let it be mean[gmp] instead of mean[1]. ie a programatical solution...
+  mutate(across(matches(".I|.V"), ~ if_else(row_number() %in% grep("in %", name), ./100, .)))
+  mutate(pval2 = case_when(
+  ID %in% Status1$ID ~ "Status1"
+  ))
+
+h
+
+T-test
+
 
 df_no_na_long |> 
   group_by(protein_groups, cell_type)
@@ -31,9 +190,6 @@ df_no_na_long |>
 df_mean_intensitities
 
 
-
-
-
 flot <- df_no_na_long |> 
   filter(replicate_n != 5)
   
@@ -43,11 +199,12 @@ wide <- flot |>
   pivot_wider(names_from = cell_type,
               values_from = intensity,
               values_fn = mean) # the pivot_wider finds duplicate values for intentcity, this is a way to mitigate that issue.
+  
+```
 
+```{r}
 
-
-
-wide |> 
+#wide |> 
   group_by(genes) |>
   mutate(ttest = map(.x = hsc,
                      .f = ~ t.test(.x,
@@ -56,8 +213,21 @@ wide |>
                                                    "greater"),
                                    conf.level = 0.99)))
 
+```
 
 
+
+test_plot <- df_mean_intensitities |> 
+pivot_wider(names_from = cell_type, values_from = c(mean, sd)) |> 
+  select(mean_gmp, mean_hsc, sd_gmp, sd_hsc) |> 
+  mutate(fold = mean_gmp/mean_hsc) |> 
+  mutate(pval = pval(mean_gmp,mean_hsc,4,4,sd_gmp,sd_hsc)) |> 
+  select(protein_groups,fold,pval)
+  
+
+  
+
+<<<<<<< HEAD
 view(wide)
 ```
 
@@ -70,3 +240,24 @@ krap <-df_mean_intensitities |>
   mutate(fold = cmp/clp) 
   
 ```
+
+```{r}
+#creating a new label-variable which takes values for gene for significant genes only and otherwise leaves it as "" otherwise there would be waaaay too many (>2000) gene names
+library(ggrepel)
+test_plot |> 
+  mutate(label = case_when(fold > 1 ~ protein_groups,
+                           fold < 1 ~ "")) |> 
+  ggplot(aes(x = log2(fold), 
+             y = desc(log10(pval))))+
+  geom_point(size=1, alpha = 0.5)+
+  geom_text_repel(aes(label = label), size = 3)+
+  theme_minimal()+
+  labs(title = "GMP/HSC", 
+       subtitle = "Proteins that were more expressed in GMP are highlighted",
+       x = "fold",
+       y = "-log10(p)",
+       caption = "proteomics data")+
+  theme(legend.position = "none",
+        plot.title = element_text(hjust = 1),
+        plot.subtitle = element_text(hjust = 1))+
+  geom_hline(yintercept = 2)

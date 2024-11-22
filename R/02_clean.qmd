@@ -77,7 +77,7 @@ df_long <- df_ful |>
   )
 ```
 
-Seperating the samples column into replicate number and cell type
+Separating the samples column into replicate number and cell type
 
 ```{r}
 df_long <- df_long |> 

@@ -118,6 +118,15 @@ sample_n(df_long,10)
 
 ```
 
+## Write to tsv
+
+```{r}
+df_long_clean <- df_long
+#Remember to change this code to relate to the corect path once the data has sucessfully been updated to url
+#write_tsv(df_long_clean, file="local_data/df_long_clean.tsv.gz")
+#for some reason this code does not work so this must be fixed
+```
+
 ## Conclusion
 
 Now the data is tidied - meaning each cell has only one value, each observation is in its own row and each variable is in a column. Now the data needs to be log-transformed, normalized and NA's must be dealt with based on the normalization, which will all happen in the augment.

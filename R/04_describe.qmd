@@ -4,6 +4,12 @@ format: html
 editor: visual
 ---
 
+## Library
+
+```{r}
+library(tidyverse)
+```
+
 ## Describe Data
 
 -   What do these data show?
@@ -18,7 +24,7 @@ editor: visual
 # Test normalization with density plot --> medians are equal now
 #This plot should be in the describe
 df_norm_long |> 
-  ggplot(aes(x=intensity, colour=sample)) +
+  ggplot(aes(x=intensity, colour = sample)) +
   geom_density() +
   theme_classic()
 

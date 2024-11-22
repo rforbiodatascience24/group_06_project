@@ -204,13 +204,37 @@ df_mean_intensitities
 
 ```{r}
 
-df_mean_intensitities |> 
-
+test_plot <- df_mean_intensitities |> 
 pivot_wider(names_from = cell_type, values_from = c(mean, sd)) |> 
-  select(mean_clp, mean_cmp, sd_clp, sd_cmp) |> 
-  mutate(fold = mean_clp/mean_clp) |> 
+  select(mean_gmp, mean_hsc, sd_gmp, sd_hsc) |> 
+  mutate(fold = mean_gmp/mean_hsc) |> 
+  mutate(pval = pval(mean_gmp,mean_hsc,4,4,sd_gmp,sd_hsc)) |> 
+  select(protein_groups,fold,pval)
   
 
   
+
+```
+
+```{r}
+#creating a new label-variable which takes values for gene for significant genes only and otherwise leaves it as "" otherwise there would be waaaay too many (>2000) gene names
+library(ggrepel)
+test_plot |> 
+  mutate(label = case_when(fold > 1 ~ protein_groups,
+                           fold < 1 ~ "")) |> 
+  ggplot(aes(x = fold, 
+             y = desc(log10(pval))))+
+  geom_point(size=1, alpha = 0.5)+
+  geom_text_repel(aes(label = label), size = 3)+
+  theme_minimal()+
+  labs(title = "GMP/HSC", 
+       subtitle = "Proteins that were more expressed in GMP are highlighted",
+       x = "fold",
+       y = "-log10(p)",
+       caption = "proteomics data")+
+  theme(legend.position = "none",
+        plot.title = element_text(hjust = 1),
+        plot.subtitle = element_text(hjust = 1))+
+  geom_hline(yintercept = 2)
 
 ```

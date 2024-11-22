@@ -25,26 +25,12 @@ df_no_na_long |>
 #There is no such thing as Cd150??
 ```
 
-First of all we want to subset the data so we only work with two cell types. In this case hsc and gmp as they appear to be the most different.
-
-```{r}
-#subset the data to only hsc or gmp
-df_no_na_long |> 
-  filter(cell_type == "hsc" | cell_type == "gmp") |> 
-  ggplot(aes(x = genes, y = intensity, color = cell_type))+
-  geom_point()
-```
-
-```{r}
-df_mean_intensitities |> 
-  filter(cell_type == "hsc" | cell_type == "gmp") |> 
-  ggplot(aes(x = protein_groups, y = mean, colour = cell_type))+
-  geom_point()
-```
+First of all we want to subset the data so we only work with two cell types. In this case hsc and gmp as they appear to be the most different
 
 Grouping data
 
 ```{r}
+# 
 df_no_na_long_nested <- df_no_na_long |> 
   #then there will be a tibble for each gene-cell-type combo which will contain all the replicates
   group_by(genes, cell_type) |> 
@@ -145,14 +131,14 @@ this |>
   pull(data)
 ```
 
+Creating a function that finds the p-value based on the students t.test
+
 ```{r}
 #no of replicates
-#n <- 4
-##Compute the observed test statistic under the null hypothesis that there is no difference between mu1 and mu2
-#tobs <- ((mu1-mu2)-0)/sqrt((sd1^2)/n1+(sd2^2)/n2)
-#tobs
+n <- 4
+
 ##Compute the p-value as a tail propability in the t-distribution. pvalue=2*P(T>|tobs|). pt is the cdf distribution, so the propability that T is smaller than or equal to tobs is given by
-#pvalue <- 2*(1-pt(abs(tobs), df=n-1))
+
 pval <- function(mu1,mu2,n1,n2,s1,s2){
   tobs <- ((mu1-mu2)-0)/sqrt((s1^2)/n1+(s2^2)/n2)
   df <- (((s1^2)/n1+(s2^2)/n2)^2)/((((s1^2)/n1)^2)/(n1-1)+(((s2^2)/n2)^2)/(n2-1))
@@ -161,6 +147,8 @@ pval <- function(mu1,mu2,n1,n2,s1,s2){
   }
 
 ```
+
+Testing the function to get functionality
 
 ```{r}
 df_mean_intensitities |> 
@@ -173,10 +161,17 @@ df_mean_intensitities |>
   ID %in% Status1$ID ~ "Status1"
   ))
 
+  
+  
 h
 
 T-test
+```
 
+Lasse is testing methods to apply the t.test
+
+```{r}
+# Lasse stuff
 
 df_no_na_long |> 
   group_by(protein_groups, cell_type)
@@ -199,41 +194,21 @@ wide <- flot |>
   pivot_wider(names_from = cell_type,
               values_from = intensity,
               values_fn = mean) # the pivot_wider finds duplicate values for intentcity, this is a way to mitigate that issue.
-  
-```
 
-```{r}
-
-#wide |> 
-  group_by(genes) |>
+# Lasse tried to map the p-value t.test in a cool way
+wide |> 
+group_by(genes) |>
   mutate(ttest = map(.x = hsc,
                      .f = ~ t.test(.x,
                                    alternative = c("two.sided",
                                                    "less",
                                                    "greater"),
                                    conf.level = 0.99)))
-
-
-
-
-#test_plot <- df_mean_intensitities |> 
-#pivot_wider(names_from = cell_type, values_from = c(mean, sd)) |> 
-  #select(mean_gmp, mean_hsc, sd_gmp, sd_hsc) |> 
-  #mutate(fold = mean_gmp/mean_hsc) |> 
-  #mutate(pval = pval(mean_gmp,mean_hsc,4,4,sd_gmp,sd_hsc)) |> 
-  #select(protein_groups,fold,pval)
-
-
-
-
 ```
 
-
-  
-
 ```{r}
-
-krap <-df_mean_intensitities |> 
+# Antonio pivoted wider and creatd a log2foldchange
+df_mean_intensitities |> 
   select(!sd) |> 
   pivot_wider(names_from = cell_type, values_from = mean) |> 
   select(!gmp & !hsc & !mep) |> 
@@ -242,22 +217,26 @@ krap <-df_mean_intensitities |>
 ```
 
 ```{r}
-#creating a new label-variable which takes values for gene for significant genes only and otherwise leaves it as "" otherwise there would be waaaay too many (>2000) gene names
-library(ggrepel)
-test_plot |> 
-  mutate(label = case_when(fold > 1 ~ protein_groups,
-                           fold < 1 ~ "")) |> 
-  ggplot(aes(x = log2(fold), 
-             y = desc(log10(pval))))+
+#creating a new label-variable which takes values for gene for significant genes only and otherwise leaves it as "" otherwise there would be waaaay too many (>2000) gene names 
+
+test_plot <- df_mean_intensitities |> 
+pivot_wider(names_from = cell_type, values_from = c(mean, sd)) |> 
+  select(mean_gmp, mean_hsc, sd_gmp, sd_hsc) |> 
+  mutate(fold = mean_gmp/mean_hsc) |> 
+  mutate(pval = pval(mean_gmp,mean_hsc,4,4,sd_gmp,sd_hsc)) |> 
+  select(protein_groups,fold,pval)
+
+
+library(ggrepel) 
+test_plot |>
+  mutate(label = case_when(fold > 1 ~ protein_groups, fold < 1 ~ "")) |>
+  ggplot(aes(x = log2(fold), y = desc(log10(pval))))+
   geom_point(size=1, alpha = 0.5)+
   geom_text_repel(aes(label = label), size = 3)+
-  theme_minimal()+
-  labs(title = "GMP/HSC", 
-       subtitle = "Proteins that were more expressed in GMP are highlighted",
-       x = "fold",
-       y = "-log10(p)",
-       caption = "proteomics data")+
-  theme(legend.position = "none",
-        plot.title = element_text(hjust = 1),
-        plot.subtitle = element_text(hjust = 1))+
+  theme_minimal()+ labs(title = "GMP/HSC", subtitle = "Proteins that were more expressed in GMP are highlighted", x = "fold", y = "-log10(p)", caption = "proteomics data")+
+  theme(legend.position = "none", plot.title = element_text(hjust = 1), plot.subtitle = element_text(hjust = 1))+
   geom_hline(yintercept = 2)
+
+```
+
+\`\`\`

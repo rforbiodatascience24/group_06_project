@@ -29,56 +29,7 @@ df_no_na_long |>
 
 First of all we want to subset the data so we only work with two cell types. In this case hsc and gmp as they appear to be the most different
 
-Grouping data
-
-```{r}
-# Lasse stuff
-
-df_no_na_long_nested <- 
-  df_no_na_long |> 
-  group_by(cell_type, genes) |> 
-  nest() |> 
-  ungroup()
-
-df_no_na_long_nested |>
-  filter(genes == 'Ddi2') |> 
-  filter(cell_type == "hsc") |> 
-  pull(data)
-
-
-df_no_na_long_nested |> 
-  group_by(genes, cell_type) |>
-  mutate(mean = map_dpl(.x = intensity::data,
-                    .f = ~mean(.x)
-                    ))
-
-
-
-df_no_na_long_nested |> 
-  filter(genes == "Ddi2") |>
-  pull(data, 'intensity')
-
-
-df_no_na_long_nested |> 
-  group_by(genes, cell_type) |>
-  summarize(mean = mean(map(data, ~ mean(pull(.x, intensity)))))
-
-
-# create a tibble with mean values and standard deviation
-df_no_na_long |> 
-  group_by(protein_groups, cell_type) |> # take the mean/sd of of the replicates for the protein groups and cell types.
-  summarise(
-    p_value = t.test()
-    )
-puldf_mean_intensitities
-
-wide <- flot |> 
-  pivot_wider(names_from = cell_type,
-              values_from = intensity,
-              values_fn = mean) # the pivot_wider finds duplicate values for intentcity, this is a way to mitigate that issue.
-
-# Lasse tried to map the p-value t.test in a cool way
-```
+Grouping data and nesting
 
 I also don't think we should consider the protein column. Is the amount of protein_groups the same as the amount of genes? If we subset the data again, by grouping for cell_type, what is then the lenght of them? How do I figure out how many unique genes there are?
 
@@ -191,38 +142,6 @@ s
 h
 
 T-test
-```
-
-Lasse is testing methods to apply the t.test
-
-```{r}
-# Lasse stuff
-
-df_no_na_long |> 
-  group_by(protein_groups, cell_type)
-
-# create a tibble with mean values and standard deviation
-df_no_na_long |> 
-  group_by(protein_groups, cell_type) |> # take the mean/sd of of the replicates for the protein groups and cell types.
-  summarise(
-    p_value = t.test()
-    )
-df_mean_intensitities
-
-wide <- flot |> 
-  pivot_wider(names_from = cell_type,
-              values_from = intensity,
-              values_fn = mean) # the pivot_wider finds duplicate values for intentcity, this is a way to mitigate that issue.
-
-# Lasse tried to map the p-value t.test in a cool way
-wide |> 
-group_by(genes) |>
-  mutate(ttest = map(.x = hsc,
-                     .f = ~ t.test(.x,
-                                   alternative = c("two.sided",
-                                                   "less",
-                                                   "greater"),
-                                   conf.level = 0.99)))
 ```
 
 ```{r}

@@ -9,3 +9,12 @@ editor: visual
 ### PCA
 
 ### Volcano plots (pairwise)
+
+```{r}
+df_mean_intensitities |> 
+  select(!sd) |> 
+  pivot_wider(names_from = cell_type, values_from = mean) |> 
+  select(!gmp & !hsc & !mep) |> 
+  mutate(fold = cmp/clp) 
+  
+```

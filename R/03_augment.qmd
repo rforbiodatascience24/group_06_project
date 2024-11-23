@@ -63,8 +63,9 @@ df_no_na_long <- df_norm_long |>
 ### No N/A in wide format
 
 ```{r}
-df_no_na_wide <- pivot_wider(data = df_no_na_long, id_cols = 'cell_type',
-                             names_from = 'protein_groups', values_from = 'intensity')
+
+df_no_na_wide <- df_no_na_long |> mutate(intensity = unname(intensity)) |>
+  pivot_wider(id_cols = c('sample',cell_type), names_from = 'protein_groups', values_from = 'intensity')
 ```
 
 

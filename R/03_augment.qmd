@@ -60,6 +60,14 @@ df_no_na_long <- df_norm_long |>
 
 ```
 
+### No N/A in wide format
+
+```{r}
+df_no_na_wide <- pivot_wider(data = df_no_na_long, id_cols = 'cell_type',
+                             names_from = 'protein_groups', values_from = 'intensity')
+```
+
+
 ### Getting mean values and standard deviation for volcano plot
 
 The mean value between each replicate of the cell samples are estimated along with the standard deviation, to create a new tibble which is used to create a volcano plot for the fold change.

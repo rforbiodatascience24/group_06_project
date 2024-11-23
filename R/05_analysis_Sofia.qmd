@@ -1,0 +1,117 @@
+---
+title: "05_analysis_Sofia"
+format: html
+editor: visual
+---
+
+## Libraries
+
+```{r}
+library(ggplot2)
+```
+
+## Data Analysis
+
+### Data Normalization
+
+```{r}
+# Log-transform
+df_long <- df_long |> 
+  mutate(log_intensity = log2(intensity + 1))
+
+# Normalizzazione Z-score (opzionale, dopo log-transform)
+df_long <- df_long |> 
+  group_by(cell_type) |> 
+  mutate(z_intensity = (log_intensity - mean(log_intensity, na.rm = TRUE)) / sd(log_intensity, na.rm = TRUE))
+```
+
+### PCA
+
+```{r}
+# Creare matrice wide senza NA
+df_pca <- df_long |> 
+  select(protein_groups, cell_type, replicate_n, log_intensity) |> 
+  pivot_wider(names_from = c(cell_type, replicate_n), values_from = log_intensity)
+
+# Eliminare righe con valori NA
+df_pca <- df_pca |> 
+  filter(rowSums(is.na(across(everything()))) == 0)
+
+# Eseguire PCA
+pca_result <- prcomp(df_pca[,-1], scale. = TRUE)
+
+# Estrarre i punteggi della PCA
+pca_data <- as.data.frame(pca_result$x)
+
+# Se vuoi esplorare la varianza spiegata dalle componenti principali:
+explained_variance <- summary(pca_result)$importance[2, ]  # Varianza spiegata
+cumulative_variance <- summary(pca_result)$importance[3, ]  # Varianza cumulativa
+
+# Visualizzazione generale (senza cell_type, che non è direttamente associato alle righe)
+ggplot(pca_data, aes(x = PC1, y = PC2)) +
+  geom_point(size = 2) +
+  labs(title = "PCA", x = "PC1", y = "PC2") +
+  theme_bw()
+
+
+```
+
+### Volcano plot
+
+```{r}
+# Calculate log2 fold change and p-values
+# Assuming df_long contains the data with columns: protein_groups, cell_type, replicate_n, log_intensity
+
+# Filter for two specific groups, e.g., hsc and mep
+df_fc <- df_long |> 
+  filter(cell_type %in% c("hsc", "gmp")) |> 
+  group_by(protein_groups) |> 
+  summarise(
+    # Calculate log2 fold change (log2FC) between hsc and mep
+    log2FC = mean(log_intensity[cell_type == "hsc"], na.rm = TRUE) - 
+             mean(log_intensity[cell_type == "mep"], na.rm = TRUE),
+    
+    # Calculate p-value using t-test for differences between groups
+    p_value = ifelse(
+      sum(!is.na(log_intensity[cell_type == "hsc"])) > 1 & 
+      sum(!is.na(log_intensity[cell_type == "gmp"])) > 1,
+      t.test(log_intensity[cell_type == "hsc"], 
+             log_intensity[cell_type == "gmp"])$p.value,
+      NA  # Assign NA if there are insufficient observations
+    )
+  )
+
+# Add thresholds for significance
+# Define thresholds for log2 fold change and p-value
+log2FC_threshold <- 0.5  # Example: Significant fold change > 0.5
+p_value_threshold <- -log10(0.05)  # Corresponding to p-value < 0.05
+
+# Classify proteins as "Up-regulated", "Down-regulated", or "NA"
+df_fc <- df_fc |> 
+  mutate(
+    regulation = case_when(
+      log2FC > log2FC_threshold & -log10(p_value) > p_value_threshold ~ "Up-regulated",
+      log2FC < -log2FC_threshold & -log10(p_value) > p_value_threshold ~ "Down-regulated",
+      TRUE ~ "NA"  # Non-significant proteins
+    )
+  )
+
+# Add labels for the most significant proteins
+# Label only the most significant proteins based on p-value and log2FC
+df_fc <- df_fc |> 
+  mutate(label = ifelse(regulation != "NA" & -log10(p_value) > 50, protein_groups, NA))
+
+# Generate the volcano plot
+ggplot(df_fc, aes(x = log2FC, y = -log10(p_value), color = regulation)) +
+  geom_point(alpha = 0.8, size = 2) +  # Add points
+  scale_color_manual(values = c("Down-regulated" = "blue", "Up-regulated" = "red", "NA" = "gray")) +
+  geom_hline(yintercept = p_value_threshold, linetype = "dashed") +  # Add horizontal threshold for p-value
+  geom_vline(xintercept = c(-log2FC_threshold, log2FC_threshold), linetype = "dashed") +  # Add vertical thresholds for log2FC
+  labs(
+    title = "Volcano plot",
+    x = "log2(Fold Change)",
+    y = "-log10(P-value)",
+    color = "Regulation") +
+  theme_bw()
+
+```

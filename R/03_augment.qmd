@@ -18,9 +18,9 @@ df_log_long <- df_long |>
 
 ## Deal with Missing Values by Normalization of Intensity
 
-The data contains many missing values. The reason values are missing is because they are below the detection limit of the intensity measurer. NA's should not be replaced by 0, instead they should be replaced with the 1st percentile of the normalized distribution of each cell type replicate (sample group).
+The data contains many missing values. The reason values are missing is because they are below the detection limit of the mass spectrometer. NA's should not be replaced by 0, instead they should be replaced with the 1st percentile of the normalized distribution of each cell type replicate (sample), to give a reasonable value close to the suspected detection limit.
 
-For each observation (a replicate of a particular cell type) we wish to nomalize the intensity compared to all proteomics observation of that cell type. This is why we group the data by sample (fx hsc_rep_1 is one group and clp_rep_2 is another group). We then normalize the data by dividing individual intensities with the median of the sample group. We then use the normalized data to replace missing values.
+For each observation (a replicate of a particular cell type) we wish to nomalize the intensity compared to the total intensity of all measured proteins of that cell type. This is why we group the data by sample (fx hsc_rep_1 is one group and clp_rep_2 is another group). We then normalize the data by dividing individual intensities by the median of the sample. We then use the first percentile of the normalized data to replace missing values.
 
 ```{r}
 #Check that the grouping gives 21 median values
@@ -49,13 +49,14 @@ df_no_na_long <- df_norm_long |>
   mutate(intensity = case_when(
     #if an NA is detected the value is transformed to 1st percentile of that samples group
     #-3.090 is Z-score for 0.1st percentile
-    is.na(intensity) ~ mean(intensity, na.rm = TRUE) - 3.090 * sd(intensity, na.rm = TRUE),
+    #is.na(intensity) ~ mean(intensity, na.rm = TRUE) - 2.326 * sd(intensity, na.rm = TRUE),
     #if an NA is not detected the original value is preserved
     #alternatively I believe the built-in r function quantile(x,0.01) can be used to find the 1st percentile
     #THis does not yield the same result but I am not sure why
-    #is.na(intensity) ~ quantile(intensity, probs = 0.01, na.rm = TRUE),
+    is.na(intensity) ~ quantile(intensity, probs = 0.01, na.rm = TRUE),
     .default = intensity
   ))
+
 
 ```
 
@@ -65,21 +66,15 @@ The mean value between each replicate of the cell samples are estimated along wi
 
 ```{r}
 
+# create a tibble with mean values and standard deviation
 df_mean_intensitities <- df_no_na_long |> 
-  group_by(protein_groups,cell_type) |> 
+  group_by(protein_groups,cell_type) |> # take the mean/sd of of the replicates for the protein groups and cell types.
   summarise(
     mean = mean(intensity),
     sd = sd(intensity)
     )
-#df_no_na_long |> 
-  #mutate()
+df_mean_intensitities
 
+summary(df_no_na_long)
 
-#group_by()
-
-#df_no_na_long |> 
-  #summarise(
-    #mean = mean(intensity),
-    #sd = sd(intensity)
-    #)
 ```

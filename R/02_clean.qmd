@@ -6,6 +6,14 @@ editor: visual
 
 ```{r}
 library("tidyverse")
+library("here")
+```
+
+### Load data
+
+```{r}
+
+df_hsc <- load_tsv(file = here("data/01_dat_load_hsc.csv")) 
 ```
 
 ## Missing in this document
@@ -106,7 +114,7 @@ Separating the samples column into replicate number and cell type
 
 ```{r}
 df_long <- df_long |> 
-  separate(sample, into = c("cell_type","replicate_n"), sep = "_rep_")
+  separate(sample, into = c("cell_type","replicate_n"), sep = "_rep_", remove = FALSE)
   
 
 ```
@@ -121,10 +129,13 @@ sample_n(df_long,10)
 ## Write to tsv
 
 ```{r}
+# produce file 02_dat_clean.tsv
+
 df_long_clean <- df_long
-#Remember to change this code to relate to the corect path once the data has sucessfully been updated to url
-#write_tsv(df_long_clean, file="local_data/df_long_clean.tsv.gz")
-#for some reason this code does not work so this must be fixed
+
+project_path = here()
+setwd(project_path)
+write_tsv(df_long_clean, "data/02_dat_clean.tsv")
 ```
 
 ## Conclusion

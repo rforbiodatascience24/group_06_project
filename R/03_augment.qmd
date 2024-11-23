@@ -4,12 +4,16 @@ format: html
 editor: visual
 ---
 
+```{r}
+library("tidyverse")
+library("here")
+```
+
 ### Load data
 
 ```{r}
-'''
+
 df_long <- read_tsv(file = here("data/02_dat_clean.tsv"))
-'''
 ```
 
 ## Log Transforming the Data
@@ -73,8 +77,18 @@ df_no_na_long <- df_norm_long |>
 
 ```{r}
 
-df_no_na_wide <- df_no_na_long |> mutate(intensity = unname(intensity)) |>
+df_no_na_wide <- df_no_na_long |> 
+  mutate(intensity = unname(intensity)) |>
   pivot_wider(id_cols = c('sample',cell_type), names_from = 'protein_groups', values_from = 'intensity')
+```
+
+```{r}
+#df_wide <- df_no_na_long |>
+#  pivot_wider(
+ #   id_cols = protein_groups,
+#    names_from = c(genes, sample, cell_type, replicate_n),  # Create columns for each unique #'variable'
+#    values_from = intensity 
+#  )
 ```
 
 ### Getting mean values and standard deviation for volcano plot
@@ -101,5 +115,6 @@ summary(df_no_na_long)
 
 project_path = here()
 setwd(project_path)
-write_tsv(df_no_na_long, "data/03_dat_aug.tsv")
+write_tsv(df_no_na_long, "data/03_dat_aug_long.tsv")
+write_tsv(df_no_na_wide, "data/03_dat_aug_wide.tsv")
 ```

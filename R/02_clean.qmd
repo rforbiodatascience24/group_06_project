@@ -13,11 +13,11 @@ library("here")
 
 ```{r}
 
-df_hsc <- read_tsv(file = here("data/01_dat_load_hsc.tsv"))
-df_mep <- read_tsv(file = here("data/01_dat_load_mep.tsv"))
-df_gmp <- read_tsv(file = here("data/01_dat_load_gmp.tsv"))
-df_clp <- read_tsv(file = here("data/01_dat_load_clp.tsv"))
-df_cmp <- read_tsv(file = here("data/01_dat_load_cmp.tsv"))
+.df_hsc <- read_tsv(file = here("data/01_dat_load_hsc.tsv"))
+.df_mep <- read_tsv(file = here("data/01_dat_load_mep.tsv"))
+.df_gmp <- read_tsv(file = here("data/01_dat_load_gmp.tsv"))
+.df_clp <- read_tsv(file = here("data/01_dat_load_clp.tsv"))
+.df_cmp <- read_tsv(file = here("data/01_dat_load_cmp.tsv"))
 
 ```
 
@@ -36,13 +36,12 @@ There are five dataframes, one for each of the five cell types: hsc, clp, cmp, m
 # do full join to preserve data. The combination of PG.ProteinGroups and PG.Genes is the same for all data frames, so we join by both columns
 
 df_ful <- df_hsc |> 
-  full_join(df_clp, by=c("PG.ProteinGroups", "PG.Genes")) |> 
-  full_join(df_cmp, by=c("PG.ProteinGroups", "PG.Genes")) |> 
-  full_join(df_mep, by=c("PG.ProteinGroups", "PG.Genes")) |>
-  full_join(df_gmp, by=c("PG.ProteinGroups", "PG.Genes")) 
+  full_join(.df_clp, by=c("PG.ProteinGroups", "PG.Genes")) |> 
+  full_join(.df_cmp, by=c("PG.ProteinGroups", "PG.Genes")) |> 
+  full_join(.df_mep, by=c("PG.ProteinGroups", "PG.Genes")) |>
+  full_join(.df_gmp, by=c("PG.ProteinGroups", "PG.Genes")) 
 
-#Remove raw data frames from environment
-remove(list=c(df_clp,df_cmp,df_mep,df_gmp))
+
 ```
 
 ## Changing Variable Names

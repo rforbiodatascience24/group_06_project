@@ -1,0 +1,124 @@
+---
+title: "04_describe"
+format: html
+editor: visual
+---
+
+## Library
+
+```{r}
+library("tidyverse")
+```
+
+## Describe Data
+
+-   What do these data show?
+
+-   What is intensity?
+
+-   How many observations? How many rows and columns?
+
+    The original datasets that have been loaded in each contain the below number of observations and variables
+
+    |                     | hsc  | cmp  | gmp  | clp  | mep  |
+    |---------------------|------|------|------|------|------|
+    | No. of observations | 2196 | 1986 | 2291 | 2382 | 2691 |
+    | No. of variables    | 6    | 6    | 6    | 7    | 6    |
+    | No. of replicates   | 4    | 4    | 4    | 5    | 4    |
+
+    The number of observations corresponds to the number of protein groups and genes that are there in each of the datasets.
+
+    What does each cell type correspond to? (point wise in time?) The cells can either develop in erythroid or granulocyte directions.
+
+    Can the genes / proteins somehow be grouped according to functionality? Ie. are some of them transcription factors, some of them enzymes..? Or can we have any information whatsoever about them?
+
+## Normalization plot before removing NAs
+
+```{r}
+# Test normalization with density plot --> medians are equal now
+#This plot should be in the describe
+df_norm_long |> 
+  ggplot(aes(x=intensity, colour = sample)) +
+  geom_density() +
+  theme_classic()
+
+```
+
+## Density Plot
+
+```{r}
+# Check density -> Not ideal, many NA's distort distribution. Feature-wise would be ideal, b ut couldn't figure out how to operate NaIsMindet row-wise
+
+df_nona_long |> 
+  ggplot(aes(x=intensity, colour=sample)) +
+  geom_density() +
+  theme_classic()
+```
+
+## Summary Statistics / descriptive plots
+
+-   here we could have some scatter plots, density plots etc.
+
+## How many genes and proteins are there?
+
+In theory the protein_groups column corresponds to the genes column because it is the gene that codes for the protein. But is the amount of protein_groups the same as the amount of genes? We try to look at how many unique genes there are in the dataset.
+
+```{r}
+df_no_na_long |> 
+  #ungroup must be used because the dataset has often been grouped
+  ungroup() |> 
+  select(genes) |> 
+  distinct()
+#There are 3623 unique genes
+```
+
+```{r}
+df_no_na_long |> 
+  ungroup() |> 
+  select(protein_groups) |> 
+  distinct()
+#There are 3724 different protein groups 
+#why is the number of genes and number of proteins not the same??
+#And how do we figure out if the same genes are present in all of the cell types?
+
+```
+
+There is a discrepancy in that there are 3724 unique proteins (rows) and 3623 unique genes (rows). Why this discrepancy?
+
+```{r}
+#We look for genes that have no name
+df_no_na_long |> 
+  filter(genes == "")
+```
+
+We see that there are 483 rows that contain no name for genes. How many of these are unique?
+
+```{r}
+df_no_na_long |> 
+  filter(genes == "") |> 
+  ungroup() |> 
+  select(protein_groups) |> 
+  distinct()
+```
+
+We can see that there are 22 proteins that have no corresponding gene attached. How come? And is it better to use the gene or the proteins for displaying in plots? What is interesting is that 3724-3623= 101 so in theory there should be 101 proteins that do not have a corresponding gene column?
+
+## Scatter Plots
+
+```{r}
+#This scatter plot is just to show how fucking many datapoints we have... You can't even see the genes on the y-axis because there are +3000! 
+df_no_na_long |> 
+  ggplot(aes(x = intensity, y = genes, colour = cell_type))+
+  geom_point(alpha = 0.2, size = 0.1)+
+  theme_classic()+
+  theme(axis.text.y = element_text(size=1))
+```
+
+## Density plots
+
+```{r}
+df_no_na_long |> 
+  ggplot(aes(x=intensity, colour=cell_type)) +
+  geom_density() +
+  theme_classic()
+```

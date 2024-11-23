@@ -35,7 +35,7 @@ There are five dataframes, one for each of the five cell types: hsc, clp, cmp, m
 
 # do full join to preserve data. The combination of PG.ProteinGroups and PG.Genes is the same for all data frames, so we join by both columns
 
-df_ful <- df_hsc |> 
+df_ful <- .df_hsc |> 
   full_join(.df_clp, by=c("PG.ProteinGroups", "PG.Genes")) |> 
   full_join(.df_cmp, by=c("PG.ProteinGroups", "PG.Genes")) |> 
   full_join(.df_mep, by=c("PG.ProteinGroups", "PG.Genes")) |>
@@ -84,7 +84,6 @@ The variables protein_groups and genes in some cases contain multiple names. The
 
 ```{r}
   #str_split_i splits the protein isomers separated by the delimiter ; and keeps only the "first protein isomer_group"
-'''
 df_ful <- df_ful |> 
     mutate(
       protein_groups = case_when(
@@ -101,7 +100,7 @@ df_ful <- df_ful |>
         str_c(str_split_i(genes,";",1), "_group"),
         .default = genes
         )
-    )'''
+    )
 ```
 
 ## Lengthening the Data
@@ -137,15 +136,13 @@ sample_n(df_long,10)
 ## Write to tsv
 
 ```{r}
-'''
 # produce file 02_dat_clean.tsv
 
 df_long_clean <- df_long
 
 project_path = here()
 setwd(project_path)
-write_tsv(df_long_clean, "data/02_dat_clean.tsv") 
-'''
+write_tsv(df_long_clean, "data/02_dat_clean.tsv")
 ```
 
 ## Conclusion

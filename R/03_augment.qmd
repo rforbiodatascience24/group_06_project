@@ -4,6 +4,13 @@ format: html
 editor: visual
 ---
 
+### Load data
+
+```{r}
+
+df_long <- read_tsv(file = here("data/02_dat_clean.tsv"))
+```
+
 ## Log Transforming the Data
 
 Proteomics data must be log 2 transformed to have a more compatible scale.

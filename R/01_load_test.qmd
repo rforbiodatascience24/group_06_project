@@ -35,5 +35,13 @@ df_cmp <- read_csv2(file = "local_data/group6_data_CMP_Report.csv", na= "NaN")
 ```
 
 ```{r}
-# There should be a module added now, that loads the data from an online service - and writes it back in a compressed and more easily accesible format for R, like the TSV files.
+# write tsv files
+project_path = here()
+setwd(project_path)
+dir.create("data")
+write_tsv(df_hsc, "data/01_dat_load_hsc.tsv")
+write_tsv(df_mep, "data/01_dat_load_mep.tsv")
+write_tsv(df_gmp, "data/01_dat_load_gmp.tsv")
+write_tsv(df_clp, "data/01_dat_load_clp.tsv")
+write_tsv(df_cmp, "data/01_dat_load_cmp.tsv")
 ```

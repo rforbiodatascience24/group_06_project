@@ -78,3 +78,11 @@ df_mean_intensitities
 summary(df_no_na_long)
 
 ```
+
+```{r}
+# Produce file 03_dat_aug.tsv
+
+project_path = here()
+setwd(project_path)
+write_tsv(df_no_na_long, "data/03_dat_aug.tsv")
+```

@@ -121,10 +121,13 @@ sample_n(df_long,10)
 ## Write to tsv
 
 ```{r}
+# produce file 02_dat_clean.tsv
+
 df_long_clean <- df_long
-#Remember to change this code to relate to the corect path once the data has sucessfully been updated to url
-#write_tsv(df_long_clean, file="local_data/df_long_clean.tsv.gz")
-#for some reason this code does not work so this must be fixed
+
+project_path = here()
+setwd(project_path)
+write_tsv(df_long_clean, "data/02_dat_clean.tsv")
 ```
 
 ## Conclusion

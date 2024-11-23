@@ -4,16 +4,24 @@ format: html
 editor: visual
 ---
 
+### Load data
+
+```{r}
+
+df_long <- read_tsv(file = here("data/02_dat_clean.tsv"))
+```
+
 ## Log Transforming the Data
 
 Proteomics data must be log 2 transformed to have a more compatible scale.
 
 ```{r}
-#log transform long dataframe
+# log transform all numerical values except the ones indicating the replicates
 df_log_long <- df_long |> 
-  #only apply this to non-NA data
-  mutate(across(where(is.numeric), ~log2(. +1)))
-
+  mutate(across(
+    .cols = where(is.numeric) & !c("replicate_n"),
+    .fns = ~log2(. + 1)
+  ))
 ```
 
 ## Deal with Missing Values by Normalization of Intensity
@@ -67,7 +75,6 @@ df_no_na_long <- df_norm_long |>
 df_no_na_wide <- df_no_na_long |> mutate(intensity = unname(intensity)) |>
   pivot_wider(id_cols = c('sample',cell_type), names_from = 'protein_groups', values_from = 'intensity')
 ```
-
 
 ### Getting mean values and standard deviation for volcano plot
 

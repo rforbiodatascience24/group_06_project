@@ -11,23 +11,28 @@ library(here)
 
 # Loading Data
 
-##### Before sharepoint API issue is resolved, load data directly from local machine
+```{r}
+
+# Dropbox url
+url <- "https://www.dropbox.com/scl/fi/d63o8sgp03fyu2s6tsqau/group_6_data.zip?rlkey=50z2rrfaowoizqivttdmyym2i&st=kngr6y9j&dl=1"
+
+# Download the zip file
+download.file(url, destfile = here("raw_data/group_6_data.zip"))
+
+# Unzip the downloaded file
+unzip(here("raw_data/group_6_data.zip"), exdir = here("raw_data"))
+```
 
 ```{r}
 
 # read in csv files for all cell populations
-#loading data
-#setwd(getwd())
-#setwd("/home/people/s194428/projects/project_group6")
-#setwd("/home/people/s215025/Projects/group_6_project")
-#setwd("/Users/cxm393/Code/R/R for Bioscience/group_6_project")
 
+df_hsc <- read_csv2(file = here("raw_data/group6_data_HSC_Report.csv"), na= "NaN")
+df_mep <- read_csv2(file = here("raw_data/group6_data_MEP_Report.csv"), na= "NaN")
+df_gmp <- read_csv2(file = here("raw_data/group6_data_GMP_Report.csv"), na= "NaN")
+df_clp <- read_csv2(file = here("raw_data/group6_data_CLP_Report.csv"), na= "NaN")
+df_cmp <- read_csv2(file = here("raw_data/group6_data_CMP_Report.csv"), na= "NaN")
 
-df_hsc <- read_csv2(file = "local_data/group6_data_HSC_Report.csv", na= "NaN")
-df_mep <- read_csv2(file = "local_data/group6_data_MEP_Report.csv", na= "NaN")
-df_gmp <- read_csv2(file = "local_data/group6_data_GMP_Report.csv", na= "NaN")
-df_clp <- read_csv2(file = "local_data/group6_data_CLP_Report.csv", na= "NaN")
-df_cmp <- read_csv2(file = "local_data/group6_data_CMP_Report.csv", na= "NaN")
 
 #| echo: false
 #| eval: false

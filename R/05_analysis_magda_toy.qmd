@@ -9,6 +9,12 @@ library(purrr)
 library(broom)
 ```
 
+## Load Data
+
+```{r}
+df_no_na_long <- read_tsv(file = here("data/03_dat_aug.tsv"))
+```
+
 ## Data Analysis
 
 ### PCA

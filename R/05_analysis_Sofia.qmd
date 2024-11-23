@@ -10,6 +10,12 @@ editor: visual
 library(ggplot2)
 ```
 
+## Load Data
+
+```{r}
+df_no_na_long <- read_tsv(file = here("data/03_dat_aug.tsv"))
+```
+
 ## Data Analysis
 
 ### Data Normalization

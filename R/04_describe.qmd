@@ -10,6 +10,12 @@ editor: visual
 library("tidyverse")
 ```
 
+## Load Data
+
+```{r}
+df_long <- read_tsv(file = here("data/02_dat_clean.tsv"))
+```
+
 ## Describe Data
 
 -   What do these data show?

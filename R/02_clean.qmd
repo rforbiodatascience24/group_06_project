@@ -13,7 +13,12 @@ library("here")
 
 ```{r}
 
-df_hsc <- load_tsv(file = here("data/01_dat_load_hsc.csv")) 
+df_hsc <- read_tsv(file = here("data/01_dat_load_hsc.tsv"))
+df_mep <- read_tsv(file = here("data/01_dat_load_mep.tsv"))
+df_gmp <- read_tsv(file = here("data/01_dat_load_gmp.tsv"))
+df_clp <- read_tsv(file = here("data/01_dat_load_clp.tsv"))
+df_cmp <- read_tsv(file = here("data/01_dat_load_cmp.tsv"))
+
 ```
 
 ## Missing in this document

@@ -7,8 +7,9 @@ editor: visual
 ### Load data
 
 ```{r}
-
+'''
 df_long <- read_tsv(file = here("data/02_dat_clean.tsv"))
+'''
 ```
 
 ## Log Transforming the Data

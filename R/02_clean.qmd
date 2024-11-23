@@ -40,6 +40,9 @@ df_ful <- df_hsc |>
   full_join(df_cmp, by=c("PG.ProteinGroups", "PG.Genes")) |> 
   full_join(df_mep, by=c("PG.ProteinGroups", "PG.Genes")) |>
   full_join(df_gmp, by=c("PG.ProteinGroups", "PG.Genes")) 
+
+#Remove raw data frames from environment
+remove(list=c(df_clp,df_cmp,df_mep,df_gmp))
 ```
 
 ## Changing Variable Names

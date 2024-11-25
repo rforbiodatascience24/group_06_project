@@ -154,7 +154,39 @@ df_no_na_long_1 |>
   theme_classic()
 ```
 
-We can observe a heavy distortion of the density plots in all samples, provoked by replacing NA's sample-wise. This is not necessarily bad, as we needed the log-normal distribution to calculate the z-scores for replacement.
+```{r}
+x <- df_no_na_long_1 |> 
+  group_by(sample) |> 
+  summarize(median(intensity, na.rm = TRUE))
+```
+
+```{r}
+df_no_na_long_1 |> 
+  group_by(sample) |> 
+  summarize(median(intensity, na.rm = TRUE)) |> 
+  rename(median_intensity = "median(intensity, na.rm = TRUE)") |> 
+  ggplot(aes(x=median_intensity)) +
+  geom_density() +
+  theme_classic()
+```
+
+```{r}
+df_no_na_long_2 |> 
+  group_by(sample) |> 
+  summarize(median(intensity, na.rm = TRUE)) |> 
+  rename(median_intensity = "median(intensity, na.rm = TRUE)") |> 
+  ggplot(aes(x=median_intensity)) +
+  geom_density() +
+  theme_classic()
+```
+
+```{r}
+df_no_na_long_1 |> 
+  group_by(sample) |> 
+  ggplot(aes(x=sample, y=median(intensity))) +
+  geom_bar(stat="identity") +
+  theme_classic()
+```
 
 ### Feature-wise imputation
 
@@ -165,9 +197,22 @@ df_no_na_long_2 |>
   theme_classic()
 ```
 
-We observe a less apparent distortion of the density plots, instead of a new global maximum at the 0.1 percentile mark, we have left-skewed densities.\
-\
-Choice of NA imputation: We need to base our decision on the nature of the data we are working with. Both strategies would produce meaningful replacement values for NA's. Because the missingness in our data is MNAR, we chose sample-wise imputation, as it accounts better for biological missingness in DIA data.
+```{r}
+df_no_na_long_2 |> 
+  group_by(sample) |> 
+  summarize(median(intensity, na.rm = TRUE))
+```
+
+## Density Plot
+
+```{r}
+# Check density -> Not ideal, many NA's distort distribution. Feature-wise would be ideal, b ut couldn't figure out how to operate NaIsMindet row-wise
+
+df_nona_long |> 
+  ggplot(aes(x=intensity, colour=sample)) +
+  geom_density() +
+  theme_classic()
+```
 
 ## Summary Statistics / descriptive plots
 

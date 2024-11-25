@@ -78,10 +78,6 @@ df_ful <- setNames(df_ful, c("protein_groups",
                              "gmp_rep_4"))
 ```
 
-## Shortening Protein and Gene Names to Contain One String per Cell
-
-The variables protein_groups and genes in some cases contain multiple names. The reason for this is that if a cell contains more than one protein name (fx "Q8BSP2;Q8BSP2-2;Q8BSP2-3") it is because they are protein isomers, and there is no means of discerning which of protein isomers is actually measured. For the purpose of tidy data we decide to keep only the first name in that column, and a `_group`*\`* is added to signify that more isomers were there in the original dataset (fx "Q8BSP2_group"). The same procedure is applied to the 'genes' variable.
-
 
 ## Lengthening the Data
 

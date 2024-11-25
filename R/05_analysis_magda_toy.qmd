@@ -12,7 +12,7 @@ library(broom)
 ## Load Data
 
 ```{r}
-df_no_na_long <- read_tsv(file = here("data/03_dat_aug.tsv"))
+df_no_na_long <- read_tsv(file = here("data/03_dat_aug_long_1.tsv"))
 ```
 
 ## Data Analysis

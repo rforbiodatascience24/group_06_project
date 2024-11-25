@@ -97,15 +97,6 @@ df_no_na_long_2 <- df_norm_long |>
 
 ```
 
-```{r}
-### TEST: plot densities ###
-df_no_na_long2 |> 
-  ggplot(aes(x=intensity, colour=sample)) +
-  geom_density() +
-  theme_classic()
-
-```
-
 ## No N/A in wide format
 
 For certain operations it is easier to work with data frames in wide format. We therefore pivot wider and save as separate file. We use the feature-wise NA-imputed data frame.

@@ -4,7 +4,6 @@ format: html
 editor: visual
 ---
 
-
 ## Library
 
 ```{r}
@@ -13,7 +12,6 @@ library("here")
 ```
 
 ### Load data
-
 
 ```{r}
 
@@ -108,31 +106,14 @@ df_no_na_wide <- df_no_na_long_2 |> mutate(intensity = unname(intensity)) |>
   pivot_wider(id_cols = c('sample',cell_type), names_from = 'protein_groups', values_from = 'intensity')
 ```
 
-## Getting mean values and standard deviation for volcano plot
-
-df_no_na_wide <- df_no_na_long |> 
-  mutate(intensity = unname(intensity)) |>
-  pivot_wider(id_cols = c('sample',cell_type), names_from = 'protein_groups', values_from = 'intensity')
-```
-
-```{r}
-#df_wide <- df_no_na_long |>
-#  pivot_wider(
- #   id_cols = protein_groups,
-#    names_from = c(genes, sample, cell_type, replicate_n),  # Create columns for each unique #'variable'
-#    values_from = intensity 
-#  )
-```
-
 ### Getting mean values and standard deviation for volcano plot
-
 
 The mean value between each replicate of the cell samples are estimated along with the standard deviation, to create a new tibble which is used to create a volcano plot for the fold change.
 
 ```{r}
 
 # create a tibble with mean values and standard deviation
-df_mean_intensitities <- df_no_na_long_2 |> 
+df_mean_intensitities <- df_no_na_long_1 |> 
   group_by(protein_groups,cell_type) |> # take the mean/sd of of the replicates for the protein groups and cell types.
   summarise(
     mean = mean(intensity),
@@ -140,7 +121,7 @@ df_mean_intensitities <- df_no_na_long_2 |>
     )
 df_mean_intensitities
 
-summary(df_no_na_long_2)
+summary(df_no_na_long_1)
 
 ```
 

@@ -4,7 +4,16 @@ format: html
 editor: visual
 ---
 
-## Load Data
+
+## Library
+
+```{r}
+library("tidyverse")
+library("here")
+```
+
+### Load data
+
 
 ```{r}
 
@@ -103,11 +112,29 @@ For certain operations it is easier to work with data frames in wide format. We 
 
 ```{r}
 
+
 df_no_na_wide <- df_no_na_long_2 |> mutate(intensity = unname(intensity)) |>
   pivot_wider(id_cols = c('sample',cell_type), names_from = 'protein_groups', values_from = 'intensity')
 ```
 
 ## Getting mean values and standard deviation for volcano plot
+
+df_no_na_wide <- df_no_na_long |> 
+  mutate(intensity = unname(intensity)) |>
+  pivot_wider(id_cols = c('sample',cell_type), names_from = 'protein_groups', values_from = 'intensity')
+```
+
+```{r}
+#df_wide <- df_no_na_long |>
+#  pivot_wider(
+ #   id_cols = protein_groups,
+#    names_from = c(genes, sample, cell_type, replicate_n),  # Create columns for each unique #'variable'
+#    values_from = intensity 
+#  )
+```
+
+### Getting mean values and standard deviation for volcano plot
+
 
 The mean value between each replicate of the cell samples are estimated along with the standard deviation, to create a new tibble which is used to create a volcano plot for the fold change.
 
@@ -145,7 +172,9 @@ write_tsv(df_no_na_wide, "data/03_dat_aug_wide.tsv")
 
 project_path = here()
 setwd(project_path)
+
 write_tsv(df_long, "data/03_dat_intermediate_1_clean.tsv")
 write_tsv(df_log_long, "data/03_dat_intermediate_2_log.tsv")
 write_tsv(df_norm_long, "data/03_dat_intermediate_3_norm.tsv")
+
 ```

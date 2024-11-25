@@ -12,7 +12,7 @@ df_long <- read_tsv(file = here("data/02_dat_clean.tsv"))
 
 ```
 
-## Log Transform 
+## Log Transform
 
 For mass spectrometry proteomics data, it is common practice to log 2 transform the data, to achieve a log-normal distribution.
 

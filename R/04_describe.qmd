@@ -16,27 +16,17 @@ library("tidyverse")
 df_long <- read_tsv(file = here("data/02_dat_clean.tsv"))
 ```
 
-## Describe Data
+### 1. Raw Data
 
--   What do these data show?
+|                     | hsc  | cmp  | gmp  | clp  | mep  |
+|---------------------|------|------|------|------|------|
+| No. of observations | 2196 | 1986 | 2291 | 2382 | 2691 |
+| No. of variables    | 6    | 6    | 6    | 7    | 6    |
+| No. of replicates   | 4    | 4    | 4    | 5    | 4    |
 
--   What is intensity?
+-   CV's
 
--   How many observations? How many rows and columns?
-
-    The original datasets that have been loaded in each contain the below number of observations and variables
-
-    |                     | hsc  | cmp  | gmp  | clp  | mep  |
-    |---------------------|------|------|------|------|------|
-    | No. of observations | 2196 | 1986 | 2291 | 2382 | 2691 |
-    | No. of variables    | 6    | 6    | 6    | 7    | 6    |
-    | No. of replicates   | 4    | 4    | 4    | 5    | 4    |
-
-    The number of observations corresponds to the number of protein groups and genes that are there in each of the datasets.
-
-    What does each cell type correspond to? (point wise in time?) The cells can either develop in erythroid or granulocyte directions.
-
-    Can the genes / proteins somehow be grouped according to functionality? Ie. are some of them transcription factors, some of them enzymes..? Or can we have any information whatsoever about them?
+-   
 
 ## Normalization plot before removing NAs
 
@@ -65,18 +55,7 @@ df_nona_long |>
 
 -   here we could have some scatter plots, density plots etc.
 
-## Scatter Plots
-
-```{r}
-#This scatter plot is just to show how fucking many datapoints we have... You can't even see the genes on the y-axis because there are +3000! 
-df_no_na_long |> 
-  ggplot(aes(x = intensity, y = genes, colour = cell_type))+
-  geom_point(alpha = 0.2, size = 0.1)+
-  theme_classic()+
-  theme(axis.text.y = element_text(size=1))
-```
-
-## Density plots
+## Scatter PlotsDensity plots
 
 ```{r}
 df_no_na_long |> 

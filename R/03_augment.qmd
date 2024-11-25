@@ -4,7 +4,7 @@ format: html
 editor: visual
 ---
 
-### Load data
+## Load Data
 
 ```{r}
 
@@ -12,9 +12,9 @@ df_long <- read_tsv(file = here("data/02_dat_clean.tsv"))
 
 ```
 
-## Log Transforming the Data
+## Log Transform 
 
-Proteomics data must be log 2 transformed to have a more compatible scale.
+For mass spectrometry proteomics data, it is common practice to log 2 transform the data, to achieve a log-normal distribution.
 
 ```{r}
 # log transform all numerical values except the ones indicating the replicates
@@ -25,11 +25,11 @@ df_log_long <- df_long |>
   ))
 ```
 
-## Deal with Missing Values by Normalization of Intensity
+## Normalize Intensity across Samples
 
-The data contains many missing values. The reason values are missing is because they are below the detection limit of the mass spectrometer. NA's should not be replaced by 0, instead they should be replaced with the 1st percentile of the normalized distribution of each cell type replicate (sample), to give a reasonable value close to the suspected detection limit.
+Technical variation of sample preparation and LC/MS runs introduce error in our data, leading to varying total intensities of theoretically identical samples. To compare protein intensities across samples, we normalize the individual protein intensities to the median of each sample. This way we account for unwanted technical variation.
 
-For each observation (a replicate of a particular cell type) we wish to nomalize the intensity compared to the total intensity of all measured proteins of that cell type. This is why we group the data by sample (fx hsc_rep_1 is one group and clp_rep_2 is another group). We then normalize the data by dividing individual intensities by the median of the sample. We then use the first percentile of the normalized data to replace missing values.
+For each observation (a replicate of a particular cell type) we wish to nomalize the intensity compared to the total intensity of all measured proteins of that cell type. This is why we group the data by sample (fx hsc_rep_1 is one group and clp_rep_2 is another group). We then normalize the data by dividing individual intensities by the median of the sample.
 
 ```{r}
 #Check that the grouping gives 21 median values
@@ -38,53 +38,83 @@ df_log_long |>
   summarize(median(intensity, na.rm = TRUE))
 ```
 
-Normalize data to impute missing values for NA.
-
 ```{r}
 #Normalize data
 df_norm_long <- df_log_long |> 
-  group_by(cell_type, replicate_n) |> 
+  group_by(sample) |> 
   #normalizing by dividing each intensity value with the median intensity of all proteins from that sample
   mutate(intensity = intensity/median(intensity, na.rm = TRUE))
 ```
 
-Imputing missing values/NAs
+## Replace NA's with reasonable Intensity Values
+
+The data contains many missing values. The reason values are missing is because they are below the detection limit of the mass spectrometer. NA's should not be replaced by 0, instead they can be replaced with the 0.1st percentile of the normalized distribution of each cell type replicate (sample), or feature (protein group), to give a reasonable value close to the suspected detection limit. Theoretical basis for this is the nature of the data: In data-independent acquisition (DIA), missing data is missing not at random (MNAR). This allows to use a left-censor method for NA value imputation.
+
+Replacing missing values option 1: sample-wise
 
 ```{r}
-#Have a secon opinion on this code
-#replace NA with 1st percentile of sample type
-df_no_na_long <- df_norm_long |> 
-  group_by(cell_type,replicate_n) |> 
+
+# Replace NA with 0.1st percentile of sample intensity distribution
+# If an NA is detected the value is transformed to 0.1st percentile of that sample
+# -3.090 is Z-score for 0.1st percentile
+# If an NA is not detected the original value is preserved
+
+df_no_na_long_1 <- df_norm_long |> 
+  group_by(sample) |> 
   mutate(intensity = case_when(
-    #if an NA is detected the value is transformed to 1st percentile of that samples group
-    #-3.090 is Z-score for 0.1st percentile
-    #is.na(intensity) ~ mean(intensity, na.rm = TRUE) - 2.326 * sd(intensity, na.rm = TRUE),
-    #if an NA is not detected the original value is preserved
-    #alternatively I believe the built-in r function quantile(x,0.01) can be used to find the 1st percentile
-    #THis does not yield the same result but I am not sure why
-    is.na(intensity) ~ quantile(intensity, probs = 0.01, na.rm = TRUE),
+    is.na(intensity) ~ mean(intensity, na.rm = TRUE) - 3.090 * sd(intensity, na.rm = TRUE),
     .default = intensity
   ))
 
 
 ```
 
-### No N/A in wide format
+Replacing missing values option 2: feature-wise
 
 ```{r}
 
-df_no_na_wide <- df_no_na_long |> mutate(intensity = unname(intensity)) |>
+# Replace NA with 0.1st percentile of feature (=protein group) intensity distribution
+# If an NA is detected the value is transformed to 0.1st percentile of that feature
+# -3.090 is Z-score for 0.1st percentile
+# If an NA is not detected the original value is preserved
+
+df_no_na_long_2 <- df_norm_long |> 
+  group_by(protein_groups) |> 
+  mutate(intensity = case_when(
+    is.na(intensity) ~ mean(intensity, na.rm = TRUE) - 3.090 * sd(intensity, na.rm = TRUE),
+    .default = intensity
+  ))
+
+
+```
+
+```{r}
+### TEST: plot densities ###
+df_no_na_long2 |> 
+  ggplot(aes(x=intensity, colour=sample)) +
+  geom_density() +
+  theme_classic()
+
+```
+
+## No N/A in wide format
+
+For certain operations it is easier to work with data frames in wide format. We therefore pivot wider and save as separate file. We use the feature-wise NA-imputed data frame.
+
+```{r}
+
+df_no_na_wide <- df_no_na_long_2 |> mutate(intensity = unname(intensity)) |>
   pivot_wider(id_cols = c('sample',cell_type), names_from = 'protein_groups', values_from = 'intensity')
 ```
 
-### Getting mean values and standard deviation for volcano plot
+## Getting mean values and standard deviation for volcano plot
 
 The mean value between each replicate of the cell samples are estimated along with the standard deviation, to create a new tibble which is used to create a volcano plot for the fold change.
 
 ```{r}
 
 # create a tibble with mean values and standard deviation
-df_mean_intensitities <- df_no_na_long |> 
+df_mean_intensitities <- df_no_na_long_2 |> 
   group_by(protein_groups,cell_type) |> # take the mean/sd of of the replicates for the protein groups and cell types.
   summarise(
     mean = mean(intensity),
@@ -92,14 +122,30 @@ df_mean_intensitities <- df_no_na_long |>
     )
 df_mean_intensitities
 
-summary(df_no_na_long)
+summary(df_no_na_long_2)
 
 ```
 
+## Produce Data Files for downstream Analysis
+
 ```{r}
-# Produce file 03_dat_aug.tsv
+# Produce files 03_dat_aug_XXX.tsv
 
 project_path = here()
 setwd(project_path)
-write_tsv(df_no_na_long, "data/03_dat_aug.tsv")
+write_tsv(df_no_na_long_1, "data/03_dat_aug_long_1.tsv")
+write_tsv(df_no_na_long_2, "data/03_dat_aug_long_2.tsv")
+write_tsv(df_no_na_wide, "data/03_dat_aug_wide.tsv")
+```
+
+## Produce Data Files for describing intermediate Processing Steps
+
+```{r}
+# Produce files 03_dat_intermediate_XXX.tsv
+
+project_path = here()
+setwd(project_path)
+write_tsv(df_long, "data/03_dat_intermediate_1_clean.tsv")
+write_tsv(df_log_long, "data/03_dat_intermediate_2_log.tsv")
+write_tsv(df_norm_long, "data/03_dat_intermediate_3_norm.tsv")
 ```

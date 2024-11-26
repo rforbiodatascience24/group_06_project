@@ -13,6 +13,8 @@ library("here")
 
 ```{r}
 
+#move this to load - antonio
+
 .df_hsc <- read_tsv(file = here("data/01_dat_load_hsc.tsv"))
 .df_mep <- read_tsv(file = here("data/01_dat_load_mep.tsv"))
 .df_gmp <- read_tsv(file = here("data/01_dat_load_gmp.tsv"))
@@ -77,7 +79,6 @@ df_ful <- setNames(df_ful, c("protein_groups",
                              "gmp_rep_3",
                              "gmp_rep_4"))
 ```
-
 
 ## Lengthening the Data
 

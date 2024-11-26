@@ -7,7 +7,8 @@ library(sjmisc) #Unofficial tidyverse package that follows the tidyverse syntax
 #df_input <- df_norm[, -(1:2)] |> na.omit() |> rotate_df()
 
 #Augmented data
-df_input <- df_no_na_wide[, -(1:2)] |>   na.omit() 
+df_input <- df_no_na_wide[, -(1:2)] |> 
+  mutate(across(everything(), as.numeric)) #|>  na.omit() 
   
 #Projecting data unto principal components (pc)
 pc <- prcomp(df_input, center = FALSE, scale = FALSE)

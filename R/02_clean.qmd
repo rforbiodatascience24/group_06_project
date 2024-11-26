@@ -13,6 +13,8 @@ library("here")
 
 ```{r}
 
+#move this to load - antonio
+
 .df_hsc <- read_tsv(file = here("data/01_dat_load_hsc.tsv"))
 .df_mep <- read_tsv(file = here("data/01_dat_load_mep.tsv"))
 .df_gmp <- read_tsv(file = here("data/01_dat_load_gmp.tsv"))
@@ -78,9 +80,15 @@ df_ful <- setNames(df_ful, c("protein_groups",
                              "gmp_rep_4"))
 ```
 
+<<<<<<< HEAD
 ## Elongating the dataframe
 
 There are four or five technical replicates of each of the 5 cell types, making up a total of 21 variables - all with measures of intensity. We use pivot_longer to lengthen the data so that there is one intensity column and one 'sample' column specifying which replicate and which cell type is referred to.
+=======
+## Lengthening the Data
+
+There are four or five replicates of each cell type, that are currently stored as 21 variables all with measures of intensity. We use pivot_longer to lengthen the data so that there is one intensity column and one 'sample' column specifying which replicate and which cell type is referred to.
+>>>>>>> 49dfd5c191b02fdac89ee354cc101adffa0353da
 
 ```{r}
 df_long <- df_ful |> 

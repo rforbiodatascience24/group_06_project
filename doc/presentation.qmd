@@ -1,0 +1,52 @@
+---
+title: "Proteomics Data from Murine Blood Cells"
+subtitle: "A Collaborative Data Science Project by Group 6"
+format: revealjs
+editor: visual
+---
+
+Read the following resources to become smarter on how to create presentations. Remember to have exactly 10 slides.
+https://quarto.org/docs/presentations/
+
+https://quarto.org/docs/presentations/revealjs/
+
+
+
+## Introduction to the data
+
+Introduction
+-   Here we should introduce the dataset(s) we are working with 
+
+## Data tidying and data format
+Methods
+This is a part of description of methods
+
+## What issues did we encounter while tidying the code
+Methods
+Here we write some of our thoughts. Fx long / wide discussion we had. Or our troubles with computing p-value for all. Explain our choices. 
+How did we solve these issues
+
+## Augmenting the data
+Methods
+Explain how/why we did log transformation, normalization, how we dealt with N/As
+
+## PCA
+Results
+
+## Volcano Plot
+Results
+
+## Discussion
+Discussion
+-   What do the data tell us?
+-   What could we have done differently?
+-   What was the hardest part about working with the data/what were our issues? 
+
+## Discussion
+Another Discussion slide
+
+## Take away messages / Conclusion
+Write some conclusion here
+
+
+

@@ -142,7 +142,7 @@ We can now observe identical medians of 1 for all samples.
 
 ## Missing Value Imputation
 
-As explained before, NA's need to be replaced by meaningful values. We explored two options: \
+As explained before, NA's need to be replaced by meaningful values. We explored two options:\
 sample-wise and feature-wise imputation.
 
 ### Sample-wise imputation

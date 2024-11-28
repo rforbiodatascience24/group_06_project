@@ -69,6 +69,7 @@ df_hsc_clp <- df_hsc_clp |>
 
 ### Volcano plots (pairwise)
 
+
 Select hsc where protein starts with c
 
 ```{r}
@@ -157,6 +158,9 @@ this |>
 
 Creating a function that finds the p-value based on the students t.test
 
+Creating a function that finds the p-value based on the students t.test. This 'manual' pvalue computation is used because a dataframe that consists of standard deviations and mean values.
+
+
 ```{r}
 #no of replicates
 n <- 4
@@ -170,30 +174,6 @@ pval <- function(mu1,mu2,n1,n2,s1,s2){
   return(pvalue)
   }
 
-```
-
-Testing the function to get functionality
-
-```{r}
-df_mean_intensitities |> 
-  filter(cell_type == "hsc" | cell_type == "gmp") |> 
-  filter(protein_groups == "A1L314") 
-```
-
-s
-
-```{r}
-  mutate(pval = pval(mean[1],mean[2],4,4,sd[1],sd[2]))
-#ok so this works but how can I let it be mean[gmp] instead of mean[1]. ie a programatical solution...
-  mutate(across(matches(".I|.V"), ~ if_else(row_number() %in% grep("in %", name), ./100, .)))
-  mutate(pval2 = case_when(
-  ID %in% Status1$ID ~ "Status1"
-  ))
-
-
-h
-
-T-test
 ```
 
 ```{r}
@@ -214,31 +194,67 @@ ggplot(df_mean_intensitities, aes(x=fold))+
   scale_x_continuous(limits = c(0.75, 1.25))
 ```
 
-```{r}
-#creating a new label-variable which takes values for gene for significant genes only and otherwise leaves it as "" otherwise there would be waaaay too many (>2000) gene names 
+## Volcano plots
 
+Genes with statistically significant differential expression lie above a horizontal threshold. Closer to zero indicates less change while moving away from zero in either direction indicates more change. Volcano plots provide an effective means for visualizing the direction, magnitude, and significance of changes in gene expression. 
+
+```{r}
 test_plot <- df_mean_intensitities |> 
 pivot_wider(names_from = cell_type, values_from = c(mean, sd)) |> 
-  select(mean_gmp, mean_hsc, sd_gmp, sd_hsc) |> 
-  mutate(fold = mean_gmp/mean_hsc) |> 
-  mutate(pval = pval(mean_gmp,mean_hsc,4,4,sd_gmp,sd_hsc)) |> 
-  select(protein_groups, fold, pval)
+  select(mean_gmp, mean_hsc, sd_cmp, sd_hsc) |> 
+  mutate(log2fold = log2(mean_cmp/mean_hsc)) |> 
+  #using the home-made function pval
+  mutate(pval = pval(mu1 = mean_cmp, mu2 = mean_hsc, n1 = 4, n2 = 4, s1 = sd_cmp, s2 = sd_hsc)) |> 
+  select(protein_groups, log2fold, pval) |> 
+  mutate(is_signif = case_when(pval <= 0.05 & log2fold > 0 ~ "up",
+                               pval <= 0.05 & log2fold < 0 ~"down",
+                               pval > 0.05 ~"not significant"
+  ))
 
 
+```
+
+q
+
+We will look at the development from HSC to CLP and from HSC to CMP.
+
+And then from CMP to MEP and from CMP to GMP. Because that is the order in which the cells develop.
+
+```{r}
 library(ggrepel) 
 test_plot |>
-  mutate(label = case_when(fold > 1 ~ protein_groups, fold < 1 ~ "")) |>
-  ggplot(aes(x = log2(fold), y = desc(log10(pval))))+
+  #When are points significant? In this case if fold > 1 it is overexpressed
+ # mutate(label = case_when(fold > 1 ~ protein_groups, fold < 1 ~ "")) |>
+  ggplot(aes(x = log2fold, y = desc(log10(pval)), color = is_signif))+
   geom_point(size=1, alpha = 0.5)+
-  geom_text_repel(aes(label = label), size = 3)+
-  theme_minimal()+ labs(title = "GMP/HSC",
-                        subtitle = "Proteins that were more expressed in GMP are highlighted",
-                        x = "fold",
-                        y = "-log10(p)",
-                        caption = "proteomics data")+
-  theme(legend.position = "none",
-        plot.title = element_text(hjust = 1),
-        plot.subtitle = element_text(hjust = 1))+
-  geom_hline(yintercept = 2)
+#  geom_text_repel(aes(label = label), size = 3)+
+  theme_minimal()+
+  labs(title = "Expression of CLP relative to HSC",
+       x = "fold",
+       y = "-log10(p)",
+       caption = "proteomics data")+
+  theme(legend.position = "none")+
+  #The horizontal line that indicates significance - remember to check if it correct with qvalue and all
+#  geom_hline(yintercept = 2)+
+  scale_color_manual(values = c("up" = "red", "down" = "blue", "not significant" = "gray"))
 
+#The threshold should be p value of 0.05
+#Use q-value instead of pvalue 
+#Sofias code for defining the color
+#scale_color_manual(values = c("Down-regulated" = "blue", "Up-regulated" = "red", "NA" = "gray"))
+```
+
+```{r}
+test_plot |>
+  ggplot(aes(x = log2fold, y = desc(log10(pval)), color = is_signif))+
+  geom_point(size=1, alpha = 0.5)+
+  theme_minimal()+
+  labs(title = "Expression of CMP relative to HSC",
+       x = "fold",
+       y = "-log10(p)",
+       caption = "proteomics data")+
+  theme(legend.position = "none")+
+  #The horizontal line that indicates significance - remember to check if it correct with qvalue and all
+#  geom_hline(yintercept = 2)+
+  scale_color_manual(values = c("up" = "red", "down" = "blue", "not significant" = "gray"))
 ```

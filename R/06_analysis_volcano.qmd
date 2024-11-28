@@ -19,6 +19,52 @@ df_no_na_long <- read_tsv(file = here("data/03_dat_aug_long_1.tsv"))
 
 ## Data Analysis
 
+### #Argument the data for a volcano plot
+
+```{r}
+#starting form df_no_na_long_1 (will need to change the tibble when the universal is done)
+df_hsc_clp <- df_no_na_long_1 |> 
+  group_by(protein_groups,cell_type) |> 
+  filter(cell_type == c("hsc", "clp")) |> 
+ #  take the mean/sd of of the replicates for the protein groups and cell types.
+   summarise(
+    mean = mean(intensity),
+    sd = sd(intensity)) |> 
+      pivot_wider(names_from = cell_type, values_from = c(mean, sd))
+
+#including calculating fold, p_val and q_val
+
+df_hsc_clp <- df_hsc_clp |> 
+  mutate(fold_log2 = log2(mean_hsc/mean_clp), 
+       p_val = pval(mean_clp, mean_hsc, 5, 4, sd_clp, sd_hsc),
+       q_val = (p.adjust(p_val)))
+
+#including binary variable - overexpressed or underexpressed
+
+df_hsc_clp <- df_hsc_clp |> 
+  mutate(expression = case_when(fold_log2 > 0 & q_val <= 0.05~ "overexpressed",
+                                fold_log2 < 0 & q_val <= 0.05 ~ "underexpressed",
+                                q_val >0.05  ~ "not_significant"))
+
+#removing unnecesary colomns
+
+df_hsc_clp <- df_hsc_clp |> 
+  select(protein_groups, fold_log2, q_val, expression)
+
+
+
+
+  
+```
+
+```{r}
+df_hsc_clp <- df_hsc_clp |> 
+  mutate( 
+       q_val = p.adjust(p_val, n=3724)) |> 
+  arrange(q_val)
+
+```
+
 ### PCA
 
 ### Volcano plots (pairwise)
@@ -33,7 +79,7 @@ df_no_na_long |>
 #There is no such thing as Cd150??
 ```
 
-First of all we want to subset the data so we only work with two cell types. In this case hsc and gmp as they appear to be the most different
+First of all we want to subset the data so we only work with two cell types. In this case hsc and gmp as they appear to be the most different.
 
 Grouping data and nesting
 
@@ -152,17 +198,18 @@ T-test
 
 ```{r}
 # Antonio pivoted wider and creatd a log2foldchange
-df_mean_intensitities |> 
+df_mean_intensities <- df_mean_intensities |> 
   select(!sd) |> 
   pivot_wider(names_from = cell_type, values_from = mean) |> 
   select(!gmp & !hsc & !mep) |> 
   mutate(fold = cmp/clp) 
+df_mean_intensities
 
 ```
 
 ```{r}
 # Histogram that shows distribution of the fold
-ggplot(test_plot, aes(x=fold))+
+ggplot(df_mean_intensitities, aes(x=fold))+
   geom_histogram()+
   scale_x_continuous(limits = c(0.75, 1.25))
 ```

@@ -19,11 +19,147 @@ df_no_na_long <- read_tsv(file = here("data/03_dat_aug_long_1.tsv"))
 
 ## Data Analysis
 
+### #Argument the data for a volcano plot
+
+```{r}
+#starting form df_no_na_long_1 (will need to change the tibble when the universal is done)
+df_hsc_clp <- df_no_na_long_1 |> 
+  group_by(protein_groups,cell_type) |> 
+  filter(cell_type == c("hsc", "clp")) |> 
+ #  take the mean/sd of of the replicates for the protein groups and cell types.
+   summarise(
+    mean = mean(intensity),
+    sd = sd(intensity)) |> 
+      pivot_wider(names_from = cell_type, values_from = c(mean, sd))
+
+#including calculating fold, p_val and q_val
+
+df_hsc_clp <- df_hsc_clp |> 
+  mutate(fold_log2 = log2(mean_hsc/mean_clp), 
+       p_val = pval(mean_clp, mean_hsc, 5, 4, sd_clp, sd_hsc),
+       q_val = (p.adjust(p_val)))
+
+#including binary variable - overexpressed or underexpressed
+
+df_hsc_clp <- df_hsc_clp |> 
+  mutate(expression = case_when(fold_log2 > 0 & q_val <= 0.05~ "overexpressed",
+                                fold_log2 < 0 & q_val <= 0.05 ~ "underexpressed",
+                                q_val >0.05  ~ "not_significant"))
+
+#removing unnecesary colomns
+
+df_hsc_clp <- df_hsc_clp |> 
+  select(protein_groups, fold_log2, q_val, expression)
+
+
+
+
+  
+```
+
+```{r}
+df_hsc_clp <- df_hsc_clp |> 
+  mutate( 
+       q_val = p.adjust(p_val, n=3724)) |> 
+  arrange(q_val)
+
+```
+
 ### PCA
 
 ### Volcano plots (pairwise)
 
+
+Select hsc where protein starts with c
+
+```{r}
+df_no_na_long |> 
+#  filter(cell_type == "hsc") |> 
+ # select(genes, intensity) |> 
+  filter(str_detect(genes, "^Cd1"))
+#There is no such thing as Cd150??
+```
+
+First of all we want to subset the data so we only work with two cell types. In this case hsc and gmp as they appear to be the most different.
+
+Grouping data and nesting
+
+I also don't think we should consider the protein column. Is the amount of protein_groups the same as the amount of genes? If we subset the data again, by grouping for cell_type, what is then the lenght of them? How do I figure out how many unique genes there are?
+
+```{r}
+df_no_na_long |> 
+  group_by(cell_type) |> 
+  summarize(n = n())
+#We can see that there are equally many cmp, gmp, hsc and mep but there are more clp's which is due to the no of replicates
+```
+
+```{r}
+df_no_na_long |> 
+  ungroup() |> 
+  select(genes) |> 
+  distinct()
+
+#There are 3623 different genes
+df_no_na_long |> 
+  ungroup() |> 
+  select(protein_groups) |> 
+  distinct()
+#There are 3724 different protein groups 
+#why is the number of genes and number of proteins not the same??
+#And how do we figure out if the same genes are present in all of the cell types?
+
+```
+
+```{r}
+df_no_na_long |> 
+  ungroup() |> 
+  select(genes, cell_type) |> 
+  group_by(cell_type) |> 
+  summarize(n = n())
+```
+
+```{r}
+df_no_na_long |> 
+  filter(cell_type == "hsc" | cell_type == "gmp") |> 
+  distinct()
+```
+
+Now lets try to work with hsc and gmp.
+
+I want to create a new variable that shows me the ration between hsc and gmp.
+
+```{r}
+df_no_na_long_sample |> 
+  ungroup() |> 
+  select(cell_type, replicate_n, genes, intensity) |> 
+  filter(cell_type == "hsc" | cell_type == "gmp") |> 
+  group_by(cell_type) |> 
+  mutate(ratio = case_when(cell_type == "hsc" ~ 1,
+                           cell_type == "gmp" ~ 0))
+```
+
+```{r}
+this <- df_no_na_long |> 
+  ungroup() |> 
+  select(cell_type, replicate_n, genes, intensity) |> 
+  pivot_wider(names_from = cell_type,
+              values_from = intensity) |> 
+  filter(replicate_n != 5) |> 
+  group_by(genes) |> 
+  nest() |> 
+  ungroup()
+```
+
+```{r}
+this |> 
+  filter(genes == "Gprin1") |> 
+  pull(data)
+```
+
+Creating a function that finds the p-value based on the students t.test
+
 Creating a function that finds the p-value based on the students t.test. This 'manual' pvalue computation is used because a dataframe that consists of standard deviations and mean values.
+
 
 ```{r}
 #no of replicates
@@ -42,17 +178,18 @@ pval <- function(mu1,mu2,n1,n2,s1,s2){
 
 ```{r}
 # Antonio pivoted wider and creatd a log2foldchange
-df_mean_intensitities |> 
+df_mean_intensities <- df_mean_intensities |> 
   select(!sd) |> 
   pivot_wider(names_from = cell_type, values_from = mean) |> 
   select(!gmp & !hsc & !mep) |> 
   mutate(fold = cmp/clp) 
+df_mean_intensities
 
 ```
 
 ```{r}
 # Histogram that shows distribution of the fold
-ggplot(test_plot, aes(x=fold))+
+ggplot(df_mean_intensitities, aes(x=fold))+
   geom_histogram()+
   scale_x_continuous(limits = c(0.75, 1.25))
 ```

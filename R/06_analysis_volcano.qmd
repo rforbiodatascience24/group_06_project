@@ -90,44 +90,13 @@ test_plot |>
        x = "fold",
        y = "-log10(p)",
        caption = "proteomics data")+
-  theme(legend.position = "none",
-        plot.title = element_text(hjust = 1),
-        plot.subtitle = element_text(hjust = 1))+
+  theme(legend.position = "none")+
   #The horizontal line that indicates significance - remember to check if it correct with qvalue and all
-  geom_hline(yintercept = 2)+
+#  geom_hline(yintercept = 2)+
   scale_color_manual(values = c("up" = "red", "down" = "blue", "not significant" = "gray"))
 
 #The threshold should be p value of 0.05
 #Use q-value instead of pvalue 
 #Sofias code for defining the color
 #scale_color_manual(values = c("Down-regulated" = "blue", "Up-regulated" = "red", "NA" = "gray"))
-```
-
-```{r}
-#creating a new label-variable which takes values for gene for significant genes only and otherwise leaves it as "" otherwise there would be waaaay too many (>2000) gene names 
-
-
-#Would be nice if to the right of 0  they are overexpressed have one color and to the left of zero have another color for underexpressed.
-#Would also be nice to have below threshold to be grey. 
-
-# Add thresholds for significance
-# Define thresholds for log2 fold change and p-value
-#log2FC_threshold <- 0.5  # Example: Significant fold change > 0.5
-#p_value_threshold <- -log10(0.05)  # Corresponding to p-value < 0.05
-
-# Classify proteins as "Up-regulated", "Down-regulated", or "NA"
-#df_fc <- test_plot |> 
-  mutate(
-    regulation = case_when(
-      #If the gene is significant and upregulated 
-      log2FC > log2FC_threshold & -log10(p_value) > p_value_threshold ~ "Up-regulated",
-      #if the gene is significant and downregulated
-      log2FC < -log2FC_threshold & -log10(p_value) > p_value_threshold ~ "Down-regulated",
-      #If the gene is not significant
-      TRUE ~ "NA"  # Non-significant proteins
-    )
-  )
-
-
-
 ```

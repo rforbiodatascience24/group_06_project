@@ -137,8 +137,8 @@ df_cmp_gmp <- df_no_na_long_1 |>
        q_val = (p.adjust(p_val))) |> 
   mutate(expression = case_when(fold_log2 > 0 & q_val <= 0.05~ "overexpressed",
                                 fold_log2 < 0 & q_val <= 0.05 ~ "underexpressed",
-                                q_val >0.05  ~ "not_significant")) |> 
-  select(protein_groups, fold_log2, q_val, expression)
+                                q_val >0.05  ~ "not_significant"))
+#  select(protein_groups, fold_log2, q_val, expression)
 ```
 
 ```{r}
@@ -279,12 +279,4 @@ df_cmp_gmp |>
 #  geom_hline(yintercept = 2)+
   scale_color_manual(values = c("overexpressed" = "#D55E00", "underexpressed" = "#0072B2", "not_significant" = "gray"))
 
-```
-
-```{r}
-library("patchwork")
-```
-
-```{r}
-(p1|p2|p3)
 ```

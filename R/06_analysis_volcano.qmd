@@ -7,8 +7,9 @@ editor: visual
 ## Library
 
 ```{r}
-library(tidyverse)
-library(broom)
+library("tidyverse")
+library("broom")
+library("ggthemes")
 ```
 
 ## Load Data
@@ -210,7 +211,7 @@ test_plot |>
   theme(legend.position = "none")+
   #The horizontal line that indicates significance - remember to check if it correct with qvalue and all
 #  geom_hline(yintercept = 2)+
-  scale_color_manual(values = c("up" = "red", "down" = "blue", "not significant" = "gray"))
+  scale_color_manual(values = c("overexpressed" = "#D55E00", "underexpressed" = "#0072B2", "not_significant" = "gray"))
 
 #The threshold should be p value of 0.05
 #Use q-value instead of pvalue 
@@ -230,7 +231,7 @@ df_hsc_clp |>
   theme(legend.position = "none")+
   #The horizontal line that indicates significance - remember to check if it correct with qvalue and all
 #  geom_hline(yintercept = 2)+
-  scale_color_manual(values = c("overexpressed" = "red", "underexpressed" = "blue", "not_significant" = "gray"))
+  scale_color_manual(values = c("overexpressed" = "#D55E00", "underexpressed" = "#0072B2", "not_significant" = "gray"))
 ```
 
 ```{r}
@@ -245,7 +246,8 @@ df_hsc_cmp |>
   theme(legend.position = "none")+
   #The horizontal line that indicates significance - remember to check if it correct with qvalue and all
 #  geom_hline(yintercept = 2)+
-  scale_color_manual(values = c("overexpressed" = "red", "underexpressed" = "blue", "not_significant" = "gray"))
+  #Colors are from the colorblind palette
+  scale_color_manual(values = c("overexpressed" = "#D55E00", "underexpressed" = "#0072B2", "not_significant" = "gray"))
 ```
 
 ```{r}
@@ -260,7 +262,7 @@ df_cmp_mep |>
   theme(legend.position = "none")+
   #The horizontal line that indicates significance - remember to check if it correct with qvalue and all
 #  geom_hline(yintercept = 2)+
-  scale_color_manual(values = c("overexpressed" = "red", "underexpressed" = "blue", "not_significant" = "gray"))
+scale_color_manual(values = c("overexpressed" = "#D55E00", "underexpressed" = "#0072B2", "not_significant" = "gray"))
 ```
 
 ```{r}
@@ -272,10 +274,11 @@ df_cmp_gmp |>
        x = "Log2fold-change",
        y = "-log10(q)",
        caption = "proteomics data")+
-  theme(legend.position = "none")+
+  theme()+
   #The horizontal line that indicates significance - remember to check if it correct with qvalue and all
 #  geom_hline(yintercept = 2)+
-  scale_color_manual(values = c("overexpressed" = "red", "underexpressed" = "blue", "not_significant" = "gray"))
+  scale_color_manual(values = c("overexpressed" = "#D55E00", "underexpressed" = "#0072B2", "not_significant" = "gray"))
+
 ```
 
 ```{r}

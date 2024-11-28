@@ -1,14 +1,12 @@
 ```{r}
 library(tidyr)
 library('ggbiplot')
-library(sjmisc) #Unofficial tidyverse package that follows the tidyverse syntax
 
-#Data without rows with N/A excluding nonnumeric columns (-1:2)
-#df_input <- df_norm[, -(1:2)] |> na.omit() |> rotate_df()
 
-#Augmented data
+#Augmented data, excluding columns with missing data.
 df_input <- df_no_na_wide[, -(1:2)] |> 
-  mutate(across(everything(), as.numeric)) #|>  na.omit() 
+  mutate(across(where(is.list), ~ sapply(., function(x) x[1]))) |> 
+  na.omit() 
   
 #Projecting data unto principal components (pc)
 pc <- prcomp(df_input, center = FALSE, scale = FALSE)
@@ -25,8 +23,8 @@ biplot <- ggbiplot(pc,
                    var.factor = 1.5,
                    varname.adjust = 1.5,
                    varname.size = 3,
-                   groups    = NULL, #visualises datagroups
-                   ellipse   = FALSE,  #Probability elipse
+                   groups    = df_no_na_wide$cell_type, #visualises datagroups
+                   ellipse   = TRUE,  #Probability elipse
                    ellipse.prob = 0.66, #Fraction of observations that should be in ellipse
                    circle    = FALSE,   #Unity circle representing structure correlation in variables
                    var.axes  = FALSE   #Variable vectors, can see correlation from if they're grouped

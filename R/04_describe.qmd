@@ -169,15 +169,14 @@ We observe a less apparent distortion of the density plots, instead of a new glo
 \
 Choice of NA imputation: We need to base our decision on the nature of the data we are working with. Both strategies would produce meaningful replacement values for NA's. Because the missingness in our data is MNAR, we chose sample-wise imputation, as it accounts better for biological missingness in DIA data.
 
-## Summary Statistics / descriptive plots
-
--   here we could have some scatter plots, density plots etc.
-
-## Scatter PlotsDensity plots
+## Protein type lookup
 
 ```{r}
-df_no_na_long |> 
-  ggplot(aes(x=intensity, colour=cell_type)) +
-  geom_density() +
-  theme_classic()
+
+# load mouse uniprot db file for lookup
+dftest <- read_tsv(file = here("data/01_dat_load_mus_musculus.tsv"))
+```
+
+```{r}
+
 ```

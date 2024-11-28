@@ -14,7 +14,7 @@ library(here)
 ```{r}
 
 # Dropbox url
-url <- "https://www.dropbox.com/scl/fi/d63o8sgp03fyu2s6tsqau/group_6_data.zip?rlkey=50z2rrfaowoizqivttdmyym2i&st=kngr6y9j&dl=1"
+url <- "https://www.dropbox.com/scl/fi/xo2tgbhknzelxazhu6qcg/group_6_data_2.zip?rlkey=q0awssn7v4vgi4xfpk2pgl142&st=blph5keq&dl=1"
 
 # Download the zip file
 download.file(url, destfile = here("raw_data/group_6_data.zip"))
@@ -34,6 +34,11 @@ unzip(here("raw_data/group_6_data.zip"), exdir = here("raw_data"))
 .df_cmp <- read_csv2(file = here("raw_data/group6_data_CMP_Report.csv"), na= "NaN")
 
 
+# read in tsv file for mus musculus uniprot file
+
+.df_mus_musculus <- read_csv2(file = here("raw_data/uniprotkb_mus_musculus.tsv"), na= "NaN")
+
+
 #| echo: false
 #| eval: false
 
@@ -49,4 +54,6 @@ write_tsv(.df_mep, "data/01_dat_load_mep.tsv")
 write_tsv(.df_gmp, "data/01_dat_load_gmp.tsv")
 write_tsv(.df_clp, "data/01_dat_load_clp.tsv")
 write_tsv(.df_cmp, "data/01_dat_load_cmp.tsv")
+
+write_tsv(.df_mus_musculus, "data/01_dat_load_mus_musculus.tsv")
 ```

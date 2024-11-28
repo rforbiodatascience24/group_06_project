@@ -27,11 +27,11 @@ unzip(here("raw_data/group_6_data.zip"), exdir = here("raw_data"))
 
 # read in csv files for all cell populations
 
-df_hsc <- read_csv2(file = here("raw_data/group6_data_HSC_Report.csv"), na= "NaN")
-df_mep <- read_csv2(file = here("raw_data/group6_data_MEP_Report.csv"), na= "NaN")
-df_gmp <- read_csv2(file = here("raw_data/group6_data_GMP_Report.csv"), na= "NaN")
-df_clp <- read_csv2(file = here("raw_data/group6_data_CLP_Report.csv"), na= "NaN")
-df_cmp <- read_csv2(file = here("raw_data/group6_data_CMP_Report.csv"), na= "NaN")
+.df_hsc <- read_csv2(file = here("raw_data/group6_data_HSC_Report.csv"), na= "NaN")
+.df_mep <- read_csv2(file = here("raw_data/group6_data_MEP_Report.csv"), na= "NaN")
+.df_gmp <- read_csv2(file = here("raw_data/group6_data_GMP_Report.csv"), na= "NaN")
+.df_clp <- read_csv2(file = here("raw_data/group6_data_CLP_Report.csv"), na= "NaN")
+.df_cmp <- read_csv2(file = here("raw_data/group6_data_CMP_Report.csv"), na= "NaN")
 
 
 #| echo: false
@@ -44,9 +44,9 @@ df_cmp <- read_csv2(file = here("raw_data/group6_data_CMP_Report.csv"), na= "NaN
 project_path = here()
 setwd(project_path)
 dir.create("data")
-write_tsv(df_hsc, "data/01_dat_load_hsc.tsv")
-write_tsv(df_mep, "data/01_dat_load_mep.tsv")
-write_tsv(df_gmp, "data/01_dat_load_gmp.tsv")
-write_tsv(df_clp, "data/01_dat_load_clp.tsv")
-write_tsv(df_cmp, "data/01_dat_load_cmp.tsv")
+write_tsv(.df_hsc, "data/01_dat_load_hsc.tsv")
+write_tsv(.df_mep, "data/01_dat_load_mep.tsv")
+write_tsv(.df_gmp, "data/01_dat_load_gmp.tsv")
+write_tsv(.df_clp, "data/01_dat_load_clp.tsv")
+write_tsv(.df_cmp, "data/01_dat_load_cmp.tsv")
 ```

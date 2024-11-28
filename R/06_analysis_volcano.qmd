@@ -167,6 +167,12 @@ ggplot(test_plot, aes(x=fold))+
   scale_x_continuous(limits = c(0.75, 1.25))
 ```
 
+We
+
+## Volcano plots
+
+Genes with statistically significant differential expression lie above a horizontal threshold. Closer to zero indicates less change while moving away from zero in either direction indicates more change. Volcano plots provide an effective means for visualizing the direction, magnitude, and significance of changes in gene expression. 
+
 ```{r}
 #creating a new label-variable which takes values for gene for significant genes only and otherwise leaves it as "" otherwise there would be waaaay too many (>2000) gene names 
 
@@ -174,12 +180,34 @@ test_plot <- df_mean_intensitities |>
 pivot_wider(names_from = cell_type, values_from = c(mean, sd)) |> 
   select(mean_gmp, mean_hsc, sd_gmp, sd_hsc) |> 
   mutate(fold = mean_gmp/mean_hsc) |> 
-  mutate(pval = pval(mean_gmp,mean_hsc,4,4,sd_gmp,sd_hsc)) |> 
+  #using the home-made function pval
+  mutate(pval = pval(mu1 = mean_gmp, mu2 = mean_hsc, n1 = 4, n2 = 4, s1 = sd_gmp, s2 = sd_hsc)) |> 
   select(protein_groups, fold, pval)
 
+#Would be nice if to the right of 0  they are overexpressed have one color and to the left of zero have another color for underexpressed.
+#Would also be nice to have below threshold to be grey. 
+
+# Add thresholds for significance
+# Define thresholds for log2 fold change and p-value
+log2FC_threshold <- 0.5  # Example: Significant fold change > 0.5
+p_value_threshold <- -log10(0.05)  # Corresponding to p-value < 0.05
+
+# Classify proteins as "Up-regulated", "Down-regulated", or "NA"
+df_fc <- test_plot |> 
+  mutate(
+    regulation = case_when(
+      #If the gene is significant and upregulated 
+      log2FC > log2FC_threshold & -log10(p_value) > p_value_threshold ~ "Up-regulated",
+      #if the gene is significant and downregulated
+      log2FC < -log2FC_threshold & -log10(p_value) > p_value_threshold ~ "Down-regulated",
+      #If the gene is not significant
+      TRUE ~ "NA"  # Non-significant proteins
+    )
+  )
 
 library(ggrepel) 
 test_plot |>
+  #When are points significant? In this case if fold > 1 it is overexpressed
   mutate(label = case_when(fold > 1 ~ protein_groups, fold < 1 ~ "")) |>
   ggplot(aes(x = log2(fold), y = desc(log10(pval))))+
   geom_point(size=1, alpha = 0.5)+

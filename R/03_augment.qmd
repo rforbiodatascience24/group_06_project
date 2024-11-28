@@ -101,9 +101,11 @@ For certain operations it is easier to work with data frames in wide format. We 
 
 ```{r}
 
-
 df_no_na_wide <- df_no_na_long_2 |> mutate(intensity = unname(intensity)) |>
-  pivot_wider(id_cols = c('sample',cell_type), names_from = 'protein_groups', values_from = 'intensity')
+  pivot_wider(id_cols = c('sample',cell_type),
+              names_from = 'protein_groups',
+              values_from = 'intensity') |>
+  select(where(~ !any(is.na(.)))) #Selects only columns without N/A
 ```
 
 ### Getting mean values and standard deviation for volcano plot

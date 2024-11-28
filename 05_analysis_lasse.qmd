@@ -17,7 +17,6 @@ library(rstatix)
 ### Calculating the p-value between sets
 
 ```{r}
-?t.test()
 df_no_na_long |> 
   group_by(protein_groups,
            genes,
@@ -32,8 +31,13 @@ Perform a welch student t-test to compare the cell types. The function from rsta
 
 ```{r}
 
-#Perform a pairwise t-test using the wrapper function rstatix::pairwise_t_test.
-df_no_na_long |>
+
+#Perform a pairwise t-test using the wrapper function rstatix::pairwise_t_test.¨¨
+
+df_no_na_long_1 
+
+
+p_values <- df_no_na_long|>
   group_by(genes,
            protein_groups) |> 
   t_test(intensity ~ cell_type,

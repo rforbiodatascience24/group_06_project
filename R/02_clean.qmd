@@ -78,7 +78,6 @@ df_ful <- setNames(df_ful, c("protein_groups",
                              "gmp_rep_4"))
 ```
 
-
 ## Lengthening the Data
 
 There are four or five replicates of each cell type, that are currently stored as 21 variables all with measures of intensity. We use pivot_longer to lengthen the data so that there is one intensity column and one 'sample' column specifying which replicate and which cell type is referred to.

@@ -12,41 +12,36 @@ library(here)
 # Loading Data
 
 ```{r}
+raw_dir <- here("data/data_raw")
+data_file <- "mouse_cell_stages.zip"
+data_loc <- "https://www.dropbox.com/scl/fi/d63o8sgp03fyu2s6tsqau/group_6_data.zip?rlkey=50z2rrfaowoizqivttdmyym2i&st=kngr6y9j&dl=1"
 
-# Dropbox url
-url <- "https://www.dropbox.com/scl/fi/d63o8sgp03fyu2s6tsqau/group_6_data.zip?rlkey=50z2rrfaowoizqivttdmyym2i&st=kngr6y9j&dl=1"
 
-# Download the zip file
-download.file(url, destfile = here("raw_data/group_6_data.zip"))
+if( !dir.exists(raw_dir) ){
+  dir.create(path = raw_dir)
+}
+if( !file.exists(str_c(raw_dir, data_file, sep = "/")) ){
+  download.file(
+    url = data_loc,
+    destfile = str_c(raw_dir, data_file, sep = "/"))
+}
+# Unzip the proteomics data
 
-# Unzip the downloaded file
-unzip(here("raw_data/group_6_data.zip"), exdir = here("raw_data"))
+unzip(str_c(raw_dir, data_file, sep = "/"), exdir = raw_dir)
 ```
 
 ```{r}
 
 # read in csv files for all cell populations
 
-.df_hsc <- read_csv2(file = here("raw_data/group6_data_HSC_Report.csv"), na= "NaN")
-.df_mep <- read_csv2(file = here("raw_data/group6_data_MEP_Report.csv"), na= "NaN")
-.df_gmp <- read_csv2(file = here("raw_data/group6_data_GMP_Report.csv"), na= "NaN")
-.df_clp <- read_csv2(file = here("raw_data/group6_data_CLP_Report.csv"), na= "NaN")
-.df_cmp <- read_csv2(file = here("raw_data/group6_data_CMP_Report.csv"), na= "NaN")
+df_hsc <- read_csv2(file = here("data/raw_data/group6_data_HSC_Report.csv"), na="NaN")
+df_mep <- read_csv2(file = here("data/raw_data/group6_data_MEP_Report.csv"), na="NaN")
+df_gmp <- read_csv2(file = here("data/raw_data/group6_data_GMP_Report.csv"), na="NaN")
+df_clp <- read_csv2(file = here("data/raw_data/group6_data_CLP_Report.csv"), na="NaN")
+df_cmp <- read_csv2(file = here("data/raw_data/group6_data_CMP_Report.csv"), na="NaN")
 
 
 #| echo: false
 #| eval: false
 
-```
-
-```{r}
-# write tsv files
-project_path = here()
-setwd(project_path)
-dir.create("data")
-write_tsv(.df_hsc, "data/01_dat_load_hsc.tsv")
-write_tsv(.df_mep, "data/01_dat_load_mep.tsv")
-write_tsv(.df_gmp, "data/01_dat_load_gmp.tsv")
-write_tsv(.df_clp, "data/01_dat_load_clp.tsv")
-write_tsv(.df_cmp, "data/01_dat_load_cmp.tsv")
 ```

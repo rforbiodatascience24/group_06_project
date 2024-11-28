@@ -1,0 +1,14 @@
+{r}
+# write tsv files
+project_path = here()
+setwd(project_path)
+dir.create("data")
+
+write_tsv(df_hsc, "data/01_dat_load_hsc.tsv")
+write_tsv(df_mep, "data/01_dat_load_mep.tsv")
+write_tsv(df_gmp, "data/01_dat_load_gmp.tsv")
+write_tsv(df_clp, "data/01_dat_load_clp.tsv")
+write_tsv(df_cmp, "data/01_dat_load_cmp.tsv")
+
+
+

@@ -11,21 +11,13 @@ library("tidyverse")
 library("here")
 ```
 
-### Load data
-
-```{r}
-
-df_long <- read_tsv(file = here("data/02_dat_clean.tsv"))
-
-```
-
 ## Log Transform
 
 For mass spectrometry proteomics data, it is common practice to log 2 transform the data, to achieve a log-normal distribution.
 
 ```{r}
 # log transform all numerical values except the ones indicating the replicates
-df_log_long <- df_long |> 
+df_log_intensities <- df_intensities_long |> 
   mutate(across(
     .cols = where(is.numeric) & !c("replicate_n"),
     .fns = ~log2(. + 1)
@@ -40,15 +32,20 @@ For each observation (a replicate of a particular cell type) we wish to nomalize
 
 ```{r}
 #Check that the grouping gives 21 median values
-df_log_long |> 
+df_log_intensities |> 
   group_by(cell_type,replicate_n) |> 
   summarize(median(intensity, na.rm = TRUE))
 ```
 
+### Normalizing intensities
+
+The intensities across the different cell types are normalized so that e.g cell count doesn't affect the intensity read, making the intensities comparable across the 5 cell types.
+
 ```{r}
 #Normalize data
-df_norm_long <- df_log_long |> 
-  group_by(sample) |> 
+df_norm_intensities <- df_log_intensities |> 
+  group_by(cell_type,
+           replicate_n) |> 
   #normalizing by dividing each intensity value with the median intensity of all proteins from that sample
   mutate(intensity = intensity/median(intensity, na.rm = TRUE))
 ```
@@ -57,7 +54,7 @@ df_norm_long <- df_log_long |>
 
 The data contains many missing values. The reason values are missing is because they are below the detection limit of the mass spectrometer. NA's should not be replaced by 0, instead they can be replaced with the 0.1st percentile of the normalized distribution of each cell type replicate (sample), or feature (protein group), to give a reasonable value close to the suspected detection limit. Theoretical basis for this is the nature of the data: In data-independent acquisition (DIA), missing data is missing not at random (MNAR). This allows to use a left-censor method for NA value imputation.
 
-Replacing missing values option 1: sample-wise
+### Replacing missing values option 1: sample-wise -
 
 ```{r}
 
@@ -66,8 +63,9 @@ Replacing missing values option 1: sample-wise
 # -3.090 is Z-score for 0.1st percentile
 # If an NA is not detected the original value is preserved
 
-df_no_na_long_1 <- df_norm_long |> 
-  group_by(sample) |> 
+df_sample_wise <- df_norm_intensities |> 
+  group_by(cell_type,
+           replicate_n) |> 
   mutate(intensity = case_when(
     is.na(intensity) ~ mean(intensity, na.rm = TRUE) - 3.090 * sd(intensity, na.rm = TRUE),
     .default = intensity
@@ -76,7 +74,7 @@ df_no_na_long_1 <- df_norm_long |>
 
 ```
 
-Replacing missing values option 2: feature-wise
+### Replacing missing values option 2: feature-wise -
 
 ```{r}
 
@@ -85,7 +83,7 @@ Replacing missing values option 2: feature-wise
 # -3.090 is Z-score for 0.1st percentile
 # If an NA is not detected the original value is preserved
 
-df_no_na_long_2 <- df_norm_long |> 
+df_feature_wise <- df_norm_intensities |> 
   group_by(protein_groups) |> 
   mutate(intensity = case_when(
     is.na(intensity) ~ mean(intensity, na.rm = TRUE) - 3.090 * sd(intensity, na.rm = TRUE),
@@ -95,60 +93,89 @@ df_no_na_long_2 <- df_norm_long |>
 
 ```
 
-## No N/A in wide format
+## Wide format of data
 
-For certain operations it is easier to work with data frames in wide format. We therefore pivot wider and save as separate file. We use the feature-wise NA-imputed data frame.
+For certain operations it is easier to work with data frames in wide format. We therefore pivot wider and save as separate file. The wide-format data frames utilize either the sample-wise or feature-wise imputed missing values, depending on the analysis to be performed.
+
+### Wide table from the feature-wise imputed missing values
 
 ```{r}
 
-df_no_na_wide <- df_no_na_long_2 |> mutate(intensity = unname(intensity)) |>
+df_intensities_wide <- df_feature_wise |> mutate(intensity = unname(intensity)) |>
   pivot_wider(id_cols = c('sample',cell_type),
               names_from = 'protein_groups',
               values_from = 'intensity') |>
   select(where(~ !any(is.na(.)))) #Selects only columns without N/A
 ```
 
-### Getting mean values and standard deviation for volcano plot
+### Wide table from the sample-wise imputed missing values
+
+The sample_wise imputed missing values in wide-format, are used in 06_volcano_analysis for the volcano plot, which streamlines comparing the protein groups between cell-types.
+
+```{r}
+# Pivoting the sample_wise imputed dataframe wider by the cell_type.
+df_sample_wide <- df_sample_wise|> 
+  pivot_wider(names_from = cell_type,
+              values_from = intensity)
+
+# Check the format of the wide table, making sure that the intensities are registered as numerical values.
+summary(df_sample_wide)
+```
+
+#### Getting mean values and standard deviation for volcano plot
 
 The mean value between each replicate of the cell samples are estimated along with the standard deviation, to create a new tibble which is used to create a volcano plot for the fold change.
 
 ```{r}
 
 # create a tibble with mean values and standard deviation
-df_mean_intensitities <- df_no_na_long_1 |> 
-  group_by(protein_groups,cell_type) |> # take the mean/sd of of the replicates for the protein groups and cell types.
+df_sample_mean <- df_sample_wise|> 
+  group_by(protein_groups,
+           genes,
+           cell_type) |> # take the mean/sd of of the replicates for the protein groups and cell types
   summarise(
     mean = mean(intensity),
     sd = sd(intensity)
     )
-df_mean_intensitities
 
-summary(df_no_na_long_1)
-
+# Showing 10 rows of the df_sample mean table
+sample_n(df_sample_mean,10, replace = TRUE)
 ```
 
-## Produce Data Files for downstream Analysis
+### Additional augmentation to make the volcano plots.
+
+## Saving data files
+
+Some of the cleaned and augmented data-files are saved in a g-zipped format, allowing for further analysis in a new R-pipeline.
 
 ```{r}
-# Produce files 03_dat_aug_XXX.tsv
 
-project_path = here()
-setwd(project_path)
-write_tsv(df_no_na_long_1, "data/03_dat_aug_long_1.tsv")
-write_tsv(df_no_na_long_2, "data/03_dat_aug_long_2.tsv")
-write_tsv(df_no_na_wide, "data/03_dat_aug_wide.tsv")
+# Directing pathway to store the .tsv  file
+
+file_name <- "03_df_log_intensities.tsv.gz"
+
+write_tsv(df_log_intensities, str_c(data_path, file_name,sep = "/"))
+
+#Writing and saving the clean dataframe to 02_df_clean.tsv.
+
 ```
 
-## Produce Data Files for describing intermediate Processing Steps
+#### Saving the data frame with imputed missing values in long format
 
 ```{r}
-# Produce files 03_dat_intermediate_XXX.tsv
 
-project_path = here()
-setwd(project_path)
+# Directing pathway to store the .tsv  file
 
-write_tsv(df_long, "data/03_dat_intermediate_1_clean.tsv")
-write_tsv(df_log_long, "data/03_dat_intermediate_2_log.tsv")
-write_tsv(df_norm_long, "data/03_dat_intermediate_3_norm.tsv")
+file_name <- "03_df_norm_intensities.tsv.gz"
+
+write_tsv(df_norm_intensities, str_c(data_path, file_name,sep = "/"))
+
+#Writing and saving the clean dataframe to 02_df_clean.tsv.
+
+
 
 ```
+
+## 03_augment conclusion:
+
+The cleaned data: df_intensities_long has been log-transformed for compression of intensities, normalized for comparability across cell-types and missing values have been imputed depending on the downstream analysis. Furthermore the dataframes were turned to wide-format with names originating from either cell_types or protein_groups, once again used depending on the downstream analysis.

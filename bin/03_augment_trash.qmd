@@ -1,0 +1,22 @@
+{r}
+# Produce files 03_dat_aug_XXX.tsv
+
+project_path = here()
+setwd(project_path)
+write_tsv(df_no_na_long_1, "data/03_dat_aug_long_1.tsv")
+write_tsv(df_no_na_long_2, "data/03_dat_aug_long_2.tsv")
+write_tsv(df_no_na_wide, "data/03_dat_aug_wide.tsv")
+
+Produce Data Files for describing intermediate Processing Steps
+
+{r}
+# Produce files 03_dat_intermediate_XXX.tsv
+
+project_path = here()
+setwd(project_path)
+
+write_tsv(df_long, "data/03_dat_intermediate_1_clean.tsv")
+write_tsv(df_log_long, "data/03_dat_intermediate_2_log.tsv")
+write_tsv(df_norm_long, "data/03_dat_intermediate_3_norm.tsv")
+
+

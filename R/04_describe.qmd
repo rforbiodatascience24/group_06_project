@@ -11,21 +11,6 @@ library(tidyverse)
 library(UpSetR)
 ```
 
-## Load Data
-
-```{r}
-
-# Intermediate data processing files
-df_long <- read_tsv(file = here("data/03_dat_intermediate_1_clean.tsv"))
-df_log_long <- read_tsv(file = here("data/03_dat_intermediate_2_log.tsv"))
-df_norm_long <- read_tsv(file = here("data/03_dat_intermediate_3_norm.tsv"))
-
-# processed data files for downstream analysis
-df_no_na_long_1 <- read_tsv(file = here("data/03_dat_aug_long_1.tsv"))
-df_no_na_long_2 <- read_tsv(file = here("data/03_dat_aug_long_2.tsv"))
-df_no_na_wide <- read_tsv(file = here("data/03_dat_aug_wide.tsv"))
-```
-
 ## The Data Set
 
 In this study, proteomics by mass spectrometry was applied to FACS-sorted populations of hematopoietic stem- and progenitor cells from the mouse bone marrow. Five populations were isolated based on known surface marker expression: Hematopoietic stem cells (HSC), common lymphoid progenitors (CLP), common myeloid progenitors (CMP), megakaryocyte-erythrocyte progenitors (MEP) and granulocyte-monocyte progenitors (GMP). According to literature, these cell populations represent different stages of hematopoiesis, meaning the differentiation of HSC into the different blood cell lineages. For each cell type, 500 cells were isolated in 4 replicates, except for CLP having 5 replicates. The sorted cells were lysed, digested with trypsin, and subjected to proteomics by mass spectrometry in data-independent acquisition (DIA) mode. Therefore our raw data consists of LS/MS DIA intensity values of identified protein groups (PG).

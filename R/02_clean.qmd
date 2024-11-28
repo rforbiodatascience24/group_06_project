@@ -1,5 +1,5 @@
 ---
-title: "Magdas_version"
+title: "Cleaning Data"
 format: html
 editor: visual
 ---
@@ -9,53 +9,40 @@ library("tidyverse")
 library("here")
 ```
 
-### Load data
-
-```{r}
-
-#move this to load - antonio
-
-.df_hsc <- read_tsv(file = here("data/01_dat_load_hsc.tsv"))
-.df_mep <- read_tsv(file = here("data/01_dat_load_mep.tsv"))
-.df_gmp <- read_tsv(file = here("data/01_dat_load_gmp.tsv"))
-.df_clp <- read_tsv(file = here("data/01_dat_load_clp.tsv"))
-.df_cmp <- read_tsv(file = here("data/01_dat_load_cmp.tsv"))
-
-```
-
 ## Missing in this document
 
 -   write to tsv.gz
 
 -   deal with redundant protein and gene ID's
 
-## Joining Dataframes
+### Joining Dataframes
 
-There are five dataframes, one for each of the five cell types: hsc, clp, cmp, mep, gmp. They must be joined together into one. We use full join because we wish to preserve all data points.
+There are five dataframes, one for each of the five cell types/stages: hsc, clp, cmp, mep, gmp. They must be joined together into one. We use full join because we wish to preserve all data points.
 
 ```{r}
 
 # do full join to preserve data. The combination of PG.ProteinGroups and PG.Genes is the same for all data frames, so we join by both columns
 
-df_ful <- .df_hsc |> 
-  full_join(.df_clp, by=c("PG.ProteinGroups", "PG.Genes")) |> 
-  full_join(.df_cmp, by=c("PG.ProteinGroups", "PG.Genes")) |> 
-  full_join(.df_mep, by=c("PG.ProteinGroups", "PG.Genes")) |>
-  full_join(.df_gmp, by=c("PG.ProteinGroups", "PG.Genes")) 
+df_intensities <- df_hsc |> 
+  full_join(df_clp, by=c("PG.ProteinGroups", "PG.Genes")) |> 
+  full_join(df_cmp, by=c("PG.ProteinGroups", "PG.Genes")) |> 
+  full_join(df_mep, by=c("PG.ProteinGroups", "PG.Genes")) |>
+  full_join(df_gmp, by=c("PG.ProteinGroups", "PG.Genes")) 
 
 
 ```
 
-## Changing Variable Names
+### Changing Variable Names
 
-For increased readability variable names are changed to define the cell type and specify the replicate.
+For increased readability variable names are changed to define the cell type and specify the replicate number. Note! The replicates are technical replicates.
 
 ```{r}
 # get column names
-print(colnames(df_ful))
+print(colnames(df_intensities))
 
 # We have four replicates per cell type. Change all column names at once for easier readability.
-df_ful <- setNames(df_ful, c("protein_groups",
+df_intensities <- 
+  setNames(df_intensities, c("protein_groups",
                              "genes",
                              "hsc_rep_1",
                              "hsc_rep_2",
@@ -80,18 +67,12 @@ df_ful <- setNames(df_ful, c("protein_groups",
                              "gmp_rep_4"))
 ```
 
-<<<<<<< HEAD
-## Elongating the dataframe
+### Elongating the dataframe
 
 There are four or five technical replicates of each of the 5 cell types, making up a total of 21 variables - all with measures of intensity. We use pivot_longer to lengthen the data so that there is one intensity column and one 'sample' column specifying which replicate and which cell type is referred to.
-=======
-## Lengthening the Data
-
-There are four or five replicates of each cell type, that are currently stored as 21 variables all with measures of intensity. We use pivot_longer to lengthen the data so that there is one intensity column and one 'sample' column specifying which replicate and which cell type is referred to.
->>>>>>> 49dfd5c191b02fdac89ee354cc101adffa0353da
 
 ```{r}
-df_long <- df_ful |> 
+df_intensities_long <- df_intensities |> 
   pivot_longer(
     #all the replicate columns will be stored in an intensity column and a sample column
     cols = !starts_with(c("protein","genes")), 
@@ -103,16 +84,18 @@ df_long <- df_ful |>
 Separating the samples column into replicate number and cell type
 
 ```{r}
-df_long <- df_long |> 
+df_intensities_long <- df_intensities_long |> 
   separate(sample, into = c("cell_type","replicate_n"), sep = "_rep_")
   
 
 ```
 
-### Present table of sample values
+### Final table sample output.
+
+Here's a snippet of how the long format of the proteomics data is organized
 
 ```{r}
-sample_n(df_long,10)
+sample_n(df_intensities_long,10)
 
 ```
 
@@ -120,13 +103,15 @@ sample_n(df_long,10)
 
 ```{r}
 
-# produce file 02_dat_clean.tsv
+# produce file 02_df_intensities.tsv
 # Directing pathway to store the .tsv  file
-project_path = here()
-setwd(project_path)
+
+data_path <- here("data")
+file_name <- "02_df_intensities_long.tsv.gz"
+write_tsv(df_intensities_long, str_c(data_path, file_name,sep = "/"))
 
 #Writing and saving the clean dataframe to 02_df_clean.tsv.
-write_tsv(df_long, "data/02_df_clean.tsv") 
+
 
 
 ```

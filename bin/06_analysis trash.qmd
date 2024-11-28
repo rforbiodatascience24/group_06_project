@@ -1,0 +1,67 @@
+Grouping data and nesting
+
+I also don't think we should consider the protein column. Is the amount of protein_groups the same as the amount of genes? If we subset the data again, by grouping for cell_type, what is then the lenght of them? How do I figure out how many unique genes there are?
+
+{r}
+df_no_na_long |> 
+  group_by(cell_type) |> 
+  summarize(n = n())
+#We can see that there are equally many cmp, gmp, hsc and mep but there are more clp's which is due to the no of replicates
+
+{r}
+df_no_na_long |> 
+  ungroup() |> 
+  select(genes) |> 
+  distinct()
+
+#There are 3623 different genes
+df_no_na_long |> 
+  ungroup() |> 
+  select(protein_groups) |> 
+  distinct()
+#There are 3724 different protein groups 
+#why is the number of genes and number of proteins not the same??
+#And how do we figure out if the same genes are present in all of the cell types?
+
+
+{r}
+df_no_na_long |> 
+  ungroup() |> 
+  select(genes, cell_type) |> 
+  group_by(cell_type) |> 
+  summarize(n = n())
+
+{r}
+df_no_na_long |> 
+  filter(cell_type == "hsc" | cell_type == "gmp") |> 
+  distinct()
+
+Now lets try to work with hsc and gmp.
+
+I want to create a new variable that shows me the ration between hsc and gmp.
+
+{r}
+df_no_na_long_sample |> 
+  ungroup() |> 
+  select(cell_type, replicate_n, genes, intensity) |> 
+  filter(cell_type == "hsc" | cell_type == "gmp") |> 
+  group_by(cell_type) |> 
+  mutate(ratio = case_when(cell_type == "hsc" ~ 1,
+                           cell_type == "gmp" ~ 0))
+
+{r}
+this <- df_no_na_long |> 
+  ungroup() |> 
+  select(cell_type, replicate_n, genes, intensity) |> 
+  pivot_wider(names_from = cell_type,
+              values_from = intensity) |> 
+  filter(replicate_n != 5) |> 
+  group_by(genes) |> 
+  nest() |> 
+  ungroup()
+
+{r}
+this |> 
+  filter(genes == "Gprin1") |> 
+  pull(data)
+

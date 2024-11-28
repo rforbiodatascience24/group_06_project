@@ -23,93 +23,7 @@ df_no_na_long <- read_tsv(file = here("data/03_dat_aug_long_1.tsv"))
 
 ### Volcano plots (pairwise)
 
-Select hsc where protein starts with c
-
-```{r}
-df_no_na_long |> 
-#  filter(cell_type == "hsc") |> 
- # select(genes, intensity) |> 
-  filter(str_detect(genes, "^Cd1"))
-#There is no such thing as Cd150??
-```
-
-First of all we want to subset the data so we only work with two cell types. In this case hsc and gmp as they appear to be the most different
-
-Grouping data and nesting
-
-I also don't think we should consider the protein column. Is the amount of protein_groups the same as the amount of genes? If we subset the data again, by grouping for cell_type, what is then the lenght of them? How do I figure out how many unique genes there are?
-
-```{r}
-df_no_na_long |> 
-  group_by(cell_type) |> 
-  summarize(n = n())
-#We can see that there are equally many cmp, gmp, hsc and mep but there are more clp's which is due to the no of replicates
-```
-
-```{r}
-df_no_na_long |> 
-  ungroup() |> 
-  select(genes) |> 
-  distinct()
-
-#There are 3623 different genes
-df_no_na_long |> 
-  ungroup() |> 
-  select(protein_groups) |> 
-  distinct()
-#There are 3724 different protein groups 
-#why is the number of genes and number of proteins not the same??
-#And how do we figure out if the same genes are present in all of the cell types?
-
-```
-
-```{r}
-df_no_na_long |> 
-  ungroup() |> 
-  select(genes, cell_type) |> 
-  group_by(cell_type) |> 
-  summarize(n = n())
-```
-
-```{r}
-df_no_na_long |> 
-  filter(cell_type == "hsc" | cell_type == "gmp") |> 
-  distinct()
-```
-
-Now lets try to work with hsc and gmp.
-
-I want to create a new variable that shows me the ration between hsc and gmp.
-
-```{r}
-df_no_na_long_sample |> 
-  ungroup() |> 
-  select(cell_type, replicate_n, genes, intensity) |> 
-  filter(cell_type == "hsc" | cell_type == "gmp") |> 
-  group_by(cell_type) |> 
-  mutate(ratio = case_when(cell_type == "hsc" ~ 1,
-                           cell_type == "gmp" ~ 0))
-```
-
-```{r}
-this <- df_no_na_long |> 
-  ungroup() |> 
-  select(cell_type, replicate_n, genes, intensity) |> 
-  pivot_wider(names_from = cell_type,
-              values_from = intensity) |> 
-  filter(replicate_n != 5) |> 
-  group_by(genes) |> 
-  nest() |> 
-  ungroup()
-```
-
-```{r}
-this |> 
-  filter(genes == "Gprin1") |> 
-  pull(data)
-```
-
-Creating a function that finds the p-value based on the students t.test
+Creating a function that finds the p-value based on the students t.test. This 'manual' pvalue computation is used because a dataframe that consists of standard deviations and mean values.
 
 ```{r}
 #no of replicates
@@ -124,30 +38,6 @@ pval <- function(mu1,mu2,n1,n2,s1,s2){
   return(pvalue)
   }
 
-```
-
-Testing the function to get functionality
-
-```{r}
-df_mean_intensitities |> 
-  filter(cell_type == "hsc" | cell_type == "gmp") |> 
-  filter(protein_groups == "A1L314") 
-```
-
-s
-
-```{r}
-  mutate(pval = pval(mean[1],mean[2],4,4,sd[1],sd[2]))
-#ok so this works but how can I let it be mean[gmp] instead of mean[1]. ie a programatical solution...
-  mutate(across(matches(".I|.V"), ~ if_else(row_number() %in% grep("in %", name), ./100, .)))
-  mutate(pval2 = case_when(
-  ID %in% Status1$ID ~ "Status1"
-  ))
-
-
-h
-
-T-test
 ```
 
 ```{r}
@@ -167,33 +57,66 @@ ggplot(test_plot, aes(x=fold))+
   scale_x_continuous(limits = c(0.75, 1.25))
 ```
 
-We
-
 ## Volcano plots
 
 Genes with statistically significant differential expression lie above a horizontal threshold. Closer to zero indicates less change while moving away from zero in either direction indicates more change. Volcano plots provide an effective means for visualizing the direction, magnitude, and significance of changes in gene expression. 
 
 ```{r}
-#creating a new label-variable which takes values for gene for significant genes only and otherwise leaves it as "" otherwise there would be waaaay too many (>2000) gene names 
-
 test_plot <- df_mean_intensitities |> 
 pivot_wider(names_from = cell_type, values_from = c(mean, sd)) |> 
   select(mean_gmp, mean_hsc, sd_gmp, sd_hsc) |> 
-  mutate(fold = mean_gmp/mean_hsc) |> 
+  mutate(log2fold = log2(mean_gmp/mean_hsc)) |> 
   #using the home-made function pval
   mutate(pval = pval(mu1 = mean_gmp, mu2 = mean_hsc, n1 = 4, n2 = 4, s1 = sd_gmp, s2 = sd_hsc)) |> 
-  select(protein_groups, fold, pval)
+  select(protein_groups, log2fold, pval) |> 
+  mutate(is_signif = case_when(pval <= 0.05 & log2fold > 0 ~ "up",
+                               pval <= 0.05 & log2fold < 0 ~"down",
+                               pval > 0.05 ~"not significant"
+  ))
+
+
+```
+
+```{r}
+library(ggrepel) 
+test_plot |>
+  #When are points significant? In this case if fold > 1 it is overexpressed
+ # mutate(label = case_when(fold > 1 ~ protein_groups, fold < 1 ~ "")) |>
+  ggplot(aes(x = log2fold, y = desc(log10(pval)), color = is_signif))+
+  geom_point(size=1, alpha = 0.5)+
+#  geom_text_repel(aes(label = label), size = 3)+
+  theme_minimal()+
+  labs(title = "Expression of GMP relative to HSC",
+       x = "fold",
+       y = "-log10(p)",
+       caption = "proteomics data")+
+  theme(legend.position = "none",
+        plot.title = element_text(hjust = 1),
+        plot.subtitle = element_text(hjust = 1))+
+  #The horizontal line that indicates significance - remember to check if it correct with qvalue and all
+  geom_hline(yintercept = 2)+
+  scale_color_manual(values = c("up" = "red", "down" = "blue", "not significant" = "gray"))
+
+#The threshold should be p value of 0.05
+#Use q-value instead of pvalue 
+#Sofias code for defining the color
+#scale_color_manual(values = c("Down-regulated" = "blue", "Up-regulated" = "red", "NA" = "gray"))
+```
+
+```{r}
+#creating a new label-variable which takes values for gene for significant genes only and otherwise leaves it as "" otherwise there would be waaaay too many (>2000) gene names 
+
 
 #Would be nice if to the right of 0  they are overexpressed have one color and to the left of zero have another color for underexpressed.
 #Would also be nice to have below threshold to be grey. 
 
 # Add thresholds for significance
 # Define thresholds for log2 fold change and p-value
-log2FC_threshold <- 0.5  # Example: Significant fold change > 0.5
-p_value_threshold <- -log10(0.05)  # Corresponding to p-value < 0.05
+#log2FC_threshold <- 0.5  # Example: Significant fold change > 0.5
+#p_value_threshold <- -log10(0.05)  # Corresponding to p-value < 0.05
 
 # Classify proteins as "Up-regulated", "Down-regulated", or "NA"
-df_fc <- test_plot |> 
+#df_fc <- test_plot |> 
   mutate(
     regulation = case_when(
       #If the gene is significant and upregulated 
@@ -205,21 +128,6 @@ df_fc <- test_plot |>
     )
   )
 
-library(ggrepel) 
-test_plot |>
-  #When are points significant? In this case if fold > 1 it is overexpressed
-  mutate(label = case_when(fold > 1 ~ protein_groups, fold < 1 ~ "")) |>
-  ggplot(aes(x = log2(fold), y = desc(log10(pval))))+
-  geom_point(size=1, alpha = 0.5)+
-  geom_text_repel(aes(label = label), size = 3)+
-  theme_minimal()+ labs(title = "GMP/HSC",
-                        subtitle = "Proteins that were more expressed in GMP are highlighted",
-                        x = "fold",
-                        y = "-log10(p)",
-                        caption = "proteomics data")+
-  theme(legend.position = "none",
-        plot.title = element_text(hjust = 1),
-        plot.subtitle = element_text(hjust = 1))+
-  geom_hline(yintercept = 2)
+
 
 ```

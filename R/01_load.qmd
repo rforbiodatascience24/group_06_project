@@ -39,11 +39,11 @@ unzip(str_c(raw_dir, data_file, sep = "/"), exdir = raw_dir)
 
 # read in csv files for all cell populations
 
-df_hsc <- read_csv2(file = here("data/raw_data/group6_data_HSC_Report.csv"), na="NaN")
-df_mep <- read_csv2(file = here("data/raw_data/group6_data_MEP_Report.csv"), na="NaN")
-df_gmp <- read_csv2(file = here("data/raw_data/group6_data_GMP_Report.csv"), na="NaN")
-df_clp <- read_csv2(file = here("data/raw_data/group6_data_CLP_Report.csv"), na="NaN")
-df_cmp <- read_csv2(file = here("data/raw_data/group6_data_CMP_Report.csv"), na="NaN")
+df_hsc <- read_csv2(file = here("data/_raw/group6_data_HSC_Report.csv"), na="NaN")
+df_mep <- read_csv2(file = here("data/_raw/group6_data_MEP_Report.csv"), na="NaN")
+df_gmp <- read_csv2(file = here("data/_raw/group6_data_GMP_Report.csv"), na="NaN")
+df_clp <- read_csv2(file = here("data/_raw/group6_data_CLP_Report.csv"), na="NaN")
+df_cmp <- read_csv2(file = here("data/_raw/group6_data_CMP_Report.csv"), na="NaN")
 
 
 #| echo: false

@@ -46,6 +46,10 @@ augmenting_data(df_no_na_long, "hsc", "clp")
 
 ### #Augment the data for a volcano plot
 
+Volcano plots are useful for comparing how different proteins are expressed in two different cell types. Typically on the x-axis the volcanoplot has the log2-fold-change, which is computed as log2 of the ratio between the later-stage cell type and the earlier-stage cell-type. Typically on the y-axis is the -log10 of p-value or q-value of the the two cell-types.
+
+The order of development of the cells is as follows.
+
 ## CLP relative to HSC
 
 ```{r}

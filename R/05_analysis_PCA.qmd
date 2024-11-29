@@ -3,7 +3,10 @@
 ```{r}
 library(tidyr)
 library('ggbiplot')
+library(graphics)
 
+# Set the bitmap type to 'cairo' to avoid PNG issue
+options(bitmapType = 'cairo')
 
 #Input data tois wide format, excluding columns with missing data.
 df_input <- df_no_na_wide |> select(-c('sample','cell_type')) |> 
@@ -32,6 +35,8 @@ biplot <- ggbiplot(pc,
                    var.axes  = FALSE   #Variable vectors, can see correlation from if they're grouped
         )+
   theme(legend.position = 'top',aspect.ratio = 1)
+  
+
 
 print(biplot)
 ```

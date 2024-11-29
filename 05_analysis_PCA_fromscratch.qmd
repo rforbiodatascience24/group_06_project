@@ -1,0 +1,37 @@
+## Make PCA plot
+
+```{r}
+library(tidyr)
+library('ggbiplot')
+library(graphics)
+
+# Set the bitmap type to 'cairo' to avoid PNG issue
+options(bitmapType = 'cairo')
+
+#Input data tois wide format, excluding columns with missing data.
+df_input <- df_no_na_wide |> select(-c('sample','cell_type')) |> 
+  mutate(across(where(is.list), ~ sapply(., function(x) x[1]))) |> 
+  na.omit() 
+
+colourby <- df_no_na_wide$cell_type |> as.factor()
+  
+#Projecting data unto principal components (pc)
+pc <- prcomp(df_input, center = FALSE, scale = FALSE)
+
+#Gives overview of variability of PC
+#print(pc)
+
+#Gives an overview, you should be able to tell the variance already here even without the plot
+summary(pc)
+
+pc$x |> as.data.frame() |>
+  #broom::augment(df_no_na_wide) %>%
+  ggplot(aes(x = PC1, y = PC2, color = colourby)) +
+  geom_point()
+```
+
+## Save plot
+
+```{r}
+ggsave(plot = biplot, filename = "PCA_on_proteingroups1.png", width = 20, height = 10, units = "cm", path = here("results"))
+```

@@ -10,6 +10,8 @@ editor: visual
 library("tidyverse")
 library("broom")
 library("ggthemes")
+library("ggrepel")
+library("ggplot2")
 ```
 
 ## Load Data
@@ -220,10 +222,10 @@ test_plot |>
 ```
 
 ```{r}
-df_hsc_clp |>
+hsc_clp_plot <- df_hsc_clp |>
   ggplot(aes(x = fold_log2, y = desc(log10(q_val)), color = expression))+
-  geom_point(size=1, alpha = 0.5)+
-  theme_minimal()+
+  geom_point(size=0.5, alpha = 0.5)+
+  theme_classic()+
   labs(title = "Expression of CLP relative to HSC",
        x = "Log2fold-change",
        y = "-log10(q)",
@@ -235,10 +237,10 @@ df_hsc_clp |>
 ```
 
 ```{r}
-df_hsc_cmp |>
+hsc_cmp_plot <- df_hsc_cmp |>
   ggplot(aes(x = fold_log2, y = desc(log10(q_val)), color = expression))+
-  geom_point(size=1, alpha = 0.5)+
-  theme_minimal()+
+  geom_point(size=0.5, alpha = 0.5)+
+  theme_classic()+
   labs(title = "Expression of CMP relative to HSC",
        x = "Log2fold-change",
        y = "-log10(q)",
@@ -251,10 +253,10 @@ df_hsc_cmp |>
 ```
 
 ```{r}
-df_cmp_mep |>
+cmp_mep_plot <- df_cmp_mep |>
   ggplot(aes(x = fold_log2, y = desc(log10(q_val)), color = expression))+
-  geom_point(size=1, alpha = 0.5)+
-  theme_minimal()+
+  geom_point(size=0.5, alpha = 0.5)+
+  theme_classic()+
   labs(title = "Expression of MEP relative to CMP",
        x = "Log2fold-change",
        y = "-log10(q)",
@@ -266,10 +268,10 @@ scale_color_manual(values = c("overexpressed" = "#D55E00", "underexpressed" = "#
 ```
 
 ```{r}
-df_cmp_gmp |>
+cmp_gmp_plot <- df_cmp_gmp |>
   ggplot(aes(x = fold_log2, y = desc(log10(q_val)), color = expression))+
-  geom_point(size=1, alpha = 0.5)+
-  theme_minimal()+
+  geom_point(size=0.5, alpha = 0.5)+
+  theme_classic()+
   labs(title = "Expression of GMP relative to CMP",
        x = "Log2fold-change",
        y = "-log10(q)",
@@ -279,4 +281,44 @@ df_cmp_gmp |>
 #  geom_hline(yintercept = 2)+
   scale_color_manual(values = c("overexpressed" = "#D55E00", "underexpressed" = "#0072B2", "not_significant" = "gray"))
 
+```
+
+```{r}
+#Due to an error occuring when saving ggplot directly in the pipeline of the latest plot which apparently is caused by a recent edit in ggplot2-3.3.4 the saving of plots is done separately.
+ggsave(plot = hsc_clp_plot, filename = "hsc_clp_volcano_plot.png", width = 20, height = 10, units = "cm", path = here("results"))
+ggsave(plot = hsc_cmp_plot, filename = "hsc_cmp_volcano_plot.png", width = 20, height = 10, units = "cm", path = here("results"))
+ggsave(plot = cmp_mep_plot, filename = "cmp_mep_volcano_plot.png", width = 20, height = 10, units = "cm", path = here("results"))
+ggsave(plot = cmp_gmp_plot, filename = "cmp_gmp_volcano_plot.png", width = 20, height = 10, units = "cm", path = here("results"))
+```
+
+A future direction for the project would be to assign all the protein groups categories based on their functionality. It would for instance be interesting to see which are the proteins that are overexpressed in the different cell types, but since there are so many of them it does not make sense to label all of them. We might for instance label the proteins that have a 2logfold change above 2, which means they are overexpressed by 400%.
+
+Lets have a look at hsc to cmp. We see that three protein groups are significantly overexpressed above 400%. P68033, P05213 and Q9WUA1. We can look up their Uniprot acession ID's and we find the following information:
+
+P68033 is an actin, actins are highly conserved proteins that are involved in various types of cell motility and are ubiquitously expressed in all eukaryotic cells.
+
+P05213 is tubulin, tubulin is the major constituent of microtubules, a cylinder consisting of laterally associated linear protofilaments composed of alpha- and beta-tubulin heterodimers.
+
+Q9WUA1 is an inhibitory factor that binds to WNT proteins and inhibits their activities. May be involved in mesoderm segmentation.
+
+Magda tried changing the point size of the legend but in vain...
+
+```{r}
+df_cmp_gmp |>
+  mutate(label = case_when(expression == "overexpressed" & fold_log2 > 2 ~ protein_groups,
+                           .default = "")) |> 
+  ggplot(aes(x = fold_log2, y = desc(log10(q_val)), color = expression))+
+  geom_point(size=0.5, alpha = 0.5)+
+  theme_classic()+
+  geom_text_repel(aes(label = label), size = 3)+
+  labs(title = "Expression of GMP relative to CMP",
+       x = "Log2fold-change",
+       y = "-log10(q)",
+       caption = "proteomics data")+
+  theme(legend.position = "bottom", legend.title = element_blank())+
+  guides(color = guide_legend(overrisde.aes = list(size = 1000)))+
+  #The horizontal line that indicates significance - remember to check if it correct with qvalue and all
+#  geom_hline(yintercept = 2)+
+  scale_color_manual(values = c("overexpressed" = "#D55E00", "underexpressed" = "#0072B2", "not_significant" = "gray"))
+  
 ```

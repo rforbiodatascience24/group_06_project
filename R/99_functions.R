@@ -1,5 +1,4 @@
 #' Title
-#' # WE MUST NOT FORGET TO PUT source("99_functions.R") IN ALL QMDs WHERE
 #' # WHERE WE ARE USING FUCTIONS!!!!! Creating a function that finds the p-value based on the students t.test. This 'manual' pvalue computation is used because a dataframe that consists of standard deviations and mean values.
 #' 
 #'
@@ -57,8 +56,4 @@ volcano_augment <- function(df, later_cell, earlier_cell, n_later, n_earlier){
     select(protein_groups, fold_log2, q_val, expression)
   return(data_set_for_visualisation)
 }
-
-
-
-
 

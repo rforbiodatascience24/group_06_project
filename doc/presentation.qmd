@@ -5,48 +5,44 @@ format: revealjs
 editor: visual
 ---
 
-Read the following resources to become smarter on how to create presentations. Remember to have exactly 10 slides.
-https://quarto.org/docs/presentations/
+Read the following resources to become smarter on how to create presentations. Remember to have exactly 10 slides. https://quarto.org/docs/presentations/
 
 https://quarto.org/docs/presentations/revealjs/
 
-
-
 ## Introduction to the data
 
-Introduction
--   Here we should introduce the dataset(s) we are working with 
+Introduction - Here we should introduce the dataset(s) we are working with
 
 ## Data tidying and data format
-Methods
-This is a part of description of methods
+
+Methods This is a part of description of methods
 
 ## What issues did we encounter while tidying the code
-Methods
-Here we write some of our thoughts. Fx long / wide discussion we had. Or our troubles with computing p-value for all. Explain our choices. 
-How did we solve these issues
+
+Methods Here we write some of our thoughts. Fx long / wide discussion we had. Or our troubles with computing p-value for all. Explain our choices. How did we solve these issues
 
 ## Augmenting the data
-Methods
-Explain how/why we did log transformation, normalization, how we dealt with N/As
+
+Methods Explain how/why we did log transformation, normalization, how we dealt with N/As
 
 ## PCA
+
 Results
 
 ## Volcano Plot
-Results
+
+The issue here is that I (Magda) can only suceed in inserting the images to the presentation if I use the 'insert picture' button in visual mode. This however creates a new folder named "images" inside the doc folder. I don't think this is desirable since Leon specifically asked us to have nothing but the presentation in the doc folder. I have spent 2 hours trying to resolve the issue of relative paths, using the here call and talking to chat gpt about it. I think our plan B must be to insert the images in this way via the images folder, because I really dont know how to call them from the result folder.
+
+![](images/cmp_gmp_volcano_plot.png)
 
 ## Discussion
-Discussion
--   What do the data tell us?
--   What could we have done differently?
--   What was the hardest part about working with the data/what were our issues? 
+
+Discussion - What do the data tell us? - What could we have done differently? - What was the hardest part about working with the data/what were our issues?
 
 ## Discussion
+
 Another Discussion slide
 
 ## Take away messages / Conclusion
+
 Write some conclusion here
-
-
-

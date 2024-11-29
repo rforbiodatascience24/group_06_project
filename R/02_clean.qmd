@@ -79,7 +79,8 @@ df_intensities <-
                              "gmp_rep_4"))
 ```
 
-### Elongating the dataframe
+
+## Elongating the dataframe
 
 There are four or five technical replicates of each of the 5 cell types, making up a total of 21 variables - all with measures of intensity. We use pivot_longer to lengthen the data so that there is one intensity column and one 'sample' column specifying which replicate and which cell type is referred to.
 

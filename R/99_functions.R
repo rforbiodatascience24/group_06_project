@@ -35,7 +35,7 @@ pval <- function(mu1,mu2,n1,n2,s1,s2){
 #' @export
 #'
 #' @examples
-augmenting_data <- function(df, later_cell, earlier_cell){
+volcano_augment <- function(df, later_cell, earlier_cell){
   data_set_for_visualisation <- df |> 
     group_by(protein_groups,cell_type) |> 
     filter(cell_type == later_cell | cell_type == earlier_cell) |> 

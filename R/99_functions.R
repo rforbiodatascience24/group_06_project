@@ -43,16 +43,18 @@ augmenting_data <- function(data_set, string1, string2){
       mean = mean(intensity),
       sd = sd(intensity)) |> 
     pivot_wider(names_from = cell_type, values_from = c(mean, sd)) |> 
-    mutate(fold_log2 = log2(paste0("mean_", string2) /paste0("mean_", string1)), 
-           p_val = pval(paste0("mean_", string1), paste0("mean_", string2), 4, 4, paste0("sd_", string1), paste0("sd_", string2)),
+    #!!sym() is used to evaluate the result as a column name.. 
+    mutate(fold_log2 = log2(!!sym(paste0("mean_", string2)) /!!sym(paste0("mean_", string1))), 
+           p_val = pval(!!sym(paste0("mean_", string1)), !!sym(paste0("mean_", string2)), 4, 4, !!sym(paste0("sd_", string1)), !!sym(paste0("sd_", string2))),
            q_val = (p.adjust(p_val))) |> 
     mutate(expression = case_when(fold_log2 > 0 & q_val <= 0.05~ "overexpressed",
                                   fold_log2 < 0 & q_val <= 0.05 ~ "underexpressed",
                                   q_val >0.05  ~ "not_significant")) |> 
     select(protein_groups, fold_log2, q_val, expression)
   return(data_set_for_visualisation)
-  
 }
+
+
 
 
 

@@ -1,0 +1,36 @@
+---
+title: "00_all"
+format:
+  html:
+    embed-resources: true
+editor: visual
+---
+
+## Library
+
+```{r}
+library(quarto)
+library(rmarkdown)
+library(here)
+```
+
+## Rendering all nn_xx.qmd files to .html
+
+```{r, message=FALSE, running=FALSE}
+output <- here("results/")
+#source(file = "01_load.qmd")
+render(input = "01_load.qmd", output_dir = output)
+render(input = "02_clean.qmd", output_dir = output)
+render(input = "03_augment.qmd", output_dir = output)
+
+
+#quarto_render(input= "02_clean.qmd")
+#quarto_render(input= "03_augment.qmd")
+```
+
+```{r}
+#here()
+
+#source(file = here("R/01_load.html"))
+#source( = "01_load.html")
+```

@@ -1,10 +1,12 @@
 ---
 title: "01_load"
-format: html
+format:
+  html:
+    embed-resources: true
 editor: visual
 ---
 
-```{r}
+```{r, message=FALSE, running=FALSE}
 library(tidyverse)
 library(here)
 ```
@@ -30,7 +32,7 @@ if( !file.exists(str_c(raw_dir, data_file, sep = "/")) ){
 unzip(str_c(raw_dir, data_file, sep = "/"), exdir = raw_dir)
 ```
 
-```{r}
+```{r, message=FALSE, running=FALSE}
 
 # read in csv files for all cell populations
 
@@ -44,4 +46,17 @@ df_cmp <- read_csv2(file = here("data/raw_data/group6_data_CMP_Report.csv"), na=
 #| echo: false
 #| eval: false
 
+```
+
+### Save the data-file for 02_clean.qmd
+
+```{r}
+data_path <- here("data")
+file_name <- "01_df_intensities.tsv.gz"
+
+write_tsv(df_hsc, file = here("data/01_hsc.tsv"))
+write_tsv(df_mep, file = here("data/01_mep.tsv"))
+write_tsv(df_gmp, file = here("data/01_gmp.tsv"))
+write_tsv(df_clp, file = here("data/01_clp.tsv"))
+write_tsv(df_cmp, file = here("data/01_cmp.tsv"))
 ```

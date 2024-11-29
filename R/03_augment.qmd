@@ -11,13 +11,24 @@ library("tidyverse")
 library("here")
 ```
 
+## Load data from 02_clean.qmd
+
+```{r}
+# read in csv files for all cell populations
+
+df_intensities <- read_tsv(file = here("data/02_df_intensities.tsv.gz"), na = "NA")
+
+#| echo: false
+#| eval: false
+```
+
 ## Log Transform
 
 For mass spectrometry proteomics data, it is common practice to log 2 transform the data, to achieve a log-normal distribution.
 
 ```{r}
 # log transform all numerical values except the ones indicating the replicates
-df_log_intensities <- df_intensities_long |> 
+df_log_intensities <- df_intensities |> 
   mutate(across(
     .cols = where(is.numeric) & !c("replicate_n"),
     .fns = ~log2(. + 1)
@@ -101,8 +112,9 @@ For certain operations it is easier to work with data frames in wide format. We 
 
 ```{r}
 
-df_intensities_wide <- df_feature_wise |> mutate(intensity = unname(intensity)) |>
-  pivot_wider(id_cols = c('sample',cell_type),
+df_intensities_wide <- df_feature_wise |>
+  mutate(intensity = unname(intensity)) |>
+  pivot_wider(id_cols = c(cell_type,replicate_n),
               names_from = 'protein_groups',
               values_from = 'intensity') |>
   select(where(~ !any(is.na(.)))) #Selects only columns without N/A

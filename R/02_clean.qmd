@@ -4,16 +4,28 @@ format: html
 editor: visual
 ---
 
-```{r}
+## Loading libraries
+
+```{r, message=FALSE, running=FALSE}
 library("tidyverse")
 library("here")
 ```
 
-## Missing in this document
+## Loading data
 
--   write to tsv.gz
+```{r, message=FALSE, running=FALSE}
+# read in csv files for all cell populations
 
--   deal with redundant protein and gene ID's
+df_hsc <- read_tsv(file = here("data/01_hsc.tsv"), na="NA")
+df_mep <- read_tsv(file = here("data/01_mep.tsv"), na="NA")
+df_gmp <- read_tsv(file = here("data/01_gmp.tsv"), na="NA")
+df_clp <- read_tsv(file = here("data/01_clp.tsv"), na="NA")
+df_cmp <- read_tsv(file = here("data/01_cmp.tsv"), na="NA")
+
+
+#| echo: false
+#| eval: false
+```
 
 ### Joining Dataframes
 
@@ -72,7 +84,7 @@ df_intensities <-
 There are four or five technical replicates of each of the 5 cell types, making up a total of 21 variables - all with measures of intensity. We use pivot_longer to lengthen the data so that there is one intensity column and one 'sample' column specifying which replicate and which cell type is referred to.
 
 ```{r}
-df_intensities_long <- df_intensities |> 
+df_intensities <- df_intensities |> 
   pivot_longer(
     #all the replicate columns will be stored in an intensity column and a sample column
     cols = !starts_with(c("protein","genes")), 
@@ -81,10 +93,12 @@ df_intensities_long <- df_intensities |>
   )
 ```
 
-Separating the samples column into replicate number and cell type
+### Separating the samples column into replicate number and cell type
+
+We separate the one column into two columns in order to allow for more flexibility when augmenting the data in 03_augment.
 
 ```{r}
-df_intensities_long <- df_intensities_long |> 
+df_intensities <- df_intensities |> 
   separate(sample, into = c("cell_type","replicate_n"), sep = "_rep_")
   
 
@@ -95,7 +109,7 @@ df_intensities_long <- df_intensities_long |>
 Here's a snippet of how the long format of the proteomics data is organized
 
 ```{r}
-sample_n(df_intensities_long,10)
+sample_n(df_intensities,10)
 
 ```
 
@@ -107,8 +121,7 @@ sample_n(df_intensities_long,10)
 # Directing pathway to store the .tsv  file
 
 data_path <- here("data")
-file_name <- "02_df_intensities_long.tsv.gz"
-write_tsv(df_intensities_long, str_c(data_path, file_name,sep = "/"))
+write_tsv(df_intensities, str_c(data_path, "02_df_intensities.tsv.gz",sep = "/"))
 
 #Writing and saving the clean dataframe to 02_df_clean.tsv.
 

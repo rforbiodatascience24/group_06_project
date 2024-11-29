@@ -20,3 +20,12 @@ write_tsv(df_log_long, "data/03_dat_intermediate_2_log.tsv")
 write_tsv(df_norm_long, "data/03_dat_intermediate_3_norm.tsv")
 
 
+{r}
+# Pivoting the sample_wise imputed dataframe wider by the cell_type.
+df_sample_wide <- df_sample_mean|> 
+  pivot_wider(names_from = cell_type,
+              values_from = intensity)
+
+# Check the format of the wide table, making sure that the intensities are registered as numerical values.
+summary(df_sample_wide)
+

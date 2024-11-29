@@ -26,161 +26,11 @@ source(here("R/99_functions.R"))
 
 ## Data Analysis
 
-## Pvalue function
-
-Creating a function that finds the p-value based on the students t.test. This 'manual' pvalue computation is used because a dataframe that consists of standard deviations and mean values.
-
-```{r}
-#no of replicates
-#n <- 4
-
-##Compute the p-value as a tail propability in the t-distribution. pvalue=2*P(T>|tobs|). pt is the cdf distribution, so the propability that T is smaller than or equal to tobs is given by
-
-#pval <- function(mu1,mu2,n1,n2,s1,s2){
-#  tobs <- ((mu1-mu2)-0)/sqrt((s1^2)/n1+(s2^2)/n2)
-#  df <- (((s1^2)/n1+(s2^2)/n2)^2)/((((s1^2)/n1)^2)/(n1-1)+(((s2^2)/n2)^2)/(n2-1))
-#  pvalue <- 2*(1-pt(abs(tobs), df=df))
-#  return(pvalue)
-#  }
-
-augmenting_data(df_no_na_long, "hsc", "clp")
-
-```
-
-### #Augment the data for a volcano plot
-
-Volcano plots are useful for comparing how different proteins are expressed in two different cell types. Typically on the x-axis the volcanoplot has the log2-fold-change, which is computed as log2 of the ratio between the later-stage cell type and the earlier-stage cell-type. Typically on the y-axis is the -log10 of p-value or q-value of the the two cell-types.
-
-The order of development of the cells in haematopoiesis is as follows (from Laurenti, E., Göttgens, B. From haematopoietic stem cells to complex differentiation landscapes. *Nature* **553**, 418–426 (2018). https://doi.org/10.1038/nature25022)
-
-![](images/Screenshot%202024-11-29%20at%2017.09.29.png)
-
-Therefore we will create four volcanoplots that compare the different cell-type (stages). CLP will be compared to HSC. CMP will be comared to HSC. And then MEP and GMP will be compared to CMP. In order to prepare the data for these volcanoplots there must be for each pair of compared cell-types be created a variable of log2-fold-change and of q-value. To figure out this data wrangling took quite a bit of effort. In the end what was done is to subset the full dataframe to the two cell types in question, then summarize to mean and standard deviation values, then transfer to wide format, and then compute the ratio of means for each protein group as well as compute the p-value which is then p.adjusted to the q-value. In order to compute p-value based on means and standard deviations a function was created that computes p-value for a two-sided student t-test of two populations based on means, standard deviations and number of replicates as input.
-
 ## CLP relative to HSC
-
-```{r}
-#starting form df_no_na_long_1 (will need to change the tibble when the universal is done)
-df_hsc_clp <- df_no_na_long_1 |> 
-  group_by(protein_groups,cell_type) |> 
-    #subsetting the data
-  filter(cell_type == c("hsc", "clp")) |> 
- #  take the mean/sd of of the replicates for the protein groups and cell types.
-   summarise(
-    mean = mean(intensity),
-    sd = sd(intensity)) |> 
-  #transform to wide format
-      pivot_wider(names_from = cell_type, values_from = c(mean, sd))
-
-#Computing new variables that calculate fold, p_val and q_val
-
-df_hsc_clp <- df_hsc_clp |> 
-  mutate(fold_log2 = log2(mean_clp/mean_hsc), 
-         #See the p-value function in 99_functions.R
-       p_val = pval(mu1 = mean_clp, mu2 = mean_hsc, n1 = 5, n2 = 4, s1 = sd_clp, s2 = sd_hsc),
-       q_val = (p.adjust(p_val)))
-
-#including variable overexpressed stating if proteins are over- or underexpressed or not significant
-df_hsc_clp <- df_hsc_clp |> 
-  mutate(expression = case_when(fold_log2 > 0 & q_val <= 0.05~ "overexpressed",
-                                fold_log2 < 0 & q_val <= 0.05 ~ "underexpressed",
-                                q_val >0.05  ~ "not_significant"))
-
-#removing colomns unnecesary for volcanoplot
-df_hsc_clp <- df_hsc_clp |> 
-  select(protein_groups, fold_log2, q_val, expression)
-```
-
-Repeating the same data wrangling for the remaining three volcano plots is automatized using the function volcano_augment which can be seen in 99_functions.R.
 
 ## CMP relative to HSC
 
-```{r}
-#Right now we have the issue that the automatized function does not produce the same output as the original code... Now the question is which one of them is right and which one is wrong..? 
-df_new_cmp_hsc <- volcano_augment(df = df_no_na_long_1, later_cell = "cmp", earlier_cell = "hsc")
-#Remember to delete the one for hsc as that one is supposedly already created in the code above. And remember to delete new for them all. ANd figure out which of the functions is the correct one!!
-df_new_clp_hsc <- volcano_augment(df = df_no_na_long_1, later_cell = "clp", earlier_cell = "hsc")
-df_new_mep_cmp <- volcano_augment(df = df_no_na_long_1, later_cell = "mep", earlier_cell = "cmp")
-df_new_gmp_cmp <- volcano_augment(df = df_no_na_long_1, later_cell = "gmp", earlier_cell = "cmp")
-
-```
-
-```{r}
-df_hsc_cmp <- df_no_na_long_1 |> 
-  group_by(protein_groups,cell_type) |> 
-  filter(cell_type == c("hsc", "cmp")) |> 
-   summarise(
-    mean = mean(intensity),
-    sd = sd(intensity)) |> 
-      pivot_wider(names_from = cell_type, values_from = c(mean, sd)) |> 
-  mutate(fold_log2 = log2(mean_cmp/mean_hsc), 
-       p_val = pval(mean_cmp, mean_hsc, 4, 4, sd_cmp, sd_hsc),
-       q_val = (p.adjust(p_val))) |> 
-  mutate(expression = case_when(fold_log2 > 0 & q_val <= 0.05~ "overexpressed",
-                                fold_log2 < 0 & q_val <= 0.05 ~ "underexpressed",
-                                q_val >0.05  ~ "not_significant")) |> 
-  select(protein_groups, fold_log2, q_val, expression)
-```
-
-## MEP relative to CMP
->>>>>>> c1242a979891e9a5267527e9bf4eebab462b1744
-
-```{r}
-df_cmp_mep <- df_no_na_long_1 |> 
-  group_by(protein_groups,cell_type) |> 
-  filter(cell_type == c("mep", "cmp")) |> 
-   summarise(
-    mean = mean(intensity),
-    sd = sd(intensity)) |> 
-      pivot_wider(names_from = cell_type, values_from = c(mean, sd)) |> 
-  mutate(fold_log2 = log2(mean_cmp/mean_mep), 
-       p_val = pval(mean_mep, mean_cmp, 4, 4, sd_mep, sd_cmp),
-       q_val = (p.adjust(p_val))) |> 
-  mutate(expression = case_when(fold_log2 > 0 & q_val <= 0.05~ "overexpressed",
-                                fold_log2 < 0 & q_val <= 0.05 ~ "underexpressed",
-                                q_val >0.05  ~ "not_significant")) |> 
-  select(protein_groups, fold_log2, q_val, expression)
-```
-
-## GMP relative to CMP
-
-```{r}
-df_cmp_gmp <- df_no_na_long_1 |> 
-  group_by(protein_groups,cell_type) |> 
-  filter(cell_type == c("gmp", "cmp")) |> 
-   summarise(
-    mean = mean(intensity),
-    sd = sd(intensity)) |> 
-      pivot_wider(names_from = cell_type, values_from = c(mean, sd)) |> 
-  mutate(fold_log2 = log2(mean_cmp/mean_gmp), 
-       p_val = pval(mean_gmp, mean_cmp, 4, 4, sd_gmp, sd_cmp),
-       q_val = (p.adjust(p_val))) |> 
-  mutate(expression = case_when(fold_log2 > 0 & q_val <= 0.05~ "overexpressed",
-                                fold_log2 < 0 & q_val <= 0.05 ~ "underexpressed",
-                                q_val >0.05  ~ "not_significant"))
-#  select(protein_groups, fold_log2, q_val, expression)
-```
-
-```{r}
-df_hsc_clp <- df_hsc_clp |> 
-  mutate( 
-       q_val = p.adjust(p_val, n=3724)) |> 
-  arrange(q_val)
-
-```
-
 First of all we want to subset the data so we only work with two cell types. In this case hsc and gmp as they appear to be the most different.
-
-```{r}
-# Antonio pivoted wider and creatd a log2foldchange
-df_mean_intensities <- df_mean_intensities |> 
-  select(!sd) |> 
-  pivot_wider(names_from = cell_type, values_from = mean) |> 
-  select(!gmp & !hsc & !mep) |> 
-  mutate(fold = cmp/clp) 
-df_mean_intensities
-
-```
 
 ```{r}
 # Histogram that shows distribution of the fold
@@ -240,7 +90,7 @@ test_plot |>
 ```
 
 ```{r}
-hsc_clp_plot <- df_hsc_clp |>
+hsc_clp_plot <- df_volcano_clp_hsc |>
   ggplot(aes(x = fold_log2, y = desc(log10(q_val)), color = expression))+
   geom_point(size=0.5, alpha = 0.5)+
   theme_classic()+
@@ -255,7 +105,7 @@ hsc_clp_plot <- df_hsc_clp |>
 ```
 
 ```{r}
-hsc_cmp_plot <- df_hsc_cmp |>
+hsc_cmp_plot <- df_volcano_cmp_hsc |>
   ggplot(aes(x = fold_log2, y = desc(log10(q_val)), color = expression))+
   geom_point(size=0.5, alpha = 0.5)+
   theme_classic()+
@@ -271,7 +121,7 @@ hsc_cmp_plot <- df_hsc_cmp |>
 ```
 
 ```{r}
-cmp_mep_plot <- df_cmp_mep |>
+cmp_mep_plot <- df_volcano_mep_cmp |>
   ggplot(aes(x = fold_log2, y = desc(log10(q_val)), color = expression))+
   geom_point(size=0.5, alpha = 0.5)+
   theme_classic()+
@@ -286,7 +136,7 @@ scale_color_manual(values = c("overexpressed" = "#D55E00", "underexpressed" = "#
 ```
 
 ```{r}
-cmp_gmp_plot <- df_cmp_gmp |>
+cmp_gmp_plot <- df_volcano_gmp_cmp |>
   ggplot(aes(x = fold_log2, y = desc(log10(q_val)), color = expression))+
   geom_point(size=0.5, alpha = 0.5)+
   theme_classic()+
@@ -323,7 +173,7 @@ Magda tried changing the point size of the legend but in vain...
 
 ```{r}
 #This is a toyplot to try out new things
-df_new_hsc_cmp|>
+df_volcano_clp_hsc|>
   mutate(label = case_when(expression == "overexpressed" & fold_log2 > 2 ~ protein_groups,
                            .default = "")) |> 
   ggplot(aes(x = fold_log2, y = desc(log10(q_val)), color = expression))+
@@ -343,5 +193,7 @@ df_new_hsc_cmp|>
 ```
 
 ```{r}
+hsc_cmp_plot + hsc_clp_plot + cmp_gmp_plot + cmp_mep_plot
+
 hsc_cmp_plot
 ```

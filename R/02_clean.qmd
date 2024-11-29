@@ -16,11 +16,11 @@ library("here")
 ```{r, message=FALSE, running=FALSE}
 # read in csv files for all cell populations
 
-df_hsc <- read_tsv(file = here("data/01_hsc.tsv"), na="NA")
-df_mep <- read_tsv(file = here("data/01_mep.tsv"), na="NA")
-df_gmp <- read_tsv(file = here("data/01_gmp.tsv"), na="NA")
-df_clp <- read_tsv(file = here("data/01_clp.tsv"), na="NA")
-df_cmp <- read_tsv(file = here("data/01_cmp.tsv"), na="NA")
+df_hsc <- read_tsv(file = here("data/01_hsc.tsv.gz"), na="NA")
+df_mep <- read_tsv(file = here("data/01_mep.tsv.gz"), na="NA")
+df_gmp <- read_tsv(file = here("data/01_gmp.tsv.gz"), na="NA")
+df_clp <- read_tsv(file = here("data/01_clp.tsv.gz"), na="NA")
+df_cmp <- read_tsv(file = here("data/01_cmp.tsv.gz"), na="NA")
 
 
 #| echo: false
@@ -78,7 +78,6 @@ df_intensities <-
                              "gmp_rep_3",
                              "gmp_rep_4"))
 ```
-
 
 ## Elongating the dataframe
 

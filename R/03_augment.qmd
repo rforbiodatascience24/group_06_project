@@ -9,6 +9,7 @@ editor: visual
 ```{r}
 library("tidyverse")
 library("here")
+source(here("R/99_functions.R"))
 ```
 
 ## Load data from 02_clean.qmd
@@ -67,6 +68,8 @@ The data contains many missing values. The reason values are missing is because 
 
 ### Replacing missing values option 1: sample-wise -
 
+The sample_wise imputed missing values in wide-format, are used for the volcano plots, which streamlines comparing the protein groups between cell-types.
+
 ```{r}
 
 # Replace NA with 0.1st percentile of sample intensity distribution
@@ -120,41 +123,76 @@ df_intensities_wide <- df_feature_wise |>
   select(where(~ !any(is.na(.)))) #Selects only columns without N/A
 ```
 
-### Wide table from the sample-wise imputed missing values
+## Augmenting data for volcano plots
 
-The sample_wise imputed missing values in wide-format, are used in 06_volcano_analysis for the volcano plot, which streamlines comparing the protein groups between cell-types.
+Volcano plots are useful for comparing how different proteins are expressed in two different cell types. Typically on the x-axis the volcanoplot has the log2-fold-change, which is computed as log2 of the ratio between the later-stage cell type and the earlier-stage cell-type. Typically on the y-axis is the -log10 of p-value or q-value of the the two cell-types.
 
-```{r}
-# Pivoting the sample_wise imputed dataframe wider by the cell_type.
-df_sample_wide <- df_sample_wise|> 
-  pivot_wider(names_from = cell_type,
-              values_from = intensity)
+The order of development of the cells in haematopoiesis is as follows (from Laurenti, E., Göttgens, B. From haematopoietic stem cells to complex differentiation landscapes. *Nature* **553**, 418–426 (2018). https://doi.org/10.1038/nature25022)
 
-# Check the format of the wide table, making sure that the intensities are registered as numerical values.
-summary(df_sample_wide)
-```
+![](images/Screenshot%202024-11-29%20at%2017.09.29.png)
+
+Therefore we will create four volcanoplots that compare the different cell-type (stages). CLP will be compared to HSC. CMP will be comared to HSC. And then MEP and GMP will be compared to CMP. In order to prepare the data for these volcanoplots there must be for each pair of compared cell-types be created a variable of log2-fold-change and of q-value. To figure out this data wrangling took quite a bit of effort. In the end what was done is to subset the full dataframe to the two cell types in question, then summarize to mean and standard deviation values, then transfer to wide format,
 
 #### Getting mean values and standard deviation for volcano plot
 
 The mean value between each replicate of the cell samples are estimated along with the standard deviation, to create a new tibble which is used to create a volcano plot for the fold change.
 
 ```{r}
-
 # create a tibble with mean values and standard deviation
 df_sample_mean <- df_sample_wise|> 
   group_by(protein_groups,
-           genes,
            cell_type) |> # take the mean/sd of of the replicates for the protein groups and cell types
   summarise(
     mean = mean(intensity),
     sd = sd(intensity)
-    )
+    ) |> 
+  pivot_wider(names_from = cell_type,
+              values_from = c(mean,sd))
 
 # Showing 10 rows of the df_sample mean table
 sample_n(df_sample_mean,10, replace = TRUE)
 ```
 
-### Additional augmentation to make the volcano plots.
+### Estamating p.value, log2fold change and q.value
+
+Computing the ratio of means for each protein group as well as compute the p-value which is then p.adjusted to the q-value. In order to compute p-value based on means and standard deviations a function was created that computes p-value for a two-sided student t-test of two populations based on means, standard deviations and number of replicates as input - The function can be found in 99_functions.R.
+
+```{r}
+#Computing new variables that calculate fold, p_val and q_val
+df_volcano_clp_hsc <- df_sample_mean |> 
+  ungroup() |> 
+  select(c(protein_groups,mean_hsc,sd_hsc,mean_clp,sd_clp)) |> 
+  mutate(fold_log2 = log2(mean_clp/mean_hsc), 
+         #See the p-value function in 99_functions.R
+       p_val = pval(mu1 = mean_clp, mu2 = mean_hsc, n1 = 5, n2 = 4, s1 = sd_clp, s2 = sd_hsc),
+       q_val = (p.adjust(p_val))) |> #including variable overexpressed stating if proteins are over- or underexpressed or not significant
+  mutate(expression = case_when(fold_log2 > 0 & q_val <= 0.05~ "overexpressed",
+                                fold_log2 < 0 & q_val <= 0.05 ~ "underexpressed",
+                                q_val >0.05  ~ "not significant")) |> #removing colomns unnecesary for volcanoplot
+  select(protein_groups, fold_log2, q_val, expression)
+  
+
+sample_n(df_volcano_clp_hsc,10)
+```
+
+```{r}
+# Checking if our home_brew p.value and q.value function... functions.
+new_volcano_clp_hsc <- volcano_augment(df = ungroup(df_sample_mean), later_cell = "clp", earlier_cell = "hsc", n_later = 5, n_earlier = 4)
+
+new_volcano_clp_hsc == df_volcano_clp_hsc
+#would be cool to show the true matrix that proves our function does the same as our homemade 
+```
+
+Repeating the same data wrangling for the remaining three volcano plots is automatized using the function volcano_augment which can be seen in 99_functions.R.
+
+```{r}
+#input to the function is dataframe, cell types to compare and no of replicates in cell types
+df_volcano_cmp_hsc <- volcano_augment(df = df_sample_mean, later_cell = "cmp", earlier_cell = "hsc", n_later = 4, n_earlier = 4)
+df_volcano_mep_cmp <- volcano_augment(df = df_sample_mean, later_cell = "mep", earlier_cell = "cmp", n_later = 4, n_earlier = 4)
+df_volcano_gmp_cmp <- volcano_augment(df = df_sample_mean, later_cell = "gmp", earlier_cell = "cmp", n_later = 4, n_earlier = 4)
+```
+
+### 
 
 ## Saving data files
 

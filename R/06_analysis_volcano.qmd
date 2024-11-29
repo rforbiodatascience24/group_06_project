@@ -9,13 +9,14 @@ editor: visual
 ```{r}
 library("tidyverse")
 library("broom")
-library("ggthemes")
+#library("ggthemes")
 ```
 
 ## Load Data
 
 ```{r}
 df_no_na_long <- read_tsv(file = here("data/03_dat_aug_long_1.tsv"))
+source(here("R/99_functions.R"))
 ```
 
 ## Data Analysis
@@ -25,18 +26,19 @@ df_no_na_long <- read_tsv(file = here("data/03_dat_aug_long_1.tsv"))
 Creating a function that finds the p-value based on the students t.test. This 'manual' pvalue computation is used because a dataframe that consists of standard deviations and mean values.
 
 ```{r}
-{r}
 #no of replicates
-n <- 4
+#n <- 4
 
 ##Compute the p-value as a tail propability in the t-distribution. pvalue=2*P(T>|tobs|). pt is the cdf distribution, so the propability that T is smaller than or equal to tobs is given by
 
-pval <- function(mu1,mu2,n1,n2,s1,s2){
-  tobs <- ((mu1-mu2)-0)/sqrt((s1^2)/n1+(s2^2)/n2)
-  df <- (((s1^2)/n1+(s2^2)/n2)^2)/((((s1^2)/n1)^2)/(n1-1)+(((s2^2)/n2)^2)/(n2-1))
-  pvalue <- 2*(1-pt(abs(tobs), df=df))
-  return(pvalue)
-  }
+#pval <- function(mu1,mu2,n1,n2,s1,s2){
+#  tobs <- ((mu1-mu2)-0)/sqrt((s1^2)/n1+(s2^2)/n2)
+#  df <- (((s1^2)/n1+(s2^2)/n2)^2)/((((s1^2)/n1)^2)/(n1-1)+(((s2^2)/n2)^2)/(n2-1))
+#  pvalue <- 2*(1-pt(abs(tobs), df=df))
+#  return(pvalue)
+#  }
+
+augmenting_data(df_no_na_long, "hsc", "clp")
 
 ```
 
@@ -73,6 +75,8 @@ df_hsc_clp <- df_hsc_clp |>
 
 df_hsc_clp <- df_hsc_clp |> 
   select(protein_groups, fold_log2, q_val, expression)
+
+df_hsc_clp 
 
 
 

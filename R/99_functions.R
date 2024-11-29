@@ -27,7 +27,7 @@ pval <- function(mu1,mu2,n1,n2,s1,s2){
 
 #' This function creates 
 #'
-#' @param data_set universal dataset
+#' @param df is the dataframe we input
 #' @param string1 3 character string of cell type 1
 #' @param string2 3 character sting of cell type 2
 #'
@@ -35,21 +35,21 @@ pval <- function(mu1,mu2,n1,n2,s1,s2){
 #' @export
 #'
 #' @examples
-augmenting_data <- function(data_set, string1, string2){
-  data_set_for_visualisation <- data_set |> 
+augmenting_data <- function(df, later_cell, earlier_cell){
+  data_set_for_visualisation <- df |> 
     group_by(protein_groups,cell_type) |> 
-    filter(cell_type == string1 | cell_type == string2) |> 
+    filter(cell_type == later_cell | cell_type == earlier_cell) |> 
     summarise(
       mean = mean(intensity),
       sd = sd(intensity)) |> 
     pivot_wider(names_from = cell_type, values_from = c(mean, sd)) |> 
     #!!sym() is used to evaluate the result as a column name.. 
-    mutate(fold_log2 = log2(!!sym(paste0("mean_", string2)) /!!sym(paste0("mean_", string1))), 
-           p_val = pval(!!sym(paste0("mean_", string1)), !!sym(paste0("mean_", string2)), 4, 4, !!sym(paste0("sd_", string1)), !!sym(paste0("sd_", string2))),
+    mutate(fold_log2 = log2(!!sym(paste0("mean_", later_cell)) /!!sym(paste0("mean_", earlier_cell))), 
+           p_val = pval(!!sym(paste0("mean_", later_cell)), !!sym(paste0("mean_", earlier_cell)), 4, 4, !!sym(paste0("sd_", later_cell)), !!sym(paste0("sd_", earlier_cell))),
            q_val = (p.adjust(p_val))) |> 
     mutate(expression = case_when(fold_log2 > 0 & q_val <= 0.05~ "overexpressed",
                                   fold_log2 < 0 & q_val <= 0.05 ~ "underexpressed",
-                                  q_val >0.05  ~ "not_significant")) |> 
+                                  q_val >0.05  ~ "not significant")) |> 
     select(protein_groups, fold_log2, q_val, expression)
   return(data_set_for_visualisation)
 }

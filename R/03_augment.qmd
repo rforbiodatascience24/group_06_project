@@ -115,7 +115,7 @@ For certain operations it is easier to work with data frames in wide format. We 
 
 ```{r 03_wide_feature_wise}
 
-df_intensities_wide <- df_feature_wise |>
+df_feature_wide <- df_feature_wise |>
   mutate(intensity = unname(intensity)) |>
   pivot_wider(id_cols = c(cell_type,replicate_n),
               names_from = 'protein_groups',
@@ -150,7 +150,7 @@ df_sample_mean <- df_sample_wise|>
               values_from = c(mean,sd))
 
 # Showing 10 rows of the df_sample mean table
-sample_n(df_sample_mean,10, replace = TRUE)
+sample_n(df_sample_mean, 1)
 ```
 
 ### Estamating p.value, log2fold change and q.value
@@ -237,6 +237,10 @@ write_tsv(df_feature_wise, file = here("data/03_df_feature_wise.tsv.gz"))
 
 ```{r}
 write_tsv(df_sample_wise, file = here("data/03_df_sample_wise.tsv.gz"))
+```
+
+```{r}
+write_tsv(df_feature_wide, file = here("data/03_df_feature_wide.tsv.gz"))
 ```
 
 ## 03_augment conclusion:

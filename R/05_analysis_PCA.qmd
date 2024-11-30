@@ -3,14 +3,25 @@
 ```{r}
 library(tidyr)
 library('ggbiplot')
-<<<<<<< HEAD
-
-=======
 library(graphics)
+```
+
+
+
+```{r}
+# The new data-frame for df_no_na_wide is called : df_feature_wide.
+# For creating a column sample as a guiding column use:
+df_feature_wide |> 
+  mutate(sample = str_c(cell_type,
+                        replicate_n, sep = "_"),
+         .before = cell_type)
+``` 
+
+
+```{r}
 
 # Set the bitmap type to 'cairo' to avoid PNG issue
 options(bitmapType = 'cairo')
->>>>>>> e292e57886712f3a82dea80c1cfb8c71307580e6
 
 #Input data tois wide format, excluding columns with missing data.
 df_input <- df_no_na_wide |> select(-c('sample','cell_type')) |> 

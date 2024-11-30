@@ -285,7 +285,7 @@ ggplot(df_mean_intensitities, aes(x=fold))+
 
 ```{r}
 #This is a toyplot to try out new things
-df_new_hsc_cmp|>
+df_volcano_cmp_hsc|>
   mutate(label = case_when(expression == "overexpressed" & fold_log2 > 2 ~ protein_groups,
                            .default = "")) |> 
   ggplot(aes(x = fold_log2, y = desc(log10(q_val)), color = expression))+
@@ -302,4 +302,48 @@ df_new_hsc_cmp|>
 #  geom_hline(yintercept = 2)+
   scale_color_manual(values = c("overexpressed" = "#D55E00", "underexpressed" = "#0072B2", "not_significant" = "gray"))
   
+```
+
+
+```{r 06_toyplot}
+#This is a toyplot to try out new things
+df_volcano_clp_hsc|>
+  
+  test_plot <- df_mean_intensitities |> 
+pivot_wider(names_from = cell_type, values_from = c(mean, sd)) |> 
+  select(mean_gmp, mean_hsc, sd_cmp, sd_hsc) |> 
+  mutate(log2fold = log2(mean_cmp/mean_hsc)) |> 
+  #using the home-made function pval
+  mutate(pval = pval(mu1 = mean_cmp, mu2 = mean_hsc, n1 = 4, n2 = 4, s1 = sd_cmp, s2 = sd_hsc)) |> 
+  select(protein_groups, log2fold, pval) |> 
+  mutate(is_signif = case_when(pval <= 0.05 & log2fold > 0 ~ "up",
+                               pval <= 0.05 & log2fold < 0 ~"down",
+                               pval > 0.05 ~"not significant"
+  ))
+
+
+```
+
+```{r 06_testplot}
+library(ggrepel) 
+test_plot |>
+  #When are points significant? In this case if fold > 1 it is overexpressed
+ # mutate(label = case_when(fold > 1 ~ protein_groups, fold < 1 ~ "")) |>
+  ggplot(aes(x = log2fold, y = desc(log10(pval)), color = is_signif))+
+  geom_point(size=1, alpha = 0.5)+
+#  geom_text_repel(aes(label = label), size = 3)+
+  theme_minimal()+
+  labs(title = "Expression of CLP relative to HSC",
+       x = "fold",
+       y = "-log10(p)",
+       caption = "proteomics data")+
+  theme(legend.position = "none")+
+  #The horizontal line that indicates significance - remember to check if it correct with qvalue and all
+#  geom_hline(yintercept = 2)+
+  scale_color_manual(values = c("overexpressed" = "#D55E00", "underexpressed" = "#0072B2", "not_significant" = "gray"))
+
+#The threshold should be p value of 0.05
+#Use q-value instead of pvalue 
+#Sofias code for defining the color
+#scale_color_manual(values = c("Down-regulated" = "blue", "Up-regulated" = "red", "NA" = "gray"))
 ```

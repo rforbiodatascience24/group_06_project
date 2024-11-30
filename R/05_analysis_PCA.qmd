@@ -1,6 +1,6 @@
 ## Make PCA plot
 
-```{r}
+```{r, message=FALSE, running=FALSE}
 library(tidyr)
 library('ggbiplot')
 library(graphics)

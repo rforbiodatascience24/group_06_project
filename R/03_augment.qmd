@@ -6,7 +6,7 @@ editor: visual
 
 ## Library
 
-```{r 03_library}
+```{r 03_library, message=FALSE, running=FALSE}
 library("tidyverse")
 library("here")
 source(here("R/99_functions.R"))
@@ -14,7 +14,7 @@ source(here("R/99_functions.R"))
 
 ## Load data from 02_clean.qmd
 
-```{r 03_load}
+```{r 03_load, message=FALSE, running=FALSE}
 # read in csv files for all cell populations
 
 df_intensities <- read_tsv(file = here("data/02_df_intensities.tsv.gz"), na = "NA")
@@ -181,7 +181,14 @@ The previous code returns a tibble with log2(fold change), log10(pvalues) and q.
 
 ```{r 03_func_test}
 # Checking if our home_brew p.value and q.value function... functions.
-new_volcano_clp_hsc <- volcano_augment(df = ungroup(df_sample_mean), later_cell = "clp", earlier_cell = "hsc", n_later = 5, n_earlier = 4)
+new_volcano_clp_hsc <- volcano_augment(df = df_sample_mean,
+                                       later_cell = "clp",
+                                       earlier_cell = "hsc",
+                                       n_later = 5,
+                                       n_earlier = 4)
+write_tsv(df_volcano_clp_hsc,
+          file = str_c(here("data"), "df_volcano_clp_hsc.tsv.gz", sep = "/")) # Writing to tsv
+
 
 # Testing if the function for creating volcano-plot values work, by comparing to the manually created tibble.
 as_tibble(new_volcano_clp_hsc == df_volcano_clp_hsc) |> 
@@ -191,12 +198,35 @@ as_tibble(new_volcano_clp_hsc == df_volcano_clp_hsc) |>
 Repeating the same data wrangling for the remaining three volcano plots is automatized using the function `volcano_augment`
 
 ```{r 03_volcano}
-#input to the function is dataframe, cell types to compare and no of replicates in cell types
-df_volcano_cmp_hsc <- volcano_augment(df = df_sample_mean, later_cell = "cmp", earlier_cell = "hsc", n_later = 4, n_earlier = 4)
+# Input to the function is dataframe, cell types to compare and no of replicates in cell types.
+# All files are saved as tsv.gz.
 
-df_volcano_mep_cmp <- volcano_augment(df = df_sample_mean, later_cell = "mep", earlier_cell = "cmp", n_later = 4, n_earlier = 4)
+# creating tibble for comparing cmp to hsc
+df_volcano_cmp_hsc <- volcano_augment(df = df_sample_mean,
+                                      later_cell = "cmp",
+                                      earlier_cell = "hsc",
+                                      n_later = 4,
+                                      n_earlier = 4)
+write_tsv(df_volcano_cmp_hsc,
+          file = str_c(here("data"), "df_volcano_cmp_hsc.tsv.gz", sep = "/")) # Writing to tsv
 
-df_volcano_gmp_cmp <- volcano_augment(df = df_sample_mean, later_cell = "gmp", earlier_cell = "cmp", n_later = 4, n_earlier = 4)
+# creating tibble for comparing mep to cmp
+df_volcano_mep_cmp <- volcano_augment(df = df_sample_mean,
+                                      later_cell = "mep",
+                                      earlier_cell = "cmp",
+                                      n_later = 4,
+                                      n_earlier = 4)
+write_tsv(df_volcano_mep_cmp,
+          file = str_c(here("data"), "df_volcano_mep_cmp.tsv.gz", sep = "/")) # wrting to tsv
+
+# creating tibble for comparing gmp to cmp
+df_volcano_gmp_cmp <- volcano_augment(df = df_sample_mean,
+                                      later_cell = "gmp",
+                                      earlier_cell = "cmp",
+                                      n_later = 4,
+                                      n_earlier = 4)
+write_tsv(df_volcano_gmp_cmp,
+          file = str_c(here("data"), "df_volcano_gmp_cmp.tsv.gz", sep = "/")) # Writing to tsv
 ```
 
 ## Saving data files

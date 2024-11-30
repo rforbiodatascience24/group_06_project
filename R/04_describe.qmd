@@ -6,7 +6,7 @@ editor: visual
 
 ## Library
 
-```{r 04_library}
+```{r 04_library, message=FALSE, running=FALSE}
 library(tidyverse)
 library(ggplot2)
 library(UpSetR)
@@ -14,7 +14,7 @@ library(UpSetR)
 
 ## Load data
 
-```{r 04_load}
+```{r 04_load, message=FALSE, running=FALSE}}
 df_intensitites <- read_tsv(file = here("data/02_df_intensities.tsv.gz"))
 
 df_log_intensities <- read_tsv(file = here("data/03_df_log_intensities.tsv.gz"))

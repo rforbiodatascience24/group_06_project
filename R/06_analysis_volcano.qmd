@@ -16,10 +16,18 @@ library("patchwork")
 ```
 
 ## Load data
-```{r  06_libraries}
 
+Loading in the data from 03_augment for the volcano plots.
 
+```{r  06_load_data, message=FALSE, running=FALSE}
 
+df_volcano_clp_hsc <- read_tsv(file = str_c(here("data"), "df_volcano_clp_hsc.tsv.gz", sep = "/"))
+
+df_volcano_cmp_hsc <- read_tsv(file = str_c(here("data"), "df_volcano_cmp_hsc.tsv.gz", sep = "/"))
+
+df_volcano_gmp_cmp <- read_tsv(file = str_c(here("data"), "df_volcano_gmp_cmp.tsv.gz", sep = "/"))
+
+df_volcano_mep_cmp <- read_tsv(file = str_c(here("data"), "df_volcano_mep_cmp.tsv.gz", sep = "/"))
 ```
 
 ## Volcano plots
@@ -28,59 +36,16 @@ P05213 is tubulin, tubulin is the major constituent of microtubules, a cylinder 
 
 Q9WUA1 is an inhibitory factor that binds to WNT proteins and inhibits their activities. May be involved in mesoderm segmentation.
 
-
-```{r}
-#This is a toyplot to try out new things
-df_volcano_clp_hsc|>
-test_plot <- df_mean_intensitities |> 
-pivot_wider(names_from = cell_type, values_from = c(mean, sd)) |> 
-  select(mean_gmp, mean_hsc, sd_cmp, sd_hsc) |> 
-  mutate(log2fold = log2(mean_cmp/mean_hsc)) |> 
-  #using the home-made function pval
-  mutate(pval = pval(mu1 = mean_cmp, mu2 = mean_hsc, n1 = 4, n2 = 4, s1 = sd_cmp, s2 = sd_hsc)) |> 
-  select(protein_groups, log2fold, pval) |> 
-  mutate(is_signif = case_when(pval <= 0.05 & log2fold > 0 ~ "up",
-                               pval <= 0.05 & log2fold < 0 ~"down",
-                               pval > 0.05 ~"not significant"
-  ))
-
-
-```
-
-q
-
 We will look at the development from HSC to CLP and from HSC to CMP.
 
 And then from CMP to MEP and from CMP to GMP. Because that is the order in which the cells develop.
 
-```{r 06_testplot}
-library(ggrepel) 
-test_plot |>
-  #When are points significant? In this case if fold > 1 it is overexpressed
- # mutate(label = case_when(fold > 1 ~ protein_groups, fold < 1 ~ "")) |>
-  ggplot(aes(x = log2fold, y = desc(log10(pval)), color = is_signif))+
-  geom_point(size=1, alpha = 0.5)+
-#  geom_text_repel(aes(label = label), size = 3)+
-  theme_minimal()+
-  labs(title = "Expression of CLP relative to HSC",
-       x = "fold",
-       y = "-log10(p)",
-       caption = "proteomics data")+
-  theme(legend.position = "none")+
-  #The horizontal line that indicates significance - remember to check if it correct with qvalue and all
-#  geom_hline(yintercept = 2)+
-  scale_color_manual(values = c("overexpressed" = "#D55E00", "underexpressed" = "#0072B2", "not_significant" = "gray"))
-
-#The threshold should be p value of 0.05
-#Use q-value instead of pvalue 
-#Sofias code for defining the color
-#scale_color_manual(values = c("Down-regulated" = "blue", "Up-regulated" = "red", "NA" = "gray"))
-```
-
 ## Creating and saving volcano plots
+
 The volcano plot tibbles created in 03_augment are used to create volcano plots with ggplot. The plots are saved to variables which are used to render image.png files used in the presentation
 
-### Comparing hsc to clp
+### Comparing clp to hsc
+
 ```{r 06_hsc_clp_plot}
 
 clp_hsc_plot <- df_volcano_clp_hsc |>
@@ -96,30 +61,36 @@ clp_hsc_plot <- df_volcano_clp_hsc |>
 #  geom_hline(yintercept = 2)+
   scale_color_manual(values = c("overexpressed" = "#D55E00", "underexpressed" = "#0072B2", "not_significant" = "gray"))
 ```
-### Comparing hsc to cmp
-```{r 06_hsc_cmp_plot}
-cmp_hsc_plot <- df_volcano_cmp_hsc |>
+
+### Comparing cmp to hsc
+
+```{r 06_cmp_hsc_plot}
+cmp_hsc_plot <- df_volcano_cmp_hsc|>
+  mutate(label = case_when(expression == "overexpressed" & fold_log2 > 2 ~ protein_groups,.default = "")) |> 
   ggplot(aes(x = fold_log2, y = desc(log10(q_val)), color = expression))+
   geom_point(size=0.5, alpha = 0.5)+
   theme_classic()+
+  geom_text_repel(aes(label = label), size = 3)+
   labs(title = "Expression of CMP relative to HSC",
        x = "Log2fold-change",
        y = "-log10(q)",
        caption = "proteomics data")+
-  theme(legend.position = "none")+
+  theme(legend.position = "bottom", legend.title = element_blank())+
+  guides(color = guide_legend(overrisde.aes = list(size = 1000)))+
   #The horizontal line that indicates significance - remember to check if it correct with qvalue and all
 #  geom_hline(yintercept = 2)+
-  #Colors are from the colorblind palette
   scale_color_manual(values = c("overexpressed" = "#D55E00", "underexpressed" = "#0072B2", "not_significant" = "gray"))
 ```
 
-### Comparing cmp to mep
+### Comparing mep to cmp
 
-```{r 06_cmp_mep_plot}
+```{r 06_mep_cmp_plot}
 mep_cmp_plot <- df_volcano_mep_cmp |>
+  mutate(label = case_when(expression == "overexpressed" & fold_log2 > 2 ~ protein_groups,.default = "")) |> # creates a label if it is overexpressed
   ggplot(aes(x = fold_log2, y = desc(log10(q_val)), color = expression))+
   geom_point(size=0.5, alpha = 0.5)+
   theme_classic()+
+  geom_text_repel(aes(label = label), size = 3)+
   labs(title = "Expression of MEP relative to CMP",
        x = "Log2fold-change",
        y = "-log10(q)",
@@ -131,7 +102,8 @@ scale_color_manual(values = c("overexpressed" = "#D55E00", "underexpressed" = "#
 ```
 
 ### Comparing cmp to gmp
-```{r 06_cmp_gmp_plot}
+
+```{r 06_gmp_cmp_plot}
 gmp_cmp_plot <- df_volcano_gmp_cmp |>
   ggplot(aes(x = fold_log2, y = desc(log10(q_val)), color = expression))+
   geom_point(size=0.5, alpha = 0.5)+
@@ -177,9 +149,25 @@ ggsave(plot = gmp_cmp_plot,
        path = here("results"))
 ```
 
+```{r}
+gmp_cmp_plot
+clp_hsc_plot
+mep_cmp_plot
+cmp_hsc_plot
+
+(gmp_cmp_plot + clp_hsc_plot)/(mep_cmp_plot + cmp_hsc_plot)
+```
+
 A future direction for the project would be to assign all the protein groups categories based on their functionality. It would for instance be interesting to see which are the proteins that are overexpressed in the different cell types, but since there are so many of them it does not make sense to label all of them. We might for instance label the proteins that have a 2logfold change above 2, which means they are overexpressed by 400%.
 
-Lets have a look at hsc to cmp. We see that three protein groups are significantly overexpressed above 400%. P68033, P05213 and Q9WUA1. We can look up their Uniprot acession ID's and we find the following information:
+Lets have a look at hsc to cmp.
+
+```{r}
+# loading the plot from variable
+cmp_hsc_plot
+```
+
+We see that three protein groups are significantly overexpressed above 400%. P68033, P05213 and Q9WUA1. We can look up their Uniprot acession ID's and we find the following information:
 
 P68033 is an actin, actins are highly conserved proteins that are involved in various types of cell motility and are ubiquitously expressed in all eukaryotic cells.
 
@@ -187,3 +175,4 @@ P05213 is tubulin, tubulin is the major constituent of microtubules, a cylinder 
 
 Q9WUA1 is an inhibitory factor that binds to WNT proteins and inhibits their activities. May be involved in mesoderm segmentation.
 
+## Conclusion

@@ -10,16 +10,20 @@ output-dir: docs
 ## Library
 
 ```{r}
+#| echo: false
+#| include: false
 library(quarto)
 library(rmarkdown)
 library(here)
 ```
 
-{{< include 01_load.qmd >}}
-
 ## Rendering all nn_xx.qmd files to .html
 
+{{< include 01_load.qmd >}}
+
 ```{r}
+#| echo: false
+#| include: false
 options(knitr.duplicate.label = "allow")
 render(input = "01_load.qmd", output_dir = here("results/"))
 ```
@@ -27,6 +31,8 @@ render(input = "01_load.qmd", output_dir = here("results/"))
 {{< include 02_clean.qmd >}}
 
 ```{r 02_render, message=FALSE, running=FALSE}
+#| echo: false
+#| include: false
 options(knitr.duplicate.label = "allow")
 render(input = "02_clean.qmd", output_dir = here("results/"))
 ```
@@ -34,6 +40,8 @@ render(input = "02_clean.qmd", output_dir = here("results/"))
 {{< include 03_augment.qmd >}}
 
 ```{r 03_render, message=FALSE, running=FALSE}
+#| echo: false
+#| include: false
 options(knitr.duplicate.label = "allow")
 render(input = "03_augment.qmd", output_dir = here("results/"))
 ```
@@ -41,24 +49,37 @@ render(input = "03_augment.qmd", output_dir = here("results/"))
 {{< include 04_describe.qmd >}}
 
 ```{r 04_render, message=FALSE, running=FALSE}
-options(knitr.duplicate.label = "allow")
-render(input = "05_analysis_pca.qmd", output_dir = here("results/"))
-```
+#| echo: false
+#| include: false
 
-{{< include 05_analysis_pca.qmd >}}
-
-```{r 04_render, message=FALSE, running=FALSE}
-options(knitr.duplicate.label = "allow")
-render(input = "06_analysis_volcano.qmd", output_dir = here("results/"))
-```
-
-{{< include 06_analysis_volcano.qmd >}}
-
-```{r 04_render, message=FALSE, running=FALSE}
 options(knitr.duplicate.label = "allow")
 render(input = "04_describe.qmd", output_dir = here("results/"))
 ```
 
+```{r 05_render, message=FALSE, running=FALSE}
+#| echo: false
+#| include: false
+
+# Include this shortcode just above this code chunk (between 04-render and 05_render)
+# {{< include 05_analysis_pca.qmd >}}
+
+# Uncomment these: options... and render... when the pca is finally ready.
+
+#options(knitr.duplicate.label = "allow")
+#render(input = "05_analysis_pca.qmd", output_dir = here("results/"))
+```
+
+{{< include 06_analysis_volcano.qmd >}}
+
+```{r 06_render, message=FALSE, running=FALSE}
+#| echo: false
+#| include: false
+options(knitr.duplicate.label = "allow")
+render(input = "06_analysis_volcano.qmd", output_dir = here("results/"))
+```
+
 ```{r 00_file2results}
+Sys.sleep(25)
+
 file.rename(from = here("R/00_all.html"), to = here("results/00_all.html"))
 ```

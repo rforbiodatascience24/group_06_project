@@ -48,16 +48,21 @@ The volcano plot tibbles created in 03_augment are used to create volcano plots 
 
 ```{r 06_hsc_clp_plot}
 
-clp_hsc_plot <- df_volcano_clp_hsc |>
+plot_clp_hsc <- df_volcano_clp_hsc |>
+  mutate(label = case_when(expression == "overexpressed" & fold_log2 > 2 ~ protein_groups,.default = "")) |>
   ggplot(aes(x = fold_log2, y = desc(log10(q_val)), color = expression))+
   geom_point(size=0.5, alpha = 0.5)+
   theme_classic()+
+  geom_text_repel(aes(label = label), size = 3)+
   labs(title = "Expression of CLP relative to HSC",
        x = "Log2fold-change",
        y = "-log10(q)",
        caption = "proteomics data")+
-  theme(legend.position = "none")+
-  #The horizontal line that indicates significance - remember to check if it correct with qvalue and all
+  theme(legend.position = "bottom",
+        legend.title = element_blank(),
+        legend.text = element_text(size = 12))+
+  guides(color = guide_legend(override.aes = list(shape = 19, size = 5, alpha = 1)))+
+  #The horizontal line that indicates significance
 #  geom_hline(yintercept = 2)+
   scale_color_manual(values = c("overexpressed" = "#D55E00", "underexpressed" = "#0072B2", "not_significant" = "gray"))
 ```
@@ -65,7 +70,7 @@ clp_hsc_plot <- df_volcano_clp_hsc |>
 ### Comparing cmp to hsc
 
 ```{r 06_cmp_hsc_plot}
-cmp_hsc_plot <- df_volcano_cmp_hsc|>
+plot_cmp_hsc <- df_volcano_cmp_hsc|>
   mutate(label = case_when(expression == "overexpressed" & fold_log2 > 2 ~ protein_groups,.default = "")) |> 
   ggplot(aes(x = fold_log2, y = desc(log10(q_val)), color = expression))+
   geom_point(size=0.5, alpha = 0.5)+
@@ -75,9 +80,11 @@ cmp_hsc_plot <- df_volcano_cmp_hsc|>
        x = "Log2fold-change",
        y = "-log10(q)",
        caption = "proteomics data")+
-  theme(legend.position = "bottom", legend.title = element_blank())+
-  guides(color = guide_legend(overrisde.aes = list(size = 1000)))+
-  #The horizontal line that indicates significance - remember to check if it correct with qvalue and all
+  theme(legend.position = "bottom",
+        legend.title = element_blank(),
+        legend.text = element_text(size = 12))+
+  guides(color = guide_legend(override.aes = list(shape = 19, size = 5, alpha = 1)))+
+  #The horizontal line that indicates significance
 #  geom_hline(yintercept = 2)+
   scale_color_manual(values = c("overexpressed" = "#D55E00", "underexpressed" = "#0072B2", "not_significant" = "gray"))
 ```
@@ -85,7 +92,7 @@ cmp_hsc_plot <- df_volcano_cmp_hsc|>
 ### Comparing mep to cmp
 
 ```{r 06_mep_cmp_plot}
-mep_cmp_plot <- df_volcano_mep_cmp |>
+plot_mep_cmp <- df_volcano_mep_cmp |>
   mutate(label = case_when(expression == "overexpressed" & fold_log2 > 2 ~ protein_groups,.default = "")) |> # creates a label if it is overexpressed
   ggplot(aes(x = fold_log2, y = desc(log10(q_val)), color = expression))+
   geom_point(size=0.5, alpha = 0.5)+
@@ -95,8 +102,11 @@ mep_cmp_plot <- df_volcano_mep_cmp |>
        x = "Log2fold-change",
        y = "-log10(q)",
        caption = "proteomics data")+
-  theme(legend.position = "none")+
-  #The horizontal line that indicates significance - remember to check if it correct with qvalue and all
+  theme(legend.position = "bottom",
+        legend.title = element_blank(),
+        legend.text = element_text(size = 12))+
+  guides(color = guide_legend(override.aes = list(shape = 19, size = 5, alpha = 1)))+
+  #The horizontal line that indicates significance
 #  geom_hline(yintercept = 2)+
 scale_color_manual(values = c("overexpressed" = "#D55E00", "underexpressed" = "#0072B2", "not_significant" = "gray"))
 ```
@@ -104,18 +114,25 @@ scale_color_manual(values = c("overexpressed" = "#D55E00", "underexpressed" = "#
 ### Comparing cmp to gmp
 
 ```{r 06_gmp_cmp_plot}
-gmp_cmp_plot <- df_volcano_gmp_cmp |>
+plot_gmp_cmp <- df_volcano_gmp_cmp |> 
+  mutate(label = case_when(expression == "overexpressed" & fold_log2 > 2 ~ protein_groups,.default = "")) |>
   ggplot(aes(x = fold_log2, y = desc(log10(q_val)), color = expression))+
   geom_point(size=0.5, alpha = 0.5)+
   theme_classic()+
+  geom_text_repel(aes(label = label), size = 3)+
   labs(title = "Expression of GMP relative to CMP",
        x = "Log2fold-change",
        y = "-log10(q)",
        caption = "proteomics data")+
-  theme()+
-  #The horizontal line that indicates significance - remember to check if it correct with qvalue and all
+  theme(legend.position = "bottom",
+        legend.title = element_blank(),
+        legend.text = element_text(size = 12))+
+  guides(color = guide_legend(override.aes = list(shape = 19, size = 5, alpha = 1)))+
+  #The horizontal line that indicates significance
 #  geom_hline(yintercept = 2)+
-  scale_color_manual(values = c("overexpressed" = "#D55E00", "underexpressed" = "#0072B2", "not_significant" = "gray"))
+  scale_color_manual(values = c("overexpressed" = "#D55E00",
+                                "underexpressed" = "#0072B2",
+                                "not_significant" = "gray"))
 
 ```
 
@@ -125,46 +142,63 @@ gmp_cmp_plot <- df_volcano_gmp_cmp |>
 #Due to an error occuring when saving ggplot directly in the pipeline of the latest plot which apparently is caused by a recent edit in ggplot2-3.3.4 the saving of plots is done separately.
 
 # save hsc_clp
-ggsave(plot = clp_hsc_plot,
+ggsave(plot = plot_clp_hsc,
        filename = "hsc_clp_volcano_plot.png",
        width = 20, height = 10, units = "cm",
        path = here("results"))
 
 # save hsc_cmp
-ggsave(plot = cmp_hsc_plot,
+ggsave(plot = plot_cmp_hsc,
        filename = "hsc_cmp_volcano_plot.png",
        width = 20, height = 10, units = "cm",
        path = here("results"))
 
 # save cmp_mep
-ggsave(plot = mep_cmp_plot,
+ggsave(plot = plot_mep_cmp,
        filename = "cmp_mep_volcano_plot.png",
        width = 20, height = 10, units = "cm",
        path = here("results"))
 
-# save cmp_gmp
-ggsave(plot = gmp_cmp_plot,
+# save gmp_cmp
+ggsave(plot = plot_gmp_cmp,
        filename = "cmp_gmp_volcano_plot.png",
        width = 20, height = 10, units = "cm",
        path = here("results"))
 ```
 
-```{r}
-gmp_cmp_plot
-clp_hsc_plot
-mep_cmp_plot
-cmp_hsc_plot
+A future direction for the project would be to assign all the protein groups categories based on their functionality. It would for instance be interesting to see which are the proteins that are overexpressed in the different cell types, but since there are so many of them it does not make sense to label all of them. We might for instance label the proteins that have a 2logfold change above 2, which means they are overexpressed by 400%.
 
-(gmp_cmp_plot + clp_hsc_plot)/(mep_cmp_plot + cmp_hsc_plot)
+## Showing the volcano plots
+
+### CLP compared to HSC
+
+```{r}
+plot_clp_hsc
 ```
 
-A future direction for the project would be to assign all the protein groups categories based on their functionality. It would for instance be interesting to see which are the proteins that are overexpressed in the different cell types, but since there are so many of them it does not make sense to label all of them. We might for instance label the proteins that have a 2logfold change above 2, which means they are overexpressed by 400%.
+### CMP compared to HSC
+
+```{r}
+plot_cmp_hsc
+```
+
+### GMP compared to CMP
+
+```{r}
+plot_gmp_cmp
+```
+
+### MEP compared to CMP
+
+```{r}
+plot_mep_cmp
+```
 
 Lets have a look at hsc to cmp.
 
 ```{r}
 # loading the plot from variable
-cmp_hsc_plot
+plot_cmp_hsc
 ```
 
 We see that three protein groups are significantly overexpressed above 400%. P68033, P05213 and Q9WUA1. We can look up their Uniprot acession ID's and we find the following information:

@@ -14,8 +14,8 @@ library(UpSetR)
 
 ## Load data
 
-```{r 04_load, message=FALSE, running=FALSE}}
-df_intensitites <- read_tsv(file = here("data/02_df_intensities.tsv.gz"))
+```{r 04_load, message=FALSE, running=FALSE}
+df_intensities <- read_tsv(file = here("data/02_df_intensities.tsv.gz"))
 
 df_log_intensities <- read_tsv(file = here("data/03_df_log_intensities.tsv.gz"))
 

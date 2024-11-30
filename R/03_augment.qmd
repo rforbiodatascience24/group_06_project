@@ -6,7 +6,7 @@ editor: visual
 
 ## Library
 
-```{r}
+```{r 03_library}
 library("tidyverse")
 library("here")
 source(here("R/99_functions.R"))
@@ -14,7 +14,7 @@ source(here("R/99_functions.R"))
 
 ## Load data from 02_clean.qmd
 
-```{r}
+```{r 03_load}
 # read in csv files for all cell populations
 
 df_intensities <- read_tsv(file = here("data/02_df_intensities.tsv.gz"), na = "NA")
@@ -27,7 +27,7 @@ df_intensities <- read_tsv(file = here("data/02_df_intensities.tsv.gz"), na = "N
 
 For mass spectrometry proteomics data, it is common practice to log 2 transform the data, to achieve a log-normal distribution.
 
-```{r}
+```{r 03_log_transform}
 # log transform all numerical values except the ones indicating the replicates
 df_log_intensities <- df_intensities |> 
   mutate(across(
@@ -42,7 +42,7 @@ Technical variation of sample preparation and LC/MS runs introduce error in our 
 
 For each observation (a replicate of a particular cell type) we wish to nomalize the intensity compared to the total intensity of all measured proteins of that cell type. This is why we group the data by sample (fx hsc_rep_1 is one group and clp_rep_2 is another group). We then normalize the data by dividing individual intensities by the median of the sample.
 
-```{r}
+```{r 03_check_rows}
 #Check that the grouping gives 21 median values
 df_log_intensities |> 
   group_by(cell_type,replicate_n) |> 
@@ -53,7 +53,7 @@ df_log_intensities |>
 
 The intensities across the different cell types are normalized so that e.g cell count doesn't affect the intensity read, making the intensities comparable across the 5 cell types.
 
-```{r}
+```{r 03_normalzie}
 #Normalize data
 df_norm_intensities <- df_log_intensities |> 
   group_by(cell_type,
@@ -70,7 +70,7 @@ The data contains many missing values. The reason values are missing is because 
 
 The sample_wise imputed missing values in wide-format, are used for the volcano plots, which streamlines comparing the protein groups between cell-types.
 
-```{r}
+```{r 03_sample_wise_imputation}
 
 # Replace NA with 0.1st percentile of sample intensity distribution
 # If an NA is detected the value is transformed to 0.1st percentile of that sample
@@ -90,7 +90,7 @@ df_sample_wise <- df_norm_intensities |>
 
 ### Replacing missing values option 2: feature-wise -
 
-```{r}
+```{r feature_wise_imputation}
 
 # Replace NA with 0.1st percentile of feature (=protein group) intensity distribution
 # If an NA is detected the value is transformed to 0.1st percentile of that feature
@@ -113,7 +113,7 @@ For certain operations it is easier to work with data frames in wide format. We 
 
 ### Wide table from the feature-wise imputed missing values
 
-```{r}
+```{r 03_wide_feature_wise}
 
 df_intensities_wide <- df_feature_wise |>
   mutate(intensity = unname(intensity)) |>
@@ -137,7 +137,7 @@ Therefore we will create four volcanoplots that compare the different cell-type 
 
 The mean value between each replicate of the cell samples are estimated along with the standard deviation, to create a new tibble which is used to create a volcano plot for the fold change.
 
-```{r}
+```{r 03_sample_mean}
 # create a tibble with mean values and standard deviation
 df_sample_mean <- df_sample_wise|> 
   group_by(protein_groups,
@@ -157,7 +157,7 @@ sample_n(df_sample_mean,10, replace = TRUE)
 
 Computing the ratio of means for each protein group as well as compute the p-value which is then p.adjusted to the q-value. In order to compute p-value based on means and standard deviations a function was created that computes p-value for a two-sided student t-test of two populations based on means, standard deviations and number of replicates as input - The function can be found in 99_functions.R.
 
-```{r}
+```{r 03_volcano_manual}
 #Computing new variables that calculate fold, p_val and q_val
 df_volcano_clp_hsc <- df_sample_mean |> 
   ungroup() |> 
@@ -175,30 +175,35 @@ df_volcano_clp_hsc <- df_sample_mean |>
 sample_n(df_volcano_clp_hsc,10)
 ```
 
-```{r}
+### Check our function
+
+The previous code returns a tibble with log2(fold change), log10(pvalues) and q. values to define if a protein is over or underexpressed. The code is however long and tedious, considering that it must be replicated 3 other times. Hence a home brewed function `volcano_augment` was made, which takes the table with mean values for each protein group, subsets the cell types, takes the log2(fold change) and estimates the q.value - which is used to define expression state.
+
+```{r 03_func_test}
 # Checking if our home_brew p.value and q.value function... functions.
 new_volcano_clp_hsc <- volcano_augment(df = ungroup(df_sample_mean), later_cell = "clp", earlier_cell = "hsc", n_later = 5, n_earlier = 4)
 
-new_volcano_clp_hsc == df_volcano_clp_hsc
-#would be cool to show the true matrix that proves our function does the same as our homemade 
+# Testing if the function for creating volcano-plot values work, by comparing to the manually created tibble.
+as_tibble(new_volcano_clp_hsc == df_volcano_clp_hsc) |> 
+  sample_n(size = 10)
 ```
 
-Repeating the same data wrangling for the remaining three volcano plots is automatized using the function volcano_augment which can be seen in 99_functions.R.
+Repeating the same data wrangling for the remaining three volcano plots is automatized using the function `volcano_augment`
 
-```{r}
+```{r 03_volcano}
 #input to the function is dataframe, cell types to compare and no of replicates in cell types
 df_volcano_cmp_hsc <- volcano_augment(df = df_sample_mean, later_cell = "cmp", earlier_cell = "hsc", n_later = 4, n_earlier = 4)
+
 df_volcano_mep_cmp <- volcano_augment(df = df_sample_mean, later_cell = "mep", earlier_cell = "cmp", n_later = 4, n_earlier = 4)
+
 df_volcano_gmp_cmp <- volcano_augment(df = df_sample_mean, later_cell = "gmp", earlier_cell = "cmp", n_later = 4, n_earlier = 4)
 ```
 
-### 
-
 ## Saving data files
 
-Some of the cleaned and augmented data-files are saved in a g-zipped format, allowing for further analysis in a new R-pipeline.
+Files used in downstream 04_describe and 05/06_analysis are saved.
 
-```{r}
+```{r 03_save_log}
 
 # Directing pathway to store the .tsv  file
 
@@ -212,7 +217,7 @@ write_tsv(df_log_intensities, str_c(data_path, file_name,sep = "/"))
 
 #### Saving the data frame with imputed missing values in long format
 
-```{r}
+```{r 03_save_norm}
 
 # Directing pathway to store the .tsv  file
 
@@ -224,6 +229,14 @@ write_tsv(df_norm_intensities, str_c(data_path, file_name,sep = "/"))
 
 
 
+```
+
+```{r}
+write_tsv(df_feature_wise, file = here("data/03_df_feature_wise.tsv.gz"))
+```
+
+```{r}
+write_tsv(df_sample_wise, file = here("data/03_df_sample_wise.tsv.gz"))
 ```
 
 ## 03_augment conclusion:

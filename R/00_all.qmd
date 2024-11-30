@@ -4,6 +4,7 @@ format:
   html:
     embed-resources: true
 editor: visual
+output-dir: docs
 ---
 
 ## Library
@@ -14,23 +15,50 @@ library(rmarkdown)
 library(here)
 ```
 
+{{< include 01_load.qmd >}}
+
 ## Rendering all nn_xx.qmd files to .html
 
-```{r, message=FALSE, running=FALSE}
-output <- here("results/")
-#source(file = "01_load.qmd")
-render(input = "01_load.qmd", output_dir = output)
-render(input = "02_clean.qmd", output_dir = output)
-render(input = "03_augment.qmd", output_dir = output)
-
-
-#quarto_render(input= "02_clean.qmd")
-#quarto_render(input= "03_augment.qmd")
+```{r}
+options(knitr.duplicate.label = "allow")
+render(input = "01_load.qmd", output_dir = here("results/"))
 ```
 
-```{r}
-#here()
+{{< include 02_clean.qmd >}}
 
-#source(file = here("R/01_load.html"))
-#source( = "01_load.html")
+```{r 02_render, message=FALSE, running=FALSE}
+options(knitr.duplicate.label = "allow")
+render(input = "02_clean.qmd", output_dir = here("results/"))
+```
+
+{{< include 03_augment.qmd >}}
+
+```{r 03_render, message=FALSE, running=FALSE}
+options(knitr.duplicate.label = "allow")
+render(input = "03_augment.qmd", output_dir = here("results/"))
+```
+
+{{< include 04_describe.qmd >}}
+
+```{r 04_render, message=FALSE, running=FALSE}
+options(knitr.duplicate.label = "allow")
+render(input = "05_analysis_pca.qmd", output_dir = here("results/"))
+```
+
+{{< include 05_analysis_pca.qmd >}}
+
+```{r 04_render, message=FALSE, running=FALSE}
+options(knitr.duplicate.label = "allow")
+render(input = "06_analysis_volcano.qmd", output_dir = here("results/"))
+```
+
+{{< include 06_analysis_volcano.qmd >}}
+
+```{r 04_render, message=FALSE, running=FALSE}
+options(knitr.duplicate.label = "allow")
+render(input = "04_describe.qmd", output_dir = here("results/"))
+```
+
+```{r 00_file2results}
+file.rename(from = here("R/00_all.html"), to = here("results/00_all.html"))
 ```

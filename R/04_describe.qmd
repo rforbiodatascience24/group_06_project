@@ -6,9 +6,26 @@ editor: visual
 
 ## Library
 
-```{r}
+```{r 04_library}
 library(tidyverse)
+library(ggplot2)
 library(UpSetR)
+```
+
+## Load data
+
+```{r 04_load}
+df_intensitites <- read_tsv(file = here("data/02_df_intensities.tsv.gz"))
+
+df_log_intensities <- read_tsv(file = here("data/03_df_log_intensities.tsv.gz"))
+
+df_norm_intensities <- read_tsv(file = here("data/03_df_norm_intensities.tsv.gz"))
+
+df_feature_wise <- read_tsv(file = here("data/03_df_feature_wise.tsv.gz"))
+
+df_sample_wise <- read_tsv(file = here("data/03_df_sample_wise.tsv.gz"))
+
+
 ```
 
 ## The Data Set
@@ -30,31 +47,31 @@ To understand the proteomic changes over the course of stem cell differentiation
 
 # make vectors of ID's in every cell type
 
-list_hsc <- df_long |> 
+list_hsc <- df_intensities |> 
   filter(cell_type=="hsc") |> 
   filter(!is.na(intensity)) |> 
   pull(protein_groups) |> 
   unique()
 
-list_cmp <- df_long |> 
+list_cmp <- df_intensities |> 
   filter(cell_type=="cmp") |> 
   filter(!is.na(intensity)) |> 
   pull(protein_groups) |> 
   unique()
 
-list_gmp <- df_long |> 
+list_gmp <- df_intensities |> 
   filter(cell_type=="gmp") |> 
   filter(!is.na(intensity)) |> 
   pull(protein_groups) |> 
   unique()
 
-list_clp <- df_long |> 
+list_clp <- df_intensities |> 
   filter(cell_type=="clp") |> 
   filter(!is.na(intensity)) |> 
   pull(protein_groups) |> 
   unique()
 
-list_mep <- df_long |> 
+list_mep <- df_intensities |> 
   filter(cell_type=="mep") |> 
   filter(!is.na(intensity)) |> 
   pull(protein_groups) |> 
@@ -68,7 +85,7 @@ list_input <- list(HSC=list_hsc, CMP=list_cmp, GMP=list_gmp, CLP=list_clp, MEP=l
 Make UpSetPlot to visualize overlapping PG sets
 
 ```{r}
-upset(fromList(list_input), order.by = "freq")
+# upset(fromList(list_input), order.by = "freq")
 ```
 
 As seen in the plot, the biggest intersection of PG is between all cell types. This intersection however only consists of 1353 PG's, which is only a fraction of all 3765 PG's observed in the data set. This makes sense, as during differentiation, the proteome changes, driving differentiation and defining the differentiated cell types. With changing proteome, many PG's become so low abundant, that they fall below the limit of detection. It is therefore essential to preserve PG's in this data set, even though they are only observed in a subset of cell types. Careful imputation of missing values, instead of dropping them, is imperative.
@@ -77,9 +94,12 @@ As seen in the plot, the biggest intersection of PG is between all cell types. T
 
 Plot of the PG intensity density prior to Log2 transformation
 
-```{r}
+```{r 04_intensities}
 
-df_long |> 
+df_intensities |> 
+  mutate(sample = str_c(cell_type,
+                        replicate_n,
+                        sep ="_"),.before = cell_type) |>
   ggplot(aes(x=intensity, colour = sample)) +
   geom_density() +
   theme_classic()
@@ -90,16 +110,22 @@ As seen in the plot, the PG intensities span a large dynamic range. For the reas
 
 Plot of the PG intensity density after Log2 transformation
 
-```{r}
+```{r 04_log1}
 
-df_log_long |> 
+df_log_intensities |>
+    mutate(sample = str_c(cell_type,
+                        replicate_n,
+                        sep ="_"),.before = cell_type) |> 
   ggplot(aes(x=intensity, colour = sample)) +
   geom_density() +
   theme_classic()
 ```
 
-```{r}
-df_log_long |> 
+```{r 04_log2}
+df_log_intensities |>  
+    mutate(sample = str_c(cell_type,
+                        replicate_n,
+                        sep ="_"),.before = cell_type) |> 
   group_by(sample) |> 
   summarize(median(intensity, na.rm = TRUE))
 ```
@@ -110,15 +136,22 @@ The intensities now follow a log-normal distribution. However, we can see that t
 
 Plot of the PG intensity density after Log2 transformation and normalization
 
-```{r}
-df_norm_long |> 
-  ggplot(aes(x=intensity, colour = sample)) +
+```{r 04_norm1}
+df_norm_intensities |> 
+    mutate(sample = str_c(cell_type,
+                        replicate_n,
+                        sep ="_"),.before = cell_type) |> 
+  ggplot(aes(x=intensity,
+  colour = sample)) +
   geom_density() +
   theme_classic()
 ```
 
-```{r}
-df_norm_long |> 
+```{r 04_norm2}
+df_norm_intensities |>
+  mutate(sample = str_c(cell_type,
+                      replicate_n,
+                      sep ="_"),.before = cell_type) |> 
   group_by(sample) |> 
   summarize(median(intensity, na.rm = TRUE))
 ```
@@ -132,8 +165,11 @@ sample-wise and feature-wise imputation.
 
 ### Sample-wise imputation
 
-```{r}
-df_no_na_long_1 |> 
+```{r 04_sample_wise}
+df_sample_wise |>
+  mutate(sample = str_c(cell_type,
+                        replicate_n,
+                        sep ="_"),.before = cell_type) |> 
   ggplot(aes(x=intensity, colour = sample)) +
   geom_density() +
   theme_classic()
@@ -143,9 +179,13 @@ We can observe a heavy distortion of the density plots in all samples, provoked 
 
 ### Feature-wise imputation
 
-```{r}
-df_no_na_long_2 |> 
-  ggplot(aes(x=intensity, colour = sample)) +
+```{r 04_feature_wise}
+df_feature_wise |>
+  mutate(sample = str_c(cell_type,
+                        replicate_n,
+                        sep ="_"),.before = cell_type) |> 
+  ggplot(aes(x=intensity, colour = sample,
+             color = replicate_n)) +
   geom_density() +
   theme_classic()
 ```
@@ -161,8 +201,8 @@ Choice of NA imputation: We need to base our decision on the nature of the data 
 ## Scatter PlotsDensity plots
 
 ```{r}
-df_no_na_long |> 
-  ggplot(aes(x=intensity, colour=cell_type)) +
-  geom_density() +
-  theme_classic()
+#df_no_na_long |> 
+ # ggplot(aes(x=intensity, colour=cell_type)) +
+  #geom_density() +
+  #theme_classic()
 ```

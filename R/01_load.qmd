@@ -6,7 +6,11 @@ format:
 editor: visual
 ---
 
-```{r, message=FALSE, running=FALSE}
+# 01_Load
+
+## Libraries
+
+```{r 01_libary, message=FALSE, running=FALSE}
 library(tidyverse)
 library(here)
 ```
@@ -15,7 +19,7 @@ library(here)
 
 Downloading data from dropbox containing the proteomics dataset.
 
-```{r}
+```{r 01_download}
 #defining path to store data in the folder data_raw
 raw_dir <- here("data/_raw")
 data_file <- "mouse_cell_stages.zip"
@@ -35,7 +39,7 @@ if( !file.exists(str_c(raw_dir, data_file, sep = "/")) ){ # Downloads the data u
 unzip(str_c(raw_dir, data_file, sep = "/"), exdir = raw_dir)
 ```
 
-```{r, message=FALSE, running=FALSE}
+```{r 01_read_csv, message=FALSE, running=FALSE}
 
 # read in csv files for all cell populations
 
@@ -53,7 +57,7 @@ df_cmp <- read_csv2(file = here("data/_raw/group6_data_CMP_Report.csv"), na="NaN
 
 ### Save the data-file for 02_clean.qmd
 
-```{r}
+```{r 01_write_csv}
 
 write_tsv(df_hsc, file = here("data/01_hsc.tsv.gz"))
 write_tsv(df_mep, file = here("data/01_mep.tsv.gz"))

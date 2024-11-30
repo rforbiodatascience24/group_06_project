@@ -11,7 +11,7 @@
 
 
 
-<title>Cleaning Data</title>
+<title>02_clean</title>
 
 <script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
 // be compatible with the behavior of Pandoc < 2.8).
@@ -348,11 +348,13 @@ display: none;
 
 
 
-<h1 class="title toc-ignore">Cleaning Data</h1>
+<h1 class="title toc-ignore">02_clean</h1>
 
 </div>
 
 
+<div id="clean" class="section level1">
+<h1>02_Clean</h1>
 <div id="loading-libraries" class="section level2">
 <h2>Loading libraries</h2>
 <pre class="r"><code>library(&quot;tidyverse&quot;)
@@ -362,11 +364,11 @@ library(&quot;here&quot;)</code></pre>
 <h2>Loading data</h2>
 <pre class="r"><code># read in csv files for all cell populations
 
-df_hsc &lt;- read_tsv(file = here(&quot;data/01_hsc.tsv&quot;), na=&quot;NA&quot;)
-df_mep &lt;- read_tsv(file = here(&quot;data/01_mep.tsv&quot;), na=&quot;NA&quot;)
-df_gmp &lt;- read_tsv(file = here(&quot;data/01_gmp.tsv&quot;), na=&quot;NA&quot;)
-df_clp &lt;- read_tsv(file = here(&quot;data/01_clp.tsv&quot;), na=&quot;NA&quot;)
-df_cmp &lt;- read_tsv(file = here(&quot;data/01_cmp.tsv&quot;), na=&quot;NA&quot;)
+df_hsc &lt;- read_tsv(file = here(&quot;data/01_hsc.tsv.gz&quot;), na=&quot;NA&quot;)
+df_mep &lt;- read_tsv(file = here(&quot;data/01_mep.tsv.gz&quot;), na=&quot;NA&quot;)
+df_gmp &lt;- read_tsv(file = here(&quot;data/01_gmp.tsv.gz&quot;), na=&quot;NA&quot;)
+df_clp &lt;- read_tsv(file = here(&quot;data/01_clp.tsv.gz&quot;), na=&quot;NA&quot;)
+df_cmp &lt;- read_tsv(file = here(&quot;data/01_cmp.tsv.gz&quot;), na=&quot;NA&quot;)
 
 
 #| echo: false
@@ -391,18 +393,18 @@ cell type and specify the replicate number. Note! The replicates are
 technical replicates.</p>
 <pre class="r"><code># get column names
 print(colnames(df_intensities))</code></pre>
-<pre><code>##  [1] &quot;PG.ProteinGroups&quot;                    &quot;PG.Genes&quot;                           
-##  [3] &quot;[1] HSC_mBM_500c_49.raw.PG.Quantity&quot; &quot;[2] HSC_mBM_500c_50.raw.PG.Quantity&quot;
-##  [5] &quot;[3] HSC_mBM_500c_51.raw.PG.Quantity&quot; &quot;[4] HSC_mBM_500c_56.raw.PG.Quantity&quot;
-##  [7] &quot;[1] CLP_mBM_500c_48.raw.PG.Quantity&quot; &quot;[2] CLP_mBM_500c_52.raw.PG.Quantity&quot;
-##  [9] &quot;[3] CLP_mBM_500c_57.raw.PG.Quantity&quot; &quot;[4] CLP_mBM_500c_58.raw.PG.Quantity&quot;
-## [11] &quot;[5] CLP_mBM_500c_59.raw.PG.Quantity&quot; &quot;[1] CMP_mBM_500c_44.raw.PG.Quantity&quot;
-## [13] &quot;[2] CMP_mBM_500c_45.raw.PG.Quantity&quot; &quot;[3] CMP_mBM_500c_46.raw.PG.Quantity&quot;
-## [15] &quot;[4] CMP_mBM_500c_47.raw.PG.Quantity&quot; &quot;[1] MEP_mBM_500c_40.raw.PG.Quantity&quot;
-## [17] &quot;[2] MEP_mBM_500c_41.raw.PG.Quantity&quot; &quot;[3] MEP_mBM_500c_42.raw.PG.Quantity&quot;
-## [19] &quot;[4] MEP_mBM_500c_43.raw.PG.Quantity&quot; &quot;[1] GMP_mBM_500c_36.raw.PG.Quantity&quot;
-## [21] &quot;[2] GMP_mBM_500c_37.raw.PG.Quantity&quot; &quot;[3] GMP_mBM_500c_38.raw.PG.Quantity&quot;
-## [23] &quot;[4] GMP_mBM_500c_39.raw.PG.Quantity&quot;</code></pre>
+<pre><code> [1] &quot;PG.ProteinGroups&quot;                    &quot;PG.Genes&quot;                           
+ [3] &quot;[1] HSC_mBM_500c_49.raw.PG.Quantity&quot; &quot;[2] HSC_mBM_500c_50.raw.PG.Quantity&quot;
+ [5] &quot;[3] HSC_mBM_500c_51.raw.PG.Quantity&quot; &quot;[4] HSC_mBM_500c_56.raw.PG.Quantity&quot;
+ [7] &quot;[1] CLP_mBM_500c_48.raw.PG.Quantity&quot; &quot;[2] CLP_mBM_500c_52.raw.PG.Quantity&quot;
+ [9] &quot;[3] CLP_mBM_500c_57.raw.PG.Quantity&quot; &quot;[4] CLP_mBM_500c_58.raw.PG.Quantity&quot;
+[11] &quot;[5] CLP_mBM_500c_59.raw.PG.Quantity&quot; &quot;[1] CMP_mBM_500c_44.raw.PG.Quantity&quot;
+[13] &quot;[2] CMP_mBM_500c_45.raw.PG.Quantity&quot; &quot;[3] CMP_mBM_500c_46.raw.PG.Quantity&quot;
+[15] &quot;[4] CMP_mBM_500c_47.raw.PG.Quantity&quot; &quot;[1] MEP_mBM_500c_40.raw.PG.Quantity&quot;
+[17] &quot;[2] MEP_mBM_500c_41.raw.PG.Quantity&quot; &quot;[3] MEP_mBM_500c_42.raw.PG.Quantity&quot;
+[19] &quot;[4] MEP_mBM_500c_43.raw.PG.Quantity&quot; &quot;[1] GMP_mBM_500c_36.raw.PG.Quantity&quot;
+[21] &quot;[2] GMP_mBM_500c_37.raw.PG.Quantity&quot; &quot;[3] GMP_mBM_500c_38.raw.PG.Quantity&quot;
+[23] &quot;[4] GMP_mBM_500c_39.raw.PG.Quantity&quot;</code></pre>
 <pre class="r"><code># We have four replicates per cell type. Change all column names at once for easier readability.
 df_intensities &lt;- 
   setNames(df_intensities, c(&quot;protein_groups&quot;,
@@ -429,8 +431,9 @@ df_intensities &lt;-
                              &quot;gmp_rep_3&quot;,
                              &quot;gmp_rep_4&quot;))</code></pre>
 </div>
-<div id="elongating-the-dataframe" class="section level3">
-<h3>Elongating the dataframe</h3>
+</div>
+<div id="elongating-the-dataframe" class="section level2">
+<h2>Elongating the dataframe</h2>
 <p>There are four or five technical replicates of each of the 5 cell
 types, making up a total of 21 variables - all with measures of
 intensity. We use pivot_longer to lengthen the data so that there is one
@@ -443,7 +446,6 @@ which cell type is referred to.</p>
     names_to = &quot;sample&quot;, 
     values_to = &quot;intensity&quot;
   )</code></pre>
-</div>
 <div id="separating-the-samples-column-into-replicate-number-and-cell-type" class="section level3">
 <h3>Separating the samples column into replicate number and cell
 type</h3>
@@ -457,6 +459,19 @@ more flexibility when augmenting the data in 03_augment.</p>
 <p>Here’s a snippet of how the long format of the proteomics data is
 organized</p>
 <pre class="r"><code>sample_n(df_intensities,10)</code></pre>
+<pre><code># A tibble: 10 × 5
+   protein_groups                          genes cell_type replicate_n intensity
+   &lt;chr&gt;                                   &lt;chr&gt; &lt;chr&gt;     &lt;chr&gt;           &lt;dbl&gt;
+ 1 P21271;P21271-3;Q99104                  &quot;Myo… gmp       2                 NA 
+ 2 Q80ZJ1                                  &quot;Rap… mep       3                 NA 
+ 3 Q922U1                                  &quot;Prp… clp       1                 NA 
+ 4 Q9Z2U1                                  &quot;Psm… hsc       4              27312.
+ 5 Q3UW53                                  &quot;Fam… cmp       4                 NA 
+ 6 P55302                                  &quot;Lrp… gmp       2                614.
+ 7 P08556;P32883;P32883-2;Q61411;Q61411-2  &quot;Nra… gmp       2               1567.
+ 8 Q9CQE8                                  &quot;&quot;    hsc       4               1292.
+ 9 O35711;O35711-2;O35711-4;Q8C8U0;Q8C8U0… &quot;Ppf… hsc       1                 NA 
+10 Q6P542                                  &quot;Abc… clp       1              10845.</code></pre>
 </div>
 </div>
 <div id="write-to-tsv" class="section level2">
@@ -475,6 +490,7 @@ write_tsv(df_intensities, str_c(data_path, &quot;02_df_intensities.tsv.gz&quot;,
 observation is in its own row and each variable is in a column. Now the
 data needs to be log-transformed, normalized and NA’s must be dealt with
 based on the normalization, which will all happen in the augment.</p>
+</div>
 </div>
 
 

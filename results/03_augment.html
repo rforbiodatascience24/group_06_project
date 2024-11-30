@@ -356,21 +356,22 @@ display: none;
 <div id="library" class="section level2">
 <h2>Library</h2>
 <pre class="r"><code>library(&quot;tidyverse&quot;)
-library(&quot;here&quot;)</code></pre>
+library(&quot;here&quot;)
+source(here(&quot;R/99_functions.R&quot;))</code></pre>
 </div>
 <div id="load-data-from-02_clean.qmd" class="section level2">
 <h2>Load data from 02_clean.qmd</h2>
 <pre class="r"><code># read in csv files for all cell populations
 
 df_intensities &lt;- read_tsv(file = here(&quot;data/02_df_intensities.tsv.gz&quot;), na = &quot;NA&quot;)</code></pre>
-<pre><code>## Rows: 79023 Columns: 5
-## ── Column specification ───────────────────────────────────────────────────────────────────────────────
-## Delimiter: &quot;\t&quot;
-## chr (3): protein_groups, genes, cell_type
-## dbl (2): replicate_n, intensity
-## 
-## ℹ Use `spec()` to retrieve the full column specification for this data.
-## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+<pre><code>Rows: 79023 Columns: 5
+── Column specification ────────────────────────────────────────────────────────
+Delimiter: &quot;\t&quot;
+chr (3): protein_groups, genes, cell_type
+dbl (2): replicate_n, intensity
+
+ℹ Use `spec()` to retrieve the full column specification for this data.
+ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
 <pre class="r"><code>#| echo: false
 #| eval: false</code></pre>
 </div>
@@ -402,7 +403,23 @@ of the sample.</p>
 df_log_intensities |&gt; 
   group_by(cell_type,replicate_n) |&gt; 
   summarize(median(intensity, na.rm = TRUE))</code></pre>
-<pre><code>## `summarise()` has grouped output by &#39;cell_type&#39;. You can override using the `.groups` argument.</code></pre>
+<pre><code>`summarise()` has grouped output by &#39;cell_type&#39;. You can override using the
+`.groups` argument.</code></pre>
+<pre><code># A tibble: 21 × 3
+# Groups:   cell_type [5]
+   cell_type replicate_n `median(intensity, na.rm = TRUE)`
+   &lt;chr&gt;           &lt;dbl&gt;                             &lt;dbl&gt;
+ 1 clp                 1                              12.2
+ 2 clp                 2                              10.5
+ 3 clp                 3                              10.4
+ 4 clp                 4                              10.6
+ 5 clp                 5                              11.0
+ 6 cmp                 1                              11.4
+ 7 cmp                 2                              11.4
+ 8 cmp                 3                              11.5
+ 9 cmp                 4                              11.4
+10 gmp                 1                              11.5
+# ℹ 11 more rows</code></pre>
 <div id="normalizing-intensities" class="section level3">
 <h3>Normalizing intensities</h3>
 <p>The intensities across the different cell types are normalized so
@@ -429,6 +446,9 @@ missing data is missing not at random (MNAR). This allows to use a
 left-censor method for NA value imputation.</p>
 <div id="replacing-missing-values-option-1-sample-wise--" class="section level3">
 <h3>Replacing missing values option 1: sample-wise -</h3>
+<p>The sample_wise imputed missing values in wide-format, are used for
+the volcano plots, which streamlines comparing the protein groups
+between cell-types.</p>
 <pre class="r"><code># Replace NA with 0.1st percentile of sample intensity distribution
 # If an NA is detected the value is transformed to 0.1st percentile of that sample
 # -3.090 is Z-score for 0.1st percentile
@@ -472,34 +492,29 @@ imputed missing values, depending on the analysis to be performed.</p>
               values_from = &#39;intensity&#39;) |&gt;
   select(where(~ !any(is.na(.)))) #Selects only columns without N/A</code></pre>
 </div>
-<div id="wide-table-from-the-sample-wise-imputed-missing-values" class="section level3">
-<h3>Wide table from the sample-wise imputed missing values</h3>
-<p>The sample_wise imputed missing values in wide-format, are used in
-06_volcano_analysis for the volcano plot, which streamlines comparing
-the protein groups between cell-types.</p>
-<pre class="r"><code># Pivoting the sample_wise imputed dataframe wider by the cell_type.
-df_sample_wide &lt;- df_sample_wise|&gt; 
-  pivot_wider(names_from = cell_type,
-              values_from = intensity)
-
-# Check the format of the wide table, making sure that the intensities are registered as numerical values.
-summary(df_sample_wide)</code></pre>
-<pre><code>##  protein_groups        genes            replicate_n      hsc             clp               cmp       
-##  Length:18815       Length:18815       Min.   :1    Min.   :0.009   Min.   :0.00542   Min.   :0.012  
-##  Class :character   Class :character   1st Qu.:2    1st Qu.:0.343   1st Qu.:0.34853   1st Qu.:0.330  
-##  Mode  :character   Mode  :character   Median :3    Median :0.751   Median :0.68866   Median :0.351  
-##                                        Mean   :3    Mean   :0.703   Mean   :0.68746   Mean   :0.660  
-##                                        3rd Qu.:4    3rd Qu.:1.030   3rd Qu.:1.01466   3rd Qu.:0.991  
-##                                        Max.   :5    Max.   :1.857   Max.   :2.10313   Max.   :2.039  
-##                                                     NA&#39;s   :3763                      NA&#39;s   :3763   
-##       mep             gmp       
-##  Min.   :0.001   Min.   :0.001  
-##  1st Qu.:0.393   1st Qu.:0.362  
-##  Median :0.755   Median :0.780  
-##  Mean   :0.727   Mean   :0.727  
-##  3rd Qu.:1.019   3rd Qu.:1.033  
-##  Max.   :2.084   Max.   :1.969  
-##  NA&#39;s   :3763    NA&#39;s   :3763</code></pre>
+</div>
+<div id="augmenting-data-for-volcano-plots" class="section level2">
+<h2>Augmenting data for volcano plots</h2>
+<p>Volcano plots are useful for comparing how different proteins are
+expressed in two different cell types. Typically on the x-axis the
+volcanoplot has the log2-fold-change, which is computed as log2 of the
+ratio between the later-stage cell type and the earlier-stage cell-type.
+Typically on the y-axis is the -log10 of p-value or q-value of the the
+two cell-types.</p>
+<p>The order of development of the cells in haematopoiesis is as follows
+(from Laurenti, E., Göttgens, B. From haematopoietic stem cells to
+complex differentiation landscapes. <em>Nature</em>
+<strong>553</strong>, 418–426 (2018). <a href="https://doi.org/10.1038/nature25022" class="uri">https://doi.org/10.1038/nature25022</a>)</p>
+<p><img src="data:image/png;base64,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" /></p>
+<p>Therefore we will create four volcanoplots that compare the different
+cell-type (stages). CLP will be compared to HSC. CMP will be comared to
+HSC. And then MEP and GMP will be compared to CMP. In order to prepare
+the data for these volcanoplots there must be for each pair of compared
+cell-types be created a variable of log2-fold-change and of q-value. To
+figure out this data wrangling took quite a bit of effort. In the end
+what was done is to subset the full dataframe to the two cell types in
+question, then summarize to mean and standard deviation values, then
+transfer to wide format,</p>
 <div id="getting-mean-values-and-standard-deviation-for-volcano-plot" class="section level4">
 <h4>Getting mean values and standard deviation for volcano plot</h4>
 <p>The mean value between each replicate of the cell samples are
@@ -508,26 +523,114 @@ which is used to create a volcano plot for the fold change.</p>
 <pre class="r"><code># create a tibble with mean values and standard deviation
 df_sample_mean &lt;- df_sample_wise|&gt; 
   group_by(protein_groups,
-           genes,
            cell_type) |&gt; # take the mean/sd of of the replicates for the protein groups and cell types
   summarise(
     mean = mean(intensity),
     sd = sd(intensity)
-    )</code></pre>
-<pre><code>## `summarise()` has grouped output by &#39;protein_groups&#39;, &#39;genes&#39;. You can override using the `.groups`
-## argument.</code></pre>
+    ) |&gt; 
+  pivot_wider(names_from = cell_type,
+              values_from = c(mean,sd))</code></pre>
+<pre><code>`summarise()` has grouped output by &#39;protein_groups&#39;. You can override using
+the `.groups` argument.</code></pre>
 <pre class="r"><code># Showing 10 rows of the df_sample mean table
 sample_n(df_sample_mean,10, replace = TRUE)</code></pre>
+<pre><code># A tibble: 37,630 × 11
+# Groups:   protein_groups [3,763]
+   protein_groups mean_clp mean_cmp mean_gmp mean_hsc mean_mep sd_clp sd_cmp
+   &lt;chr&gt;             &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;
+ 1 A1L314            0.609    0.334    0.350    0.325    0.394  0.268 0.0190
+ 2 A1L314            0.609    0.334    0.350    0.325    0.394  0.268 0.0190
+ 3 A1L314            0.609    0.334    0.350    0.325    0.394  0.268 0.0190
+ 4 A1L314            0.609    0.334    0.350    0.325    0.394  0.268 0.0190
+ 5 A1L314            0.609    0.334    0.350    0.325    0.394  0.268 0.0190
+ 6 A1L314            0.609    0.334    0.350    0.325    0.394  0.268 0.0190
+ 7 A1L314            0.609    0.334    0.350    0.325    0.394  0.268 0.0190
+ 8 A1L314            0.609    0.334    0.350    0.325    0.394  0.268 0.0190
+ 9 A1L314            0.609    0.334    0.350    0.325    0.394  0.268 0.0190
+10 A1L314            0.609    0.334    0.350    0.325    0.394  0.268 0.0190
+# ℹ 37,620 more rows
+# ℹ 3 more variables: sd_gmp &lt;dbl&gt;, sd_hsc &lt;dbl&gt;, sd_mep &lt;dbl&gt;</code></pre>
 </div>
+<div id="estamating-p.value-log2fold-change-and-q.value" class="section level3">
+<h3>Estamating p.value, log2fold change and q.value</h3>
+<p>Computing the ratio of means for each protein group as well as
+compute the p-value which is then p.adjusted to the q-value. In order to
+compute p-value based on means and standard deviations a function was
+created that computes p-value for a two-sided student t-test of two
+populations based on means, standard deviations and number of replicates
+as input - The function can be found in 99_functions.R.</p>
+<pre class="r"><code>#Computing new variables that calculate fold, p_val and q_val
+df_volcano_clp_hsc &lt;- df_sample_mean |&gt; 
+  ungroup() |&gt; 
+  select(c(protein_groups,mean_hsc,sd_hsc,mean_clp,sd_clp)) |&gt; 
+  mutate(fold_log2 = log2(mean_clp/mean_hsc), 
+         #See the p-value function in 99_functions.R
+       p_val = pval(mu1 = mean_clp, mu2 = mean_hsc, n1 = 5, n2 = 4, s1 = sd_clp, s2 = sd_hsc),
+       q_val = (p.adjust(p_val))) |&gt; #including variable overexpressed stating if proteins are over- or underexpressed or not significant
+  mutate(expression = case_when(fold_log2 &gt; 0 &amp; q_val &lt;= 0.05~ &quot;overexpressed&quot;,
+                                fold_log2 &lt; 0 &amp; q_val &lt;= 0.05 ~ &quot;underexpressed&quot;,
+                                q_val &gt;0.05  ~ &quot;not significant&quot;)) |&gt; #removing colomns unnecesary for volcanoplot
+  select(protein_groups, fold_log2, q_val, expression)
+  
+
+sample_n(df_volcano_clp_hsc,10)</code></pre>
+<pre><code># A tibble: 10 × 4
+   protein_groups           fold_log2     q_val expression     
+   &lt;chr&gt;                        &lt;dbl&gt;     &lt;dbl&gt; &lt;chr&gt;          
+ 1 P62500;P62500-2;P62500-3   -1.36   0.0574    not significant
+ 2 P12382                     -0.342  1         not significant
+ 3 Q91YR7;Q91YR7-2            -0.0144 1         not significant
+ 4 Q91YT7                      1.54   0.000737  overexpressed  
+ 5 Q99NB8                     -0.793  1         not significant
+ 6 Q05D44                     -0.334  1         not significant
+ 7 O35609                      0.0791 1         not significant
+ 8 Q9DBD5                     -0.444  1         not significant
+ 9 O70493                     -1.52   0.0000176 underexpressed 
+10 Q8VDL4;Q8VDL4-2;Q8VDL4-3    0.333  1         not significant</code></pre>
 </div>
-<div id="additional-augmentation-to-make-the-volcano-plots." class="section level3">
-<h3>Additional augmentation to make the volcano plots.</h3>
+<div id="check-our-function" class="section level3">
+<h3>Check our function</h3>
+<p>The previous code returns a tibble with log2(fold change),
+log10(pvalues) and q. values to define if a protein is over or
+underexpressed. The code is however long and tedious, considering that
+it must be replicated 3 other times. Hence a home brewed function
+<code>volcano_augment</code> was made, which takes the table with mean
+values for each protein group, subsets the cell types, takes the
+log2(fold change) and estimates the q.value - which is used to define
+expression state.</p>
+<pre class="r"><code># Checking if our home_brew p.value and q.value function... functions.
+new_volcano_clp_hsc &lt;- volcano_augment(df = ungroup(df_sample_mean), later_cell = &quot;clp&quot;, earlier_cell = &quot;hsc&quot;, n_later = 5, n_earlier = 4)
+
+# Testing if the function for creating volcano-plot values work, by comparing to the manually created tibble.
+as_tibble(new_volcano_clp_hsc == df_volcano_clp_hsc) |&gt; 
+  sample_n(size = 10)</code></pre>
+<pre><code># A tibble: 10 × 4
+   protein_groups fold_log2 q_val expression
+   &lt;lgl&gt;          &lt;lgl&gt;     &lt;lgl&gt; &lt;lgl&gt;     
+ 1 TRUE           TRUE      TRUE  TRUE      
+ 2 TRUE           TRUE      TRUE  TRUE      
+ 3 TRUE           TRUE      TRUE  TRUE      
+ 4 TRUE           TRUE      TRUE  TRUE      
+ 5 TRUE           TRUE      TRUE  TRUE      
+ 6 TRUE           TRUE      TRUE  TRUE      
+ 7 TRUE           TRUE      TRUE  TRUE      
+ 8 TRUE           TRUE      TRUE  TRUE      
+ 9 TRUE           TRUE      TRUE  TRUE      
+10 TRUE           TRUE      TRUE  TRUE      </code></pre>
+<p>Repeating the same data wrangling for the remaining three volcano
+plots is automatized using the function <code>volcano_augment</code></p>
+<pre class="r"><code>#input to the function is dataframe, cell types to compare and no of replicates in cell types
+df_volcano_cmp_hsc &lt;- volcano_augment(df = df_sample_mean, later_cell = &quot;cmp&quot;, earlier_cell = &quot;hsc&quot;, n_later = 4, n_earlier = 4)
+
+df_volcano_mep_cmp &lt;- volcano_augment(df = df_sample_mean, later_cell = &quot;mep&quot;, earlier_cell = &quot;cmp&quot;, n_later = 4, n_earlier = 4)
+
+df_volcano_gmp_cmp &lt;- volcano_augment(df = df_sample_mean, later_cell = &quot;gmp&quot;, earlier_cell = &quot;cmp&quot;, n_later = 4, n_earlier = 4)</code></pre>
 </div>
 </div>
 <div id="saving-data-files" class="section level2">
 <h2>Saving data files</h2>
-<p>Some of the cleaned and augmented data-files are saved in a g-zipped
-format, allowing for further analysis in a new R-pipeline.</p>
+<p>Files used in downstream 04_describe and 05/06_analysis are
+saved.</p>
 <pre class="r"><code># Directing pathway to store the .tsv  file
 
 file_name &lt;- &quot;03_df_log_intensities.tsv.gz&quot;
@@ -545,6 +648,8 @@ file_name &lt;- &quot;03_df_norm_intensities.tsv.gz&quot;
 write_tsv(df_norm_intensities, str_c(data_path, file_name,sep = &quot;/&quot;))
 
 #Writing and saving the clean dataframe to 02_df_clean.tsv.</code></pre>
+<pre class="r"><code>write_tsv(df_feature_wise, file = here(&quot;data/03_df_feature_wise.tsv.gz&quot;))</code></pre>
+<pre class="r"><code>write_tsv(df_sample_wise, file = here(&quot;data/03_df_sample_wise.tsv.gz&quot;))</code></pre>
 </div>
 </div>
 <div id="augment-conclusion" class="section level2">

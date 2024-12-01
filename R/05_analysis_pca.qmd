@@ -40,6 +40,7 @@ pc <- prcomp(df_input, center = FALSE, scale = FALSE)
 #Gives an overview, you should be able to tell the variance already here even without the plot
 summary(pc)
 
+#Takes the principal component values (pc$x)  
 pc$x |> as.data.frame() |>
   ggplot(aes(x = PC1, y = PC2, color = colourby)) +
   geom_point(size = 2.5)

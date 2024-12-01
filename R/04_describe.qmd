@@ -9,7 +9,6 @@ editor: visual
 ```{r 04_library, message=FALSE, running=FALSE}
 library(tidyverse)
 library(ggplot2)
-library(UpSetR)
 ```
 
 ## Load data
@@ -51,31 +50,31 @@ list_hsc <- df_intensities |>
   filter(cell_type=="hsc") |> 
   filter(!is.na(intensity)) |> 
   pull(protein_groups) |> 
-  unique()
+  distinct()
 
 list_cmp <- df_intensities |> 
   filter(cell_type=="cmp") |> 
   filter(!is.na(intensity)) |> 
   pull(protein_groups) |> 
-  unique()
+  distinct()
 
 list_gmp <- df_intensities |> 
   filter(cell_type=="gmp") |> 
   filter(!is.na(intensity)) |> 
   pull(protein_groups) |> 
-  unique()
+  distinct()
 
 list_clp <- df_intensities |> 
   filter(cell_type=="clp") |> 
   filter(!is.na(intensity)) |> 
   pull(protein_groups) |> 
-  unique()
+  distinct()
 
 list_mep <- df_intensities |> 
   filter(cell_type=="mep") |> 
   filter(!is.na(intensity)) |> 
   pull(protein_groups) |> 
-  unique()
+  distinct()
 
 # make list of vectors for UpSetPlot input
 

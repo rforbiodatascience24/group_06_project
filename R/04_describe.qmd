@@ -9,6 +9,8 @@ editor: visual
 ```{r}
 library(tidyverse)
 library(UpSetR)
+library("forcats")
+library("ggplot2")
 ```
 
 ## Load Data
@@ -178,16 +180,6 @@ df_uniprot_mouse <- read_tsv(file = here("data/01_dat_load_uniprot_mouse.tsv"))
 ```
 
 ```{r}
-# With gene names
-                
-df_test_keywords <- df_uniprot_mouse |> 
-  filter(str_detect(`Gene Names`, 'Ckap5')) |> 
-  pull(Keywords) |> 
-  str_c(collapse ='; ')
-print(Keywords)
-```
-
-```{r}
 
 uniprot_lookup <- function(gene_id, dataframe, id_column, keyword_column){
   ## function that takes in string x and looks for string pattern in uniprot dataframe, giving back the value in keyword column.
@@ -216,43 +208,6 @@ df_type2 <- df_type |>
 ```
 
 ```{r}
-# number proteins hsc before
-number_hsc <- df_type |> 
-  filter(cell_type=="hsc") |>
-  group_by(protein_groups) |> 
-  summarize(count = n())
-print(number_hsc)
-```
-
-```{r}
-# number proteins hsc after
-number_hsc <- df_type2 |> 
-  filter(cell_type=="hsc") |>
-  group_by(protein_groups) |> 
-  summarize(count = n())
-print(number_hsc)
-```
-
-```{r}
-df_type_summ2 <- df_type2 |> 
-    group_by(protein_groups, cell_type) |> 
-    summarize(non_na_count = sum(!is.na(intensity))) |> 
-    ungroup()
-```
-
-```{r}
-# make df with transcription regulation proteins
-
-df_tf <- df_type2 |> 
-  filter(str_detect(description_column, "Transcription regulation")) |> 
-  group_by(cell_type) |>
-  nest() |> 
-  mutate(nr_protein_groups = map(.x = data,
-                                 .f = ~n_distinct(pluck(.x, "protein_groups"))))
-  
-```
-
-```{r}
 # make nested df with multiple cell types
 
 df_multi <- df_type2 |> 
@@ -275,11 +230,66 @@ df_multi <- df_type2 |>
 
 ```{r}
 
-df_type
+# simple bar chart with total number protein groups per cell type
+df_type |> 
+  mutate(
+    cell_type = factor(cell_type, levels=(c("clp", "gmp", "mep", "cmp", "hsc"))),
+    cell_type = fct_recode(cell_type, 
+                         "HSC" = "hsc",
+                         "CMP" = "cmp",
+                         "MEP" = "mep",
+                         "GMP" = "gmp",
+                         "CLP" = "clp")) |> 
+  filter(!is.na(intensity)) |> 
+  group_by(protein_groups) |> 
+  distinct(cell_type, .keep_all=TRUE) |> 
+  ggplot(mapping = aes(y=cell_type)) +
+  geom_bar(aes(fill = cell_type), width = 0.7) +
+  geom_text(stat = "count", aes(label = ..count..), hjust = 1.3, size = 6, color = "white") +
+  theme_classic() +
+  theme(
+    axis.text.x = element_text(size = 16),
+    axis.text.y = element_text(size = 16),
+    axis.title.x = element_text(size = 12),
+    axis.title.y = element_text(size = 12)
+  ) +
+  guides(fill = "none") +
+  xlab("Protein Groups") +
+  ylab("Population")
 ```
 
 ```{r}
-# simple bar chart with total number pgs
+df_type2 <- df_type2 |> 
+  mutate(
+    keyword_function = case_when(
+      str_detect(description_column, "Transcription regulation") ~ "Transcription regulation",
+      str_detect(description_column, "mRNA splicing") ~ "mRNA splicing",
+      str_detect(description_column, "Translation regulation") ~ "Translation regulation",
+      str_detect(description_column, "Proteasome") ~ "Proteasome",
+      TRUE ~ NA
+    )
+  ) 
+```
 
-
+```{r}
+df_type2 |> 
+  mutate(
+    cell_type = factor(cell_type, levels=(c("hsc", "cmp", "mep", "gmp", "clp"))),
+    cell_type = fct_recode(cell_type, 
+                         "HSC" = "hsc",
+                         "CMP" = "cmp",
+                         "MEP" = "mep",
+                         "GMP" = "gmp",
+                         "CLP" = "clp")) |>
+  filter(!is.na(keyword_function)) |> 
+  ggplot(mapping = aes(x=cell_type, fill=keyword_function)) +
+  geom_bar(position = position_dodge()) +
+  theme_classic() +
+  theme(
+  axis.text.x = element_text(size = 16),
+  axis.text.y = element_text(size = 16),
+  axis.title.x = element_text(size = 12),
+  axis.title.y = element_text(size = 12)) +
+  xlab("Population") +
+  ylab("Number Protein Groups")
 ```

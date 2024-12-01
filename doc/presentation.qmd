@@ -33,7 +33,7 @@ Results
 
 The issue here is that I (Magda) can only suceed in inserting the images to the presentation if I use the 'insert picture' button in visual mode. This however creates a new folder named "images" inside the doc folder. I don't think this is desirable since Leon specifically asked us to have nothing but the presentation in the doc folder. I have spent 2 hours trying to resolve the issue of relative paths, using the here call and talking to chat gpt about it. I think our plan B must be to insert the images in this way via the images folder, because I really dont know how to call them from the result folder.
 
-![](images/cmp_gmp_volcano_plot.png)
+![](../results/cmp_gmp_volcano_plot.png)
 
 ## Discussion
 

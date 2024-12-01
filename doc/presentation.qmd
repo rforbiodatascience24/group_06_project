@@ -1,43 +1,158 @@
 ---
 title: "Proteomics Data from Murine Blood Cells"
 subtitle: "A Collaborative Data Science Project by Group 6"
-format: revealjs
 editor: visual
+format: 
+  revealjs:
+    theme: white
 ---
 
 Read the following resources to become smarter on how to create presentations. Remember to have exactly 10 slides. https://quarto.org/docs/presentations/
 
 https://quarto.org/docs/presentations/revealjs/
 
-## Introduction to the data
+## Introduction to the data {.smaller}
 
-Introduction - Here we should introduce the dataset(s) we are working with
+the data is obtained by applying mass spectrometry to FACS-sorted populations of hematopoietic stem- and progenitor cells from the mouse bone marrow
+
+five populations were isolated based on known surface marker expression: HSC, CLP, CMP, MEP, GMP
+
+500 cells were isolated in 4 replicates, except for CLP having 5 replicates
+
+raw data consists of LS/MS DIA intensity values of identified protein groups (PG)
+
+| Cell Type                   | HSC  | CMP  | GMP  | CLP  | MEP  | Total |
+|-----------------------------|------|------|------|------|------|-------|
+| No. of observations         | 2196 | 1986 | 2291 | 2382 | 2691 | 3765  |
+| No. of replicates (samples) | 4    | 4    | 4    | 5    | 4    | 21    |
+
+: Table 1: Number of replicates and observations across replicates for the analysed FACS-populations
 
 ## Data tidying and data format
 
-Methods This is a part of description of methods
-
-## What issues did we encounter while tidying the code
-
-Methods Here we write some of our thoughts. Fx long / wide discussion we had. Or our troubles with computing p-value for all. Explain our choices. How did we solve these issues
+::: nonincremental
+-   5 dataframes (hsc, clp, cmp, mep, gmp) into one joint dataframe using function  `full_join()` , joined by both: ProteinGroup and Genes
+-   variable names are simplified
+-   5 cell types making up a total of 21 variables, we used  `pivot_longer()`  to get just one intensity colomn
+-   name of the cell type and number of the replica are now merged, but we want to have them in 2 different colomns
+:::
 
 ## Augmenting the data
 
-Methods Explain how/why we did log transformation, normalization, how we dealt with N/As
+::: nonincremental
+-   log2 transformation of the values (common for mass spectrometry proteomics data)
 
-## Principal Component Analysis (PCA)
+-   individual protein intensities are normalised to the median of each sample
 
-The
+-   intensities across the different cell types are normalized (due different to cell count)
 
-## Volcano Plot
+-   missing values (detection limit of the mass spectrometer) replacing sample-wise and feature-wise
 
-The issue here is that I (Magda) can only suceed in inserting the images to the presentation if I use the 'insert picture' button in visual mode. This however creates a new folder named "images" inside the doc folder. I don't think this is desirable since Leon specifically asked us to have nothing but the presentation in the doc folder. I have spent 2 hours trying to resolve the issue of relative paths, using the here call and talking to chat gpt about it. I think our plan B must be to insert the images in this way via the images folder, because I really dont know how to call them from the result folder.
+-   which plots to showcase??????
+:::
 
-![](../results/cmp_gmp_volcano_plot.png)
+## Issuses during tidyig and augmenting
+
+::: nonincremental
+-   although longer format is often preferred, we found that for calculating fold and q value (between two cell types) wider format is a better solution, q value is then simply added by using  `mutate()` .
+
+-   even if there is an existing function for T test, we made our own, which is more adjusted to our input
+
+-   as there is multiple possible comparisons between cell types, we decided to build a function which which as an output will have a new dataframe, with 2 cell types of interest
+
+-   what other problems have we had? how did we solve it? why did we choose to do it in that way?
+:::
+
+## Function
+
+``` {.r style="font-size: 0.7em"}
+volcano_augment <- function(df, later_cell, earlier_cell, n_later, n_earlier){
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  return(data_set_for_visualisation)
+})
+```
+
+## Function {auto-animate="true"}
+
+``` {.r style="font-size: 0.7em"}
+volcano_augment <- function(df, later_cell, earlier_cell, n_later, n_earlier){
+  data_set_for_visualisation <- df |> 
+    ungroup() |> # Ungrup the data_frame to avoid miscalculations.
+    select(c(protein_groups,
+             !!sym(paste0("mean_", earlier_cell)), 
+             !!sym(paste0("mean_", later_cell)), 
+             !!sym(paste0("sd_", later_cell)), 
+             !!sym(paste0("sd_", earlier_cell)))) |> 
+    #!!sym() is used to evaluate the result as a column name.. 
+    mutate(fold_log2 = log2(!!sym(paste0("mean_", later_cell)) /!!sym(paste0("mean_", earlier_cell))), 
+           p_val = pval(!!sym(paste0("mean_", later_cell)),
+                        !!sym(paste0("mean_", earlier_cell)),
+                        n_later, n_earlier,
+                        !!sym(paste0("sd_", later_cell)),
+                        !!sym(paste0("sd_", earlier_cell))),
+           q_val = (p.adjust(p_val))) |> 
+    mutate(expression = case_when(fold_log2 > 0 & q_val <= 0.05 ~ "overexpressed",
+                                  fold_log2 < 0 & q_val <= 0.05 ~ "underexpressed",
+                                  q_val > 0.05  ~ "not significant")) |> 
+    select(protein_groups, fold_log2, q_val, expression)
+  return(data_set_for_visualisation)
+})
+```
+
+## Volcano Plot {.smaller}
+
+::: nonincremental
+-   log2(fold) vs log10(q_values) plot is a rule of thumb in proteomics
+:::
+
+::: panel-tabset
+### CMP - GMP
+
+![](images/cmp_gmp_volcano_plot-02.png)
+
+### CMP - MEP
+
+![](images/cmp_mep_volcano_plot-01.png)
+
+### HSC - CLP
+
+![](images/hsc_clp_volcano_plot-01.png)
+
+### HSC - CMP
+
+![](images/hsc_cmp_volcano_plot-02.png)
+:::
+
+## PCA
+
+🙃
 
 ## Discussion
 
-Discussion - What do the data tell us? - What could we have done differently? - What was the hardest part about working with the data/what were our issues?
+::: nonincremental
+-   5 dataframes are merged into 1
+-   data is cleaned and pivoted longer in order to separate cell type and number of measurment
+-   data is log2 transformed and normalised
+-   data is pivoted wider again in order to do the calculations between cell groups
+-   results are showcased with 4 volcano plots
+-   PCA shows us simmilarity between different cell types, and potentialy pathway of stem cell development
+:::
 
 ## Discussion
 

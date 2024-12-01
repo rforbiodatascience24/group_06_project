@@ -56,8 +56,11 @@ options(knitr.duplicate.label = "allow")
 render(input = "04_describe.qmd", output_dir = here("results/"))
 ```
 
+<<<<<<< HEAD
 
 {{< include 05_analysis_pca.qmd >}}
+=======
+>>>>>>> 0eb1b96c25cdca7db7f37a8875a4b53c3dbca9ae
 ```{r 05_render, message=FALSE, running=FALSE}
 #| echo: false
 #| include: false
@@ -67,8 +70,13 @@ render(input = "04_describe.qmd", output_dir = here("results/"))
 
 # Uncomment these: options... and render... when the pca is finally ready.
 
+<<<<<<< HEAD
 options(knitr.duplicate.label = "allow")
 render(input = "05_analysis_pca.qmd", output_dir = here("results/"))
+=======
+#options(knitr.duplicate.label = "allow")
+#render(input = "05_analysis_pca.qmd", output_dir = here("results/"))
+>>>>>>> 0eb1b96c25cdca7db7f37a8875a4b53c3dbca9ae
 ```
 
 {{< include 06_analysis_volcano.qmd >}}

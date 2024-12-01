@@ -13,7 +13,7 @@ df_input <- df_no_na_wide |> select(-c('sample','cell_type')) |>
   mutate(across(where(is.list), ~ sapply(., function(x) x[1]))) |> 
   na.omit() 
 
-colourby <- df_no_na_wide$cell_type |> as.factor()
+colourby <- df_no_na_wide$cell_type
   
 #Projecting data unto principal components (pc)
 pc <- prcomp(df_input, center = FALSE, scale = FALSE)
@@ -25,13 +25,12 @@ pc <- prcomp(df_input, center = FALSE, scale = FALSE)
 summary(pc)
 
 pc$x |> as.data.frame() |>
-  #broom::augment(df_no_na_wide) %>%
   ggplot(aes(x = PC1, y = PC2, color = colourby)) +
-  geom_point()
+  geom_point(size = 2.5)
 ```
 
 ## Save plot
 
 ```{r}
-ggsave(plot = biplot, filename = "PCA_on_proteingroups1.png", width = 20, height = 10, units = "cm", path = here("results"))
+ggsave(plot = biplot, filename = "PCA_on_proteingroups_original.png", width = 20, height = 10, units = "cm", path = here("results"))
 ```

@@ -9,7 +9,6 @@ editor: visual
 ```{r 04_library, message=FALSE, running=FALSE}
 library(tidyverse)
 library(ggplot2)
-library(UpSetR)
 ```
 
 ## Load data
@@ -50,7 +49,7 @@ To understand the proteomic changes over the course of stem cell differentiation
 list_hsc <- df_intensities |> 
   filter(cell_type=="hsc") |> 
   filter(!is.na(intensity)) |> 
-  pull(protein_groups) |> 
+  pull(protein_groups) |>
   unique()
 
 list_cmp <- df_intensities |> 

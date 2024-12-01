@@ -10,6 +10,7 @@ editor: visual
 library(tidyverse)
 library(ggplot2)
 library(UpSetR)
+library(here)
 ```
 
 ## Load data
@@ -199,10 +200,3 @@ Choice of NA imputation: We need to base our decision on the nature of the data 
 -   here we could have some scatter plots, density plots etc.
 
 ## Scatter PlotsDensity plots
-
-```{r}
-#df_no_na_long |> 
- # ggplot(aes(x=intensity, colour=cell_type)) +
-  #geom_density() +
-  #theme_classic()
-```

@@ -393,18 +393,18 @@ cell type and specify the replicate number. Note! The replicates are
 technical replicates.</p>
 <pre class="r"><code># get column names
 print(colnames(df_intensities))</code></pre>
-<pre><code>##  [1] &quot;PG.ProteinGroups&quot;                    &quot;PG.Genes&quot;                           
-##  [3] &quot;[1] HSC_mBM_500c_49.raw.PG.Quantity&quot; &quot;[2] HSC_mBM_500c_50.raw.PG.Quantity&quot;
-##  [5] &quot;[3] HSC_mBM_500c_51.raw.PG.Quantity&quot; &quot;[4] HSC_mBM_500c_56.raw.PG.Quantity&quot;
-##  [7] &quot;[1] CLP_mBM_500c_48.raw.PG.Quantity&quot; &quot;[2] CLP_mBM_500c_52.raw.PG.Quantity&quot;
-##  [9] &quot;[3] CLP_mBM_500c_57.raw.PG.Quantity&quot; &quot;[4] CLP_mBM_500c_58.raw.PG.Quantity&quot;
-## [11] &quot;[5] CLP_mBM_500c_59.raw.PG.Quantity&quot; &quot;[1] CMP_mBM_500c_44.raw.PG.Quantity&quot;
-## [13] &quot;[2] CMP_mBM_500c_45.raw.PG.Quantity&quot; &quot;[3] CMP_mBM_500c_46.raw.PG.Quantity&quot;
-## [15] &quot;[4] CMP_mBM_500c_47.raw.PG.Quantity&quot; &quot;[1] MEP_mBM_500c_40.raw.PG.Quantity&quot;
-## [17] &quot;[2] MEP_mBM_500c_41.raw.PG.Quantity&quot; &quot;[3] MEP_mBM_500c_42.raw.PG.Quantity&quot;
-## [19] &quot;[4] MEP_mBM_500c_43.raw.PG.Quantity&quot; &quot;[1] GMP_mBM_500c_36.raw.PG.Quantity&quot;
-## [21] &quot;[2] GMP_mBM_500c_37.raw.PG.Quantity&quot; &quot;[3] GMP_mBM_500c_38.raw.PG.Quantity&quot;
-## [23] &quot;[4] GMP_mBM_500c_39.raw.PG.Quantity&quot;</code></pre>
+<pre><code> [1] &quot;PG.ProteinGroups&quot;                    &quot;PG.Genes&quot;                           
+ [3] &quot;[1] HSC_mBM_500c_49.raw.PG.Quantity&quot; &quot;[2] HSC_mBM_500c_50.raw.PG.Quantity&quot;
+ [5] &quot;[3] HSC_mBM_500c_51.raw.PG.Quantity&quot; &quot;[4] HSC_mBM_500c_56.raw.PG.Quantity&quot;
+ [7] &quot;[1] CLP_mBM_500c_48.raw.PG.Quantity&quot; &quot;[2] CLP_mBM_500c_52.raw.PG.Quantity&quot;
+ [9] &quot;[3] CLP_mBM_500c_57.raw.PG.Quantity&quot; &quot;[4] CLP_mBM_500c_58.raw.PG.Quantity&quot;
+[11] &quot;[5] CLP_mBM_500c_59.raw.PG.Quantity&quot; &quot;[1] CMP_mBM_500c_44.raw.PG.Quantity&quot;
+[13] &quot;[2] CMP_mBM_500c_45.raw.PG.Quantity&quot; &quot;[3] CMP_mBM_500c_46.raw.PG.Quantity&quot;
+[15] &quot;[4] CMP_mBM_500c_47.raw.PG.Quantity&quot; &quot;[1] MEP_mBM_500c_40.raw.PG.Quantity&quot;
+[17] &quot;[2] MEP_mBM_500c_41.raw.PG.Quantity&quot; &quot;[3] MEP_mBM_500c_42.raw.PG.Quantity&quot;
+[19] &quot;[4] MEP_mBM_500c_43.raw.PG.Quantity&quot; &quot;[1] GMP_mBM_500c_36.raw.PG.Quantity&quot;
+[21] &quot;[2] GMP_mBM_500c_37.raw.PG.Quantity&quot; &quot;[3] GMP_mBM_500c_38.raw.PG.Quantity&quot;
+[23] &quot;[4] GMP_mBM_500c_39.raw.PG.Quantity&quot;</code></pre>
 <pre class="r"><code># We have four replicates per cell type. Change all column names at once for easier readability.
 df_intensities &lt;- 
   setNames(df_intensities, c(&quot;protein_groups&quot;,
@@ -459,6 +459,19 @@ more flexibility when augmenting the data in 03_augment.</p>
 <p>Here’s a snippet of how the long format of the proteomics data is
 organized</p>
 <pre class="r"><code>sample_n(df_intensities,10)</code></pre>
+<pre><code># A tibble: 10 × 5
+   protein_groups genes  cell_type replicate_n intensity
+   &lt;chr&gt;          &lt;chr&gt;  &lt;chr&gt;     &lt;chr&gt;           &lt;dbl&gt;
+ 1 Q91VC9         Ghitm  cmp       2                357.
+ 2 P68134         Acta1  gmp       1              48946.
+ 3 P62702         Rps4x  mep       4              55337.
+ 4 Q9ESW4         Agk    cmp       1                286.
+ 5 Q60864         Stip1  mep       4              52229.
+ 6 P23953         Ces1c  cmp       4                 NA 
+ 7 Q9JM76         Arpc3  cmp       4              14613.
+ 8 Q6ZPJ3         Ube2o  gmp       1                683.
+ 9 Q1XH17         Trim72 gmp       4                 NA 
+10 P97449         Anpep  cmp       3                 NA </code></pre>
 </div>
 </div>
 <div id="write-to-tsv" class="section level2">

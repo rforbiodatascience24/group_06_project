@@ -396,7 +396,23 @@ of the sample.</p>
 df_log_intensities |&gt; 
   group_by(cell_type,replicate_n) |&gt; 
   summarize(median(intensity, na.rm = TRUE))</code></pre>
-<pre><code>## `summarise()` has grouped output by &#39;cell_type&#39;. You can override using the `.groups` argument.</code></pre>
+<pre><code>`summarise()` has grouped output by &#39;cell_type&#39;. You can override using the
+`.groups` argument.</code></pre>
+<pre><code># A tibble: 21 × 3
+# Groups:   cell_type [5]
+   cell_type replicate_n `median(intensity, na.rm = TRUE)`
+   &lt;chr&gt;           &lt;dbl&gt;                             &lt;dbl&gt;
+ 1 clp                 1                              12.2
+ 2 clp                 2                              10.5
+ 3 clp                 3                              10.4
+ 4 clp                 4                              10.6
+ 5 clp                 5                              11.0
+ 6 cmp                 1                              11.4
+ 7 cmp                 2                              11.4
+ 8 cmp                 3                              11.5
+ 9 cmp                 4                              11.4
+10 gmp                 1                              11.5
+# ℹ 11 more rows</code></pre>
 <div id="normalizing-intensities" class="section level3">
 <h3>Normalizing intensities</h3>
 <p>The intensities across the different cell types are normalized so
@@ -507,10 +523,26 @@ df_sample_mean &lt;- df_sample_wise|&gt;
     ) |&gt; 
   pivot_wider(names_from = cell_type,
               values_from = c(mean,sd))</code></pre>
-<pre><code>## `summarise()` has grouped output by &#39;protein_groups&#39;. You can override using the `.groups`
-## argument.</code></pre>
+<pre><code>`summarise()` has grouped output by &#39;protein_groups&#39;. You can override using
+the `.groups` argument.</code></pre>
 <pre class="r"><code># Showing 10 rows of the df_sample mean table
 sample_n(df_sample_mean, 1)</code></pre>
+<pre><code># A tibble: 3,763 × 11
+# Groups:   protein_groups [3,763]
+   protein_groups     mean_clp mean_cmp mean_gmp mean_hsc mean_mep sd_clp sd_cmp
+   &lt;chr&gt;                 &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;
+ 1 A1L314                0.609    0.334    0.350    0.325    0.394 0.268  0.0190
+ 2 A1L317                0.320    0.334    0.350    0.325    0.593 0.0656 0.0190
+ 3 A2A432;A2A432-2       0.319    0.334    0.350    0.325    0.805 0.0284 0.0190
+ 4 A2A8Z1;A2A8Z1-2       0.319    0.529    0.350    0.325    0.394 0.0284 0.237 
+ 5 A2AAJ9;A2AAJ9-2       0.319    0.625    0.350    0.325    0.394 0.0284 0.346 
+ 6 A2AB59;A2AB59-2       0.319    0.334    0.350    0.325    0.539 0.0284 0.0190
+ 7 A2ABU4                0.319    0.729    0.350    0.325    0.394 0.0284 0.266 
+ 8 A2ADY9                0.817    0.736    0.880    0.939    0.746 0.261  0.286 
+ 9 A2AGT5;A2AGT5-2;A…    0.935    0.334    1.05     1.06     0.868 0.330  0.0190
+10 A2AIV8                0.319    0.334    0.959    0.325    0.394 0.0284 0.0190
+# ℹ 3,753 more rows
+# ℹ 3 more variables: sd_gmp &lt;dbl&gt;, sd_hsc &lt;dbl&gt;, sd_mep &lt;dbl&gt;</code></pre>
 </div>
 <div id="estamating-p.value-log2fold-change-and-q.value" class="section level3">
 <h3>Estamating p.value, log2fold change and q.value</h3>
@@ -535,6 +567,19 @@ df_volcano_clp_hsc &lt;- df_sample_mean |&gt;
   
 
 sample_n(df_volcano_clp_hsc,10)</code></pre>
+<pre><code># A tibble: 10 × 4
+   protein_groups                                   fold_log2   q_val expression
+   &lt;chr&gt;                                                &lt;dbl&gt;   &lt;dbl&gt; &lt;chr&gt;     
+ 1 Q3UGC7;Q66JS6                                       0.0996 1   e+0 not signi…
+ 2 Q6IME9                                              1.36   1   e+0 not signi…
+ 3 O55106                                             -0.927  1   e+0 not signi…
+ 4 Q60972                                              0.0172 1   e+0 not signi…
+ 5 Q61239                                              0.573  1   e+0 not signi…
+ 6 O70194                                              0.0371 1   e+0 not signi…
+ 7 Q9D824;Q9D824-2;Q9D824-3;Q9D824-4                   1.24   1   e+0 not signi…
+ 8 P62821                                             -0.0238 1   e+0 not signi…
+ 9 P32067                                             -0.0676 1   e+0 not signi…
+10 Q6PHS9;Q6PHS9-2;Q6PHS9-3;Q6PHS9-4;Q6PHS9-5;Q6PH…   -1.74   1.97e-4 underexpr…</code></pre>
 </div>
 <div id="check-our-function" class="section level3">
 <h3>Check our function</h3>
@@ -559,6 +604,19 @@ write_tsv(df_volcano_clp_hsc,
 # Testing if the function for creating volcano-plot values work, by comparing to the manually created tibble.
 as_tibble(new_volcano_clp_hsc == df_volcano_clp_hsc) |&gt; 
   sample_n(size = 10)</code></pre>
+<pre><code># A tibble: 10 × 4
+   protein_groups fold_log2 q_val expression
+   &lt;lgl&gt;          &lt;lgl&gt;     &lt;lgl&gt; &lt;lgl&gt;     
+ 1 TRUE           TRUE      TRUE  TRUE      
+ 2 TRUE           TRUE      TRUE  TRUE      
+ 3 TRUE           TRUE      TRUE  TRUE      
+ 4 TRUE           TRUE      TRUE  TRUE      
+ 5 TRUE           TRUE      TRUE  TRUE      
+ 6 TRUE           TRUE      TRUE  TRUE      
+ 7 TRUE           TRUE      TRUE  TRUE      
+ 8 TRUE           TRUE      TRUE  TRUE      
+ 9 TRUE           TRUE      TRUE  TRUE      
+10 TRUE           TRUE      TRUE  TRUE      </code></pre>
 <p>Repeating the same data wrangling for the remaining three volcano
 plots is automatized using the function <code>volcano_augment</code></p>
 <pre class="r"><code># Input to the function is dataframe, cell types to compare and no of replicates in cell types.

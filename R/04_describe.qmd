@@ -178,63 +178,108 @@ df_uniprot_mouse <- read_tsv(file = here("data/01_dat_load_uniprot_mouse.tsv"))
 ```
 
 ```{r}
-# pseudo code
-
-# custom_function <- function(x, y){
-## function that takes in string x and looks for string pattern in uniprot tibble y, giving back the value in keyword column.
-Keywords <- df_y |> 
-  filter(str_detect(Entry, x)) |> 
-  pull(Keywords)
-  
-
-# df_norm_long |> 
-# mutate(description_column = map_chr(
-#   .x = Proteins,
-#   .f = custom_function(.x)
-
-```
-
-```{r}
-Keywords <- df_uniprot_mouse |> 
-  filter(str_detect('P02301;P68433;P84228;P84244', Entry)) |> 
+# With gene names
+                
+df_test_keywords <- df_uniprot_mouse |> 
+  filter(str_detect(`Gene Names`, 'Ckap5')) |> 
   pull(Keywords) |> 
   str_c(collapse ='; ')
+print(Keywords)
 ```
 
 ```{r}
 
-uniprot_lookup <- function(pg_id, dataframe, id_column, keyword_column){
-  ## function that takes in string x and looks for string pattern in uniprot tibble y, giving back the value in keyword column.
+uniprot_lookup <- function(gene_id, dataframe, id_column, keyword_column){
+  ## function that takes in string x and looks for string pattern in uniprot dataframe, giving back the value in keyword column.
   Keywords <- dataframe |> 
-  filter(str_detect(pg_id, id_column)) |> 
-  pull(keyword_column) |> 
+  filter(str_detect({{id_column}}, gene_id)) |> 
+  pull({{keyword_column}}) |> 
   str_c(collapse ='; ')
   return(Keywords)
 }
 
   
-df_test <- df_norm_long |> 
+df_type <- df_norm_long |> 
   mutate(description_column = map_chr(
-     .x = protein_groups,
-     .f = ~uniprot_lookup(pg_id=.x, dataframe=df_uniprot_mouse, id_column="Entry", keyword_column="Keywords")
+     .x = genes,
+     .f = ~uniprot_lookup(gene_id=.x, dataframe=df_uniprot_mouse, id_column=`Gene Names`, keyword_column=Keywords)
    ))
 ```
 
 ```{r}
-# debug with dummy 
-uniprot_lookup <- function(pg_id, dataframe, id_column, keyword_column){
-  ## function that takes in string x and looks for string pattern in uniprot tibble y, giving back the value in keyword column.
-  Keywords <- dataframe |> 
-  filter(str_detect(pg_id, id_column)) |> 
-  pull(keyword_column) |> 
-  str_c(collapse ='; ')
-  return(Keywords)
-}
+# Make rule for presence in a sample: needs to be present in at least 2 replicates
 
+df_type2 <- df_type |> 
+  group_by(protein_groups, cell_type) |> 
+  filter(sum(!is.na(intensity)) >= 2) |> 
+  ungroup()
+```
+
+```{r}
+# number proteins hsc before
+number_hsc <- df_type |> 
+  filter(cell_type=="hsc") |>
+  group_by(protein_groups) |> 
+  summarize(count = n())
+print(number_hsc)
+```
+
+```{r}
+# number proteins hsc after
+number_hsc <- df_type2 |> 
+  filter(cell_type=="hsc") |>
+  group_by(protein_groups) |> 
+  summarize(count = n())
+print(number_hsc)
+```
+
+```{r}
+df_type_summ2 <- df_type2 |> 
+    group_by(protein_groups, cell_type) |> 
+    summarize(non_na_count = sum(!is.na(intensity))) |> 
+    ungroup()
+```
+
+```{r}
+# make df with transcription regulation proteins
+
+df_tf <- df_type2 |> 
+  filter(str_detect(description_column, "Transcription regulation")) |> 
+  group_by(cell_type) |>
+  nest() |> 
+  mutate(nr_protein_groups = map(.x = data,
+                                 .f = ~n_distinct(pluck(.x, "protein_groups"))))
   
-df_test <- df_norm_long |> 
-  mutate(description_column = map_chr(
-     .x = protein_groups,
-     .f = ~uniprot_lookup(pg_id=.x, dataframe=df_uniprot_mouse, id_column="Entry", keyword_column="Keywords")
-))
+```
+
+```{r}
+# make nested df with multiple cell types
+
+df_multi <- df_type2 |> 
+  group_by(cell_type) |> 
+  nest() |> 
+  mutate(transcription_pgs = map(.x = data,
+                                 .f = ~.x |> filter(str_detect(description_column,
+                                                         "Transcription regulation"))),
+         translation_pgs = map(.x = data,
+                                 .f = ~.x |> filter(str_detect(description_column,
+                                                         "Translation regulation"))),
+         mrna_splicing_pgs = map(.x = data,
+                                 .f = ~.x |> filter(str_detect(description_column,
+                                                         "mRNA splicing"))),
+         proteasome_pgs = map(.x = data,
+                                 .f = ~.x |> filter(str_detect(description_column,
+                                                         "Proteasome"))))
+
+```
+
+```{r}
+
+df_type
+```
+
+```{r}
+# simple bar chart with total number pgs
+
+
 ```

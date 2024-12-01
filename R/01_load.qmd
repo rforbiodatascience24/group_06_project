@@ -36,7 +36,7 @@ unzip(here("raw_data/group_6_data.zip"), exdir = here("raw_data"))
 
 # read in tsv file for mus musculus uniprot file
 
-.df_mus_musculus <- read_csv2(file = here("raw_data/uniprotkb_mus_musculus.tsv"), na= "NaN")
+.df_uniprot_mouse <- read_csv2(file = here("raw_data/uniprotkb_mus_musculus.tsv"), na= "NaN")
 
 
 #| echo: false
@@ -55,5 +55,5 @@ write_tsv(.df_gmp, "data/01_dat_load_gmp.tsv")
 write_tsv(.df_clp, "data/01_dat_load_clp.tsv")
 write_tsv(.df_cmp, "data/01_dat_load_cmp.tsv")
 
-write_tsv(.df_mus_musculus, "data/01_dat_load_mus_musculus.tsv")
+write_tsv(.df_uniprot_mouse, "data/01_dat_load_uniprot_mouse.tsv")
 ```

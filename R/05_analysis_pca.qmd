@@ -2,14 +2,12 @@
 
 ```{r}
 library(tidyr)
-library('ggbiplot')
 library(graphics)
 
 # Set the bitmap type to 'cairo' to avoid PNG issue
 options(bitmapType = 'cairo')
 
 #Input data tois wide format, excluding columns with missing data.
-
 
 # The new data-frame for df_no_na_wide is called : df_feature_wide.
 # For creating a column sample as a guiding column use:
@@ -34,10 +32,23 @@ pc <- prcomp(df_input, center = FALSE, scale = FALSE)
 #Gives an overview, you should be able to tell the variance already here even without the plot
 summary(pc)
 
-#Takes the principal component values (pc$x)  
+#Plots the principal component values (pc$x)  
 pc$x |> as.data.frame() |>
   ggplot(aes(x = PC1, y = PC2, color = colourby)) +
   geom_point(size = 2.5)
+```
+
+```{r}
+pc |>
+  tidy(matrix = "eigenvalues") |>
+  filter(PC <= 5) |>
+  ggplot(aes(PC, percent)) +
+  geom_col(fill = "#56B4E9", alpha = 0.8) +
+  scale_x_continuous(breaks = 1:9) +
+  scale_y_continuous(
+    labels = scales::percent_format(),
+    expand = expansion(mult = c(0, 0.01))
+  ) 
 ```
 
 ## Save plot

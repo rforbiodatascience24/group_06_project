@@ -5,3 +5,18 @@ editor: visual
 ---
 
 ## RUN ALL
+
+```{r}
+library("tidyverse")
+library(here)
+project_path <- here()
+str_c(project_path,"R/01_load.qmd",sep = "/")
+
+subfolder_path <- file.path(here(), "R")
+
+subfolder_path
+
+source("/net/pupil1/home/people/s243171/projects/Group 6 final project/R/01_load.qmd")
+source()
+
+```

@@ -63,13 +63,10 @@ raw data consists of LS/MS DIA intensity values of identified protein groups (PG
 -   what other problems have we had? how did we solve it? why did we choose to do it in that way?
 :::
 
-
-## Function 
+## Function
 
 ``` {.r style="font-size: 0.7em"}
 volcano_augment <- function(df, later_cell, earlier_cell, n_later, n_earlier){
-
-
 
 
 

@@ -1,9 +1,24 @@
 ## Make PCA plot
 
-```{r}
+```{r, message=FALSE, running=FALSE}
 library(tidyr)
 library('ggbiplot')
 library(graphics)
+```
+
+
+
+```{r}
+# The new data-frame for df_no_na_wide is called : df_feature_wide.
+# For creating a column sample as a guiding column use:
+df_feature_wide |> 
+  mutate(sample = str_c(cell_type,
+                        replicate_n, sep = "_"),
+         .before = cell_type)
+``` 
+
+
+```{r}
 
 # Set the bitmap type to 'cairo' to avoid PNG issue
 options(bitmapType = 'cairo')
@@ -36,7 +51,6 @@ biplot <- ggbiplot(pc,
         )+
   theme(legend.position = 'top',aspect.ratio = 1)
   
-
 
 print(biplot)
 ```

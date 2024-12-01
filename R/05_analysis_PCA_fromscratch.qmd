@@ -9,6 +9,16 @@ library(graphics)
 options(bitmapType = 'cairo')
 
 #Input data tois wide format, excluding columns with missing data.
+
+
+# The new data-frame for df_no_na_wide is called : df_feature_wide.
+# For creating a column sample as a guiding column use:
+# mutate
+
+df_feature_wide |> 
+  mutate(sample = str_c(cell_type, replicate_n, sep = "_"))
+
+
 df_input <- df_no_na_wide |> select(-c('sample','cell_type')) |> 
   mutate(across(where(is.list), ~ sapply(., function(x) x[1]))) |> 
   na.omit() 

@@ -1,37 +1,53 @@
 ---
 title: "01_load"
-format: html
+format:
+  html:
+    embed-resources: true
 editor: visual
 ---
 
-```{r}
+# 01_Load
+
+## Libraries
+
+```{r 01_libary, message=FALSE, running=FALSE}
 library(tidyverse)
 library(here)
 ```
 
 # Loading Data
 
-```{r}
+Downloading data from dropbox containing the proteomics dataset.
 
-# Dropbox url
-url <- "https://www.dropbox.com/scl/fi/d63o8sgp03fyu2s6tsqau/group_6_data.zip?rlkey=50z2rrfaowoizqivttdmyym2i&st=kngr6y9j&dl=1"
+```{r 01_download}
+#defining path to store data in the folder data_raw
+raw_dir <- here("data/_raw")
+data_file <- "mouse_cell_stages.zip"
+data_location <- "https://www.dropbox.com/scl/fi/d63o8sgp03fyu2s6tsqau/group_6_data.zip?rlkey=50z2rrfaowoizqivttdmyym2i&st=kngr6y9j&dl=1"
 
-# Download the zip file
-download.file(url, destfile = here("raw_data/group_6_data.zip"))
 
-# Unzip the downloaded file
-unzip(here("raw_data/group_6_data.zip"), exdir = here("raw_data"))
+if( !dir.exists(raw_dir) ){ # Check if the path already exists and creates it if it doesn't  exist
+  dir.create(path = raw_dir)
+} 
+if( !file.exists(str_c(raw_dir, data_file, sep = "/")) ){ # Downloads the data unless it is not already downloaded
+  download.file(
+    url = data_location,
+    destfile = str_c(raw_dir, data_file, sep = "/"))
+}
+
+# Unzip the proteomics data
+unzip(str_c(raw_dir, data_file, sep = "/"), exdir = raw_dir)
 ```
 
-```{r}
+```{r 01_read_csv, message=FALSE, running=FALSE}
 
 # read in csv files for all cell populations
 
-.df_hsc <- read_csv2(file = here("raw_data/group6_data_HSC_Report.csv"), na= "NaN")
-.df_mep <- read_csv2(file = here("raw_data/group6_data_MEP_Report.csv"), na= "NaN")
-.df_gmp <- read_csv2(file = here("raw_data/group6_data_GMP_Report.csv"), na= "NaN")
-.df_clp <- read_csv2(file = here("raw_data/group6_data_CLP_Report.csv"), na= "NaN")
-.df_cmp <- read_csv2(file = here("raw_data/group6_data_CMP_Report.csv"), na= "NaN")
+df_hsc <- read_csv2(file = here("data/_raw/group6_data_HSC_Report.csv"), na="NaN")
+df_mep <- read_csv2(file = here("data/_raw/group6_data_MEP_Report.csv"), na="NaN")
+df_gmp <- read_csv2(file = here("data/_raw/group6_data_GMP_Report.csv"), na="NaN")
+df_clp <- read_csv2(file = here("data/_raw/group6_data_CLP_Report.csv"), na="NaN")
+df_cmp <- read_csv2(file = here("data/_raw/group6_data_CMP_Report.csv"), na="NaN")
 
 
 #| echo: false
@@ -39,14 +55,13 @@ unzip(here("raw_data/group_6_data.zip"), exdir = here("raw_data"))
 
 ```
 
-```{r}
-# write tsv files
-project_path = here()
-setwd(project_path)
-dir.create("data")
-write_tsv(.df_hsc, "data/01_dat_load_hsc.tsv")
-write_tsv(.df_mep, "data/01_dat_load_mep.tsv")
-write_tsv(.df_gmp, "data/01_dat_load_gmp.tsv")
-write_tsv(.df_clp, "data/01_dat_load_clp.tsv")
-write_tsv(.df_cmp, "data/01_dat_load_cmp.tsv")
+### Save the data-file for 02_clean.qmd
+
+```{r 01_write_csv}
+
+write_tsv(df_hsc, file = here("data/01_hsc.tsv.gz"))
+write_tsv(df_mep, file = here("data/01_mep.tsv.gz"))
+write_tsv(df_gmp, file = here("data/01_gmp.tsv.gz"))
+write_tsv(df_clp, file = here("data/01_clp.tsv.gz"))
+write_tsv(df_cmp, file = here("data/01_cmp.tsv.gz"))
 ```

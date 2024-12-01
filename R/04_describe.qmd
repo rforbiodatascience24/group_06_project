@@ -49,32 +49,32 @@ To understand the proteomic changes over the course of stem cell differentiation
 list_hsc <- df_intensities |> 
   filter(cell_type=="hsc") |> 
   filter(!is.na(intensity)) |> 
-  pull(protein_groups) |> 
-  distinct()
+  pull(protein_groups) |>
+  unique()
 
 list_cmp <- df_intensities |> 
   filter(cell_type=="cmp") |> 
   filter(!is.na(intensity)) |> 
   pull(protein_groups) |> 
-  distinct()
+  unique()
 
 list_gmp <- df_intensities |> 
   filter(cell_type=="gmp") |> 
   filter(!is.na(intensity)) |> 
   pull(protein_groups) |> 
-  distinct()
+  unique()
 
 list_clp <- df_intensities |> 
   filter(cell_type=="clp") |> 
   filter(!is.na(intensity)) |> 
   pull(protein_groups) |> 
-  distinct()
+  unique()
 
 list_mep <- df_intensities |> 
   filter(cell_type=="mep") |> 
   filter(!is.na(intensity)) |> 
   pull(protein_groups) |> 
-  distinct()
+  unique()
 
 # make list of vectors for UpSetPlot input
 

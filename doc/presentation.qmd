@@ -25,11 +25,9 @@ Methods Here we write some of our thoughts. Fx long / wide discussion we had. Or
 
 Methods Explain how/why we did log transformation, normalization, how we dealt with N/As
 
-## PCA
+## Principal Component Analysis (PCA)
 
-```{r}
-print(biplot)
-```
+The
 
 ## Volcano Plot
 

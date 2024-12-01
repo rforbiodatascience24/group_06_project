@@ -1,3 +1,9 @@
+---
+title: "05_analysis_pca"
+format: html
+editor: visual
+---
+
 ## Make PCA plot
 
 ```{r}

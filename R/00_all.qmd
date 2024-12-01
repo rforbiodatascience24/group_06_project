@@ -68,7 +68,7 @@ render(input = "04_describe.qmd", output_dir = here("results/"))
 # Uncomment these: options... and render... when the pca is finally ready.
 
 options(knitr.duplicate.label = "allow")
-render(input = "05_analysis_pca.qmd", output_dir = here("results/"))
+render(input = "05_analysis_pca_fromscratch.qmd", output_dir = here("results/"))
 ```
 
 {{< include 06_analysis_volcano.qmd >}}

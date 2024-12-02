@@ -6,220 +6,207 @@ editor: visual
 
 ## Library
 
-```{r}
-library(tidyverse)
-library(broom)
+```{r  06_libraries}
+library("tidyverse")
+library("broom")
+library("ggthemes")
+library("ggrepel")
+library("ggplot2")
+library("patchwork")
 ```
 
-## Load Data
+## Load data
 
-```{r}
-df_no_na_long <- read_tsv(file = here("data/03_dat_aug_long_1.tsv"))
+Loading in the data from 03_augment for the volcano plots.
+
+```{r  06_load_data, message=FALSE, running=FALSE}
+
+df_volcano_clp_hsc <- read_tsv(file = str_c(here("data"), "df_volcano_clp_hsc.tsv.gz", sep = "/"))
+
+df_volcano_cmp_hsc <- read_tsv(file = str_c(here("data"), "df_volcano_cmp_hsc.tsv.gz", sep = "/"))
+
+df_volcano_gmp_cmp <- read_tsv(file = str_c(here("data"), "df_volcano_gmp_cmp.tsv.gz", sep = "/"))
+
+df_volcano_mep_cmp <- read_tsv(file = str_c(here("data"), "df_volcano_mep_cmp.tsv.gz", sep = "/"))
 ```
-
-## Data Analysis
-
-### PCA
-
-### Volcano plots (pairwise)
-
-Select hsc where protein starts with c
-
-```{r}
-df_no_na_long |> 
-#  filter(cell_type == "hsc") |> 
- # select(genes, intensity) |> 
-  filter(str_detect(genes, "^Cd1"))
-#There is no such thing as Cd150??
-```
-
-First of all we want to subset the data so we only work with two cell types. In this case hsc and gmp as they appear to be the most different
-
-Grouping data and nesting
-
-I also don't think we should consider the protein column. Is the amount of protein_groups the same as the amount of genes? If we subset the data again, by grouping for cell_type, what is then the lenght of them? How do I figure out how many unique genes there are?
-
-```{r}
-df_no_na_long |> 
-  group_by(cell_type) |> 
-  summarize(n = n())
-#We can see that there are equally many cmp, gmp, hsc and mep but there are more clp's which is due to the no of replicates
-```
-
-```{r}
-df_no_na_long |> 
-  ungroup() |> 
-  select(genes) |> 
-  distinct()
-
-#There are 3623 different genes
-df_no_na_long |> 
-  ungroup() |> 
-  select(protein_groups) |> 
-  distinct()
-#There are 3724 different protein groups 
-#why is the number of genes and number of proteins not the same??
-#And how do we figure out if the same genes are present in all of the cell types?
-
-```
-
-```{r}
-df_no_na_long |> 
-  ungroup() |> 
-  select(genes, cell_type) |> 
-  group_by(cell_type) |> 
-  summarize(n = n())
-```
-
-```{r}
-df_no_na_long |> 
-  filter(cell_type == "hsc" | cell_type == "gmp") |> 
-  distinct()
-```
-
-Now lets try to work with hsc and gmp.
-
-I want to create a new variable that shows me the ration between hsc and gmp.
-
-```{r}
-df_no_na_long_sample |> 
-  ungroup() |> 
-  select(cell_type, replicate_n, genes, intensity) |> 
-  filter(cell_type == "hsc" | cell_type == "gmp") |> 
-  group_by(cell_type) |> 
-  mutate(ratio = case_when(cell_type == "hsc" ~ 1,
-                           cell_type == "gmp" ~ 0))
-```
-
-```{r}
-this <- df_no_na_long |> 
-  ungroup() |> 
-  select(cell_type, replicate_n, genes, intensity) |> 
-  pivot_wider(names_from = cell_type,
-              values_from = intensity) |> 
-  filter(replicate_n != 5) |> 
-  group_by(genes) |> 
-  nest() |> 
-  ungroup()
-```
-
-```{r}
-this |> 
-  filter(genes == "Gprin1") |> 
-  pull(data)
-```
-
-Creating a function that finds the p-value based on the students t.test
-
-```{r}
-#no of replicates
-n <- 4
-
-##Compute the p-value as a tail propability in the t-distribution. pvalue=2*P(T>|tobs|). pt is the cdf distribution, so the propability that T is smaller than or equal to tobs is given by
-
-pval <- function(mu1,mu2,n1,n2,s1,s2){
-  tobs <- ((mu1-mu2)-0)/sqrt((s1^2)/n1+(s2^2)/n2)
-  df <- (((s1^2)/n1+(s2^2)/n2)^2)/((((s1^2)/n1)^2)/(n1-1)+(((s2^2)/n2)^2)/(n2-1))
-  pvalue <- 2*(1-pt(abs(tobs), df=df))
-  return(pvalue)
-  }
-
-```
-
-Testing the function to get functionality
-
-```{r}
-df_mean_intensitities |> 
-  filter(cell_type == "hsc" | cell_type == "gmp") |> 
-  filter(protein_groups == "A1L314") 
-```
-
-s
-
-```{r}
-  mutate(pval = pval(mean[1],mean[2],4,4,sd[1],sd[2]))
-#ok so this works but how can I let it be mean[gmp] instead of mean[1]. ie a programatical solution...
-  mutate(across(matches(".I|.V"), ~ if_else(row_number() %in% grep("in %", name), ./100, .)))
-  mutate(pval2 = case_when(
-  ID %in% Status1$ID ~ "Status1"
-  ))
-
-
-h
-
-T-test
-```
-
-```{r}
-# Antonio pivoted wider and creatd a log2foldchange
-df_mean_intensitities |> 
-  select(!sd) |> 
-  pivot_wider(names_from = cell_type, values_from = mean) |> 
-  select(!gmp & !hsc & !mep) |> 
-  mutate(fold = cmp/clp) 
-
-```
-
-```{r}
-# Histogram that shows distribution of the fold
-ggplot(test_plot, aes(x=fold))+
-  geom_histogram()+
-  scale_x_continuous(limits = c(0.75, 1.25))
-```
-
-We
 
 ## Volcano plots
 
-Genes with statistically significant differential expression lie above a horizontal threshold. Closer to zero indicates less change while moving away from zero in either direction indicates more change. Volcano plots provide an effective means for visualizing the direction, magnitude, and significance of changes in gene expression. 
+P05213 is tubulin, tubulin is the major constituent of microtubules, a cylinder consisting of laterally associated linear protofilaments composed of alpha- and beta-tubulin heterodimers.
 
-```{r}
-#creating a new label-variable which takes values for gene for significant genes only and otherwise leaves it as "" otherwise there would be waaaay too many (>2000) gene names 
+Q9WUA1 is an inhibitory factor that binds to WNT proteins and inhibits their activities. May be involved in mesoderm segmentation.
 
-test_plot <- df_mean_intensitities |> 
-pivot_wider(names_from = cell_type, values_from = c(mean, sd)) |> 
-  select(mean_gmp, mean_hsc, sd_gmp, sd_hsc) |> 
-  mutate(fold = mean_gmp/mean_hsc) |> 
-  #using the home-made function pval
-  mutate(pval = pval(mu1 = mean_gmp, mu2 = mean_hsc, n1 = 4, n2 = 4, s1 = sd_gmp, s2 = sd_hsc)) |> 
-  select(protein_groups, fold, pval)
+We will look at the development from HSC to CLP and from HSC to CMP.
 
-#Would be nice if to the right of 0  they are overexpressed have one color and to the left of zero have another color for underexpressed.
-#Would also be nice to have below threshold to be grey. 
+And then from CMP to MEP and from CMP to GMP. Because that is the order in which the cells develop.
 
-# Add thresholds for significance
-# Define thresholds for log2 fold change and p-value
-log2FC_threshold <- 0.5  # Example: Significant fold change > 0.5
-p_value_threshold <- -log10(0.05)  # Corresponding to p-value < 0.05
+## Creating and saving volcano plots
 
-# Classify proteins as "Up-regulated", "Down-regulated", or "NA"
-df_fc <- test_plot |> 
-  mutate(
-    regulation = case_when(
-      #If the gene is significant and upregulated 
-      log2FC > log2FC_threshold & -log10(p_value) > p_value_threshold ~ "Up-regulated",
-      #if the gene is significant and downregulated
-      log2FC < -log2FC_threshold & -log10(p_value) > p_value_threshold ~ "Down-regulated",
-      #If the gene is not significant
-      TRUE ~ "NA"  # Non-significant proteins
-    )
-  )
+The volcano plot tibbles created in 03_augment are used to create volcano plots with ggplot. The plots are saved to variables which are used to render image.png files used in the presentation
 
-library(ggrepel) 
-test_plot |>
-  #When are points significant? In this case if fold > 1 it is overexpressed
-  mutate(label = case_when(fold > 1 ~ protein_groups, fold < 1 ~ "")) |>
-  ggplot(aes(x = log2(fold), y = desc(log10(pval))))+
-  geom_point(size=1, alpha = 0.5)+
+### Comparing clp to hsc
+
+```{r 06_hsc_clp_plot}
+
+plot_clp_hsc <- df_volcano_clp_hsc |>
+  mutate(label = case_when(expression == "overexpressed" & fold_log2 > 2 ~ protein_groups,.default = "")) |>
+  ggplot(aes(x = fold_log2, y = desc(log10(q_val)), color = expression))+
+  geom_point(size=0.5, alpha = 0.5)+
+  theme_classic()+
   geom_text_repel(aes(label = label), size = 3)+
-  theme_minimal()+ labs(title = "GMP/HSC",
-                        subtitle = "Proteins that were more expressed in GMP are highlighted",
-                        x = "fold",
-                        y = "-log10(p)",
-                        caption = "proteomics data")+
-  theme(legend.position = "none",
-        plot.title = element_text(hjust = 1),
-        plot.subtitle = element_text(hjust = 1))+
-  geom_hline(yintercept = 2)
+  labs(title = "Expression of CLP relative to HSC",
+       x = "Log2fold-change",
+       y = "-log10(q)",
+       caption = "proteomics data")+
+  theme(legend.position = "bottom",
+        legend.title = element_blank(),
+        legend.text = element_text(size = 12))+
+  guides(color = guide_legend(override.aes = list(shape = 19, size = 5, alpha = 1)))+
+  #The horizontal line that indicates significance
+#  geom_hline(yintercept = 2)+
+  scale_color_manual(values = c("overexpressed" = "#D55E00", "underexpressed" = "#0072B2", "not_significant" = "gray"))
+```
+
+### Comparing cmp to hsc
+
+```{r 06_cmp_hsc_plot}
+plot_cmp_hsc <- df_volcano_cmp_hsc|>
+  mutate(label = case_when(expression == "overexpressed" & fold_log2 > 2 ~ protein_groups,.default = "")) |> 
+  ggplot(aes(x = fold_log2, y = desc(log10(q_val)), color = expression))+
+  geom_point(size=0.5, alpha = 0.5)+
+  theme_classic()+
+  geom_text_repel(aes(label = label), size = 3)+
+  labs(title = "Expression of CMP relative to HSC",
+       x = "Log2fold-change",
+       y = "-log10(q)",
+       caption = "proteomics data")+
+  theme(legend.position = "bottom",
+        legend.title = element_blank(),
+        legend.text = element_text(size = 12))+
+  guides(color = guide_legend(override.aes = list(shape = 19, size = 5, alpha = 1)))+
+  #The horizontal line that indicates significance
+#  geom_hline(yintercept = 2)+
+  scale_color_manual(values = c("overexpressed" = "#D55E00", "underexpressed" = "#0072B2", "not_significant" = "gray"))
+```
+
+### Comparing mep to cmp
+
+```{r 06_mep_cmp_plot}
+plot_mep_cmp <- df_volcano_mep_cmp |>
+  mutate(label = case_when(expression == "overexpressed" & fold_log2 > 2 ~ protein_groups,.default = "")) |> # creates a label if it is overexpressed
+  ggplot(aes(x = fold_log2, y = desc(log10(q_val)), color = expression))+
+  geom_point(size=0.5, alpha = 0.5)+
+  theme_classic()+
+  geom_text_repel(aes(label = label), size = 3)+
+  labs(title = "Expression of MEP relative to CMP",
+       x = "Log2fold-change",
+       y = "-log10(q)",
+       caption = "proteomics data")+
+  theme(legend.position = "bottom",
+        legend.title = element_blank(),
+        legend.text = element_text(size = 12))+
+  guides(color = guide_legend(override.aes = list(shape = 19, size = 5, alpha = 1)))+
+  #The horizontal line that indicates significance
+#  geom_hline(yintercept = 2)+
+scale_color_manual(values = c("overexpressed" = "#D55E00", "underexpressed" = "#0072B2", "not_significant" = "gray"))
+```
+
+### Comparing cmp to gmp
+
+```{r 06_gmp_cmp_plot}
+plot_gmp_cmp <- df_volcano_gmp_cmp |> 
+  mutate(label = case_when(expression == "overexpressed" & fold_log2 > 2 ~ protein_groups,.default = "")) |>
+  ggplot(aes(x = fold_log2, y = desc(log10(q_val)), color = expression))+
+  geom_point(size=0.5, alpha = 0.5)+
+  theme_classic()+
+  geom_text_repel(aes(label = label), size = 3)+
+  labs(title = "Expression of GMP relative to CMP",
+       x = "Log2fold-change",
+       y = "-log10(q)",
+       caption = "proteomics data")+
+  theme(legend.position = "bottom",
+        legend.title = element_blank(),
+        legend.text = element_text(size = 12))+
+  guides(color = guide_legend(override.aes = list(shape = 19, size = 5, alpha = 1)))+
+  #The horizontal line that indicates significance
+#  geom_hline(yintercept = 2)+
+  scale_color_manual(values = c("overexpressed" = "#D55E00",
+                                "underexpressed" = "#0072B2",
+                                "not_significant" = "gray"))
 
 ```
+
+### Rendering the plots as image.png for the quarto_presentation
+
+```{r 06_render_pngs}
+#Due to an error occuring when saving ggplot directly in the pipeline of the latest plot which apparently is caused by a recent edit in ggplot2-3.3.4 the saving of plots is done separately.
+
+# save hsc_clp
+ggsave(plot = plot_clp_hsc,
+       filename = "hsc_clp_volcano_plot.png",
+       width = 20, height = 10, units = "cm",
+       path = here("results"))
+
+# save hsc_cmp
+ggsave(plot = plot_cmp_hsc,
+       filename = "hsc_cmp_volcano_plot.png",
+       width = 20, height = 10, units = "cm",
+       path = here("results"))
+
+# save cmp_mep
+ggsave(plot = plot_mep_cmp,
+       filename = "cmp_mep_volcano_plot.png",
+       width = 20, height = 10, units = "cm",
+       path = here("results"))
+
+# save gmp_cmp
+ggsave(plot = plot_gmp_cmp,
+       filename = "cmp_gmp_volcano_plot.png",
+       width = 20, height = 10, units = "cm",
+       path = here("results"))
+```
+
+A future direction for the project would be to assign all the protein groups categories based on their functionality. It would for instance be interesting to see which are the proteins that are overexpressed in the different cell types, but since there are so many of them it does not make sense to label all of them. We might for instance label the proteins that have a 2logfold change above 2, which means they are overexpressed by 400%.
+
+## Showing the volcano plots
+
+### CLP compared to HSC
+
+```{r}
+plot_clp_hsc
+```
+
+### CMP compared to HSC
+
+```{r}
+plot_cmp_hsc
+```
+
+### GMP compared to CMP
+
+```{r}
+plot_gmp_cmp
+```
+
+### MEP compared to CMP
+
+```{r}
+plot_mep_cmp
+```
+
+Lets have a look at hsc to cmp.
+
+```{r}
+# loading the plot from variable
+plot_cmp_hsc
+```
+
+We see that three protein groups are significantly overexpressed above 400%. P68033, P05213 and Q9WUA1. We can look up their Uniprot acession ID's and we find the following information:
+
+P68033 is an actin, actins are highly conserved proteins that are involved in various types of cell motility and are ubiquitously expressed in all eukaryotic cells.
+
+P05213 is tubulin, tubulin is the major constituent of microtubules, a cylinder consisting of laterally associated linear protofilaments composed of alpha- and beta-tubulin heterodimers.
+
+Q9WUA1 is an inhibitory factor that binds to WNT proteins and inhibits their activities. May be involved in mesoderm segmentation.
+
+## Conclusion

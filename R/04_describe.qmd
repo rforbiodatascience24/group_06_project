@@ -6,26 +6,28 @@ editor: visual
 
 ## Library
 
-```{r}
+```{r 04_library, message=FALSE, running=FALSE}
 library(tidyverse)
+library(ggplot2)
 library(UpSetR)
-library("forcats")
-library("ggplot2")
+library(here)
+
 ```
 
-## Load Data
+## Load data
 
-```{r}
+```{r 04_load, message=FALSE, running=FALSE}
+df_intensities <- read_tsv(file = here("data/02_df_intensities.tsv.gz"))
 
-# Intermediate data processing files
-df_long <- read_tsv(file = here("data/03_dat_intermediate_1_clean.tsv"))
-df_log_long <- read_tsv(file = here("data/03_dat_intermediate_2_log.tsv"))
-df_norm_long <- read_tsv(file = here("data/03_dat_intermediate_3_norm.tsv"))
+df_log_intensities <- read_tsv(file = here("data/03_df_log_intensities.tsv.gz"))
 
-# processed data files for downstream analysis
-df_no_na_long_1 <- read_tsv(file = here("data/03_dat_aug_long_1.tsv"))
-df_no_na_long_2 <- read_tsv(file = here("data/03_dat_aug_long_2.tsv"))
-df_no_na_wide <- read_tsv(file = here("data/03_dat_aug_wide.tsv"))
+df_norm_intensities <- read_tsv(file = here("data/03_df_norm_intensities.tsv.gz"))
+
+df_feature_wise <- read_tsv(file = here("data/03_df_feature_wise.tsv.gz"))
+
+df_sample_wise <- read_tsv(file = here("data/03_df_sample_wise.tsv.gz"))
+
+
 ```
 
 ## The Data Set
@@ -47,31 +49,31 @@ To understand the proteomic changes over the course of stem cell differentiation
 
 # make vectors of ID's in every cell type
 
-list_hsc <- df_long |> 
+list_hsc <- df_intensities |> 
   filter(cell_type=="hsc") |> 
   filter(!is.na(intensity)) |> 
   pull(protein_groups) |> 
   unique()
 
-list_cmp <- df_long |> 
+list_cmp <- df_intensities |> 
   filter(cell_type=="cmp") |> 
   filter(!is.na(intensity)) |> 
   pull(protein_groups) |> 
   unique()
 
-list_gmp <- df_long |> 
+list_gmp <- df_intensities |> 
   filter(cell_type=="gmp") |> 
   filter(!is.na(intensity)) |> 
   pull(protein_groups) |> 
   unique()
 
-list_clp <- df_long |> 
+list_clp <- df_intensities |> 
   filter(cell_type=="clp") |> 
   filter(!is.na(intensity)) |> 
   pull(protein_groups) |> 
   unique()
 
-list_mep <- df_long |> 
+list_mep <- df_intensities |> 
   filter(cell_type=="mep") |> 
   filter(!is.na(intensity)) |> 
   pull(protein_groups) |> 
@@ -85,7 +87,7 @@ list_input <- list(HSC=list_hsc, CMP=list_cmp, GMP=list_gmp, CLP=list_clp, MEP=l
 Make UpSetPlot to visualize overlapping PG sets
 
 ```{r}
-upset(fromList(list_input), order.by = "freq")
+# upset(fromList(list_input), order.by = "freq")
 ```
 
 As seen in the plot, the biggest intersection of PG is between all cell types. This intersection however only consists of 1353 PG's, which is only a fraction of all 3765 PG's observed in the data set. This makes sense, as during differentiation, the proteome changes, driving differentiation and defining the differentiated cell types. With changing proteome, many PG's become so low abundant, that they fall below the limit of detection. It is therefore essential to preserve PG's in this data set, even though they are only observed in a subset of cell types. Careful imputation of missing values, instead of dropping them, is imperative.
@@ -94,9 +96,12 @@ As seen in the plot, the biggest intersection of PG is between all cell types. T
 
 Plot of the PG intensity density prior to Log2 transformation
 
-```{r}
+```{r 04_intensities}
 
-df_long |> 
+df_intensities |> 
+  mutate(sample = str_c(cell_type,
+                        replicate_n,
+                        sep ="_"),.before = cell_type) |>
   ggplot(aes(x=intensity, colour = sample)) +
   geom_density() +
   theme_classic()
@@ -107,16 +112,22 @@ As seen in the plot, the PG intensities span a large dynamic range. For the reas
 
 Plot of the PG intensity density after Log2 transformation
 
-```{r}
+```{r 04_log1}
 
-df_log_long |> 
+df_log_intensities |>
+    mutate(sample = str_c(cell_type,
+                        replicate_n,
+                        sep ="_"),.before = cell_type) |> 
   ggplot(aes(x=intensity, colour = sample)) +
   geom_density() +
   theme_classic()
 ```
 
-```{r}
-df_log_long |> 
+```{r 04_log2}
+df_log_intensities |>  
+    mutate(sample = str_c(cell_type,
+                        replicate_n,
+                        sep ="_"),.before = cell_type) |> 
   group_by(sample) |> 
   summarize(median(intensity, na.rm = TRUE))
 ```
@@ -127,15 +138,22 @@ The intensities now follow a log-normal distribution. However, we can see that t
 
 Plot of the PG intensity density after Log2 transformation and normalization
 
-```{r}
-df_norm_long |> 
-  ggplot(aes(x=intensity, colour = sample)) +
+```{r 04_norm1}
+df_norm_intensities |> 
+    mutate(sample = str_c(cell_type,
+                        replicate_n,
+                        sep ="_"),.before = cell_type) |> 
+  ggplot(aes(x=intensity,
+  colour = sample)) +
   geom_density() +
   theme_classic()
 ```
 
-```{r}
-df_norm_long |> 
+```{r 04_norm2}
+df_norm_intensities |>
+  mutate(sample = str_c(cell_type,
+                      replicate_n,
+                      sep ="_"),.before = cell_type) |> 
   group_by(sample) |> 
   summarize(median(intensity, na.rm = TRUE))
 ```
@@ -149,8 +167,11 @@ sample-wise and feature-wise imputation.
 
 ### Sample-wise imputation
 
-```{r}
-df_no_na_long_1 |> 
+```{r 04_sample_wise}
+df_sample_wise |>
+  mutate(sample = str_c(cell_type,
+                        replicate_n,
+                        sep ="_"),.before = cell_type) |> 
   ggplot(aes(x=intensity, colour = sample)) +
   geom_density() +
   theme_classic()
@@ -160,9 +181,13 @@ We can observe a heavy distortion of the density plots in all samples, provoked 
 
 ### Feature-wise imputation
 
-```{r}
-df_no_na_long_2 |> 
-  ggplot(aes(x=intensity, colour = sample)) +
+```{r 04_feature_wise}
+df_feature_wise |>
+  mutate(sample = str_c(cell_type,
+                        replicate_n,
+                        sep ="_"),.before = cell_type) |> 
+  ggplot(aes(x=intensity, colour = sample,
+             color = replicate_n)) +
   geom_density() +
   theme_classic()
 ```
@@ -171,125 +196,6 @@ We observe a less apparent distortion of the density plots, instead of a new glo
 \
 Choice of NA imputation: We need to base our decision on the nature of the data we are working with. Both strategies would produce meaningful replacement values for NA's. Because the missingness in our data is MNAR, we chose sample-wise imputation, as it accounts better for biological missingness in DIA data.
 
-## Protein type lookup
 
-```{r}
 
-# load mouse uniprot db file for lookup
-df_uniprot_mouse <- read_tsv(file = here("data/01_dat_load_uniprot_mouse.tsv"))
-```
 
-```{r}
-
-uniprot_lookup <- function(gene_id, dataframe, id_column, keyword_column){
-  ## function that takes in string x and looks for string pattern in uniprot dataframe, giving back the value in keyword column.
-  Keywords <- dataframe |> 
-  filter(str_detect({{id_column}}, gene_id)) |> 
-  pull({{keyword_column}}) |> 
-  str_c(collapse ='; ')
-  return(Keywords)
-}
-
-  
-df_type <- df_norm_long |> 
-  mutate(description_column = map_chr(
-     .x = genes,
-     .f = ~uniprot_lookup(gene_id=.x, dataframe=df_uniprot_mouse, id_column=`Gene Names`, keyword_column=Keywords)
-   ))
-```
-
-```{r}
-# Make rule for presence in a sample: needs to be present in at least 2 replicates
-
-df_type2 <- df_type |> 
-  group_by(protein_groups, cell_type) |> 
-  filter(sum(!is.na(intensity)) >= 2) |> 
-  ungroup()
-```
-
-```{r}
-# make nested df with multiple cell types
-
-df_multi <- df_type2 |> 
-  group_by(cell_type) |> 
-  nest() |> 
-  mutate(transcription_pgs = map(.x = data,
-                                 .f = ~.x |> filter(str_detect(description_column,
-                                                         "Transcription regulation"))),
-         translation_pgs = map(.x = data,
-                                 .f = ~.x |> filter(str_detect(description_column,
-                                                         "Translation regulation"))),
-         mrna_splicing_pgs = map(.x = data,
-                                 .f = ~.x |> filter(str_detect(description_column,
-                                                         "mRNA splicing"))),
-         proteasome_pgs = map(.x = data,
-                                 .f = ~.x |> filter(str_detect(description_column,
-                                                         "Proteasome"))))
-
-```
-
-```{r}
-
-# simple bar chart with total number protein groups per cell type
-df_type |> 
-  mutate(
-    cell_type = factor(cell_type, levels=(c("clp", "gmp", "mep", "cmp", "hsc"))),
-    cell_type = fct_recode(cell_type, 
-                         "HSC" = "hsc",
-                         "CMP" = "cmp",
-                         "MEP" = "mep",
-                         "GMP" = "gmp",
-                         "CLP" = "clp")) |> 
-  filter(!is.na(intensity)) |> 
-  group_by(protein_groups) |> 
-  distinct(cell_type, .keep_all=TRUE) |> 
-  ggplot(mapping = aes(y=cell_type)) +
-  geom_bar(aes(fill = cell_type), width = 0.7) +
-  geom_text(stat = "count", aes(label = ..count..), hjust = 1.3, size = 6, color = "white") +
-  theme_classic() +
-  theme(
-    axis.text.x = element_text(size = 16),
-    axis.text.y = element_text(size = 16),
-    axis.title.x = element_text(size = 12),
-    axis.title.y = element_text(size = 12)
-  ) +
-  guides(fill = "none") +
-  xlab("Protein Groups") +
-  ylab("Population")
-```
-
-```{r}
-df_type2 <- df_type2 |> 
-  mutate(
-    keyword_function = case_when(
-      str_detect(description_column, "Transcription regulation") ~ "Transcription regulation",
-      str_detect(description_column, "mRNA splicing") ~ "mRNA splicing",
-      str_detect(description_column, "Translation regulation") ~ "Translation regulation",
-      str_detect(description_column, "Proteasome") ~ "Proteasome",
-      TRUE ~ NA
-    )
-  ) 
-```
-
-```{r}
-df_type2 |> 
-  mutate(
-    cell_type = factor(cell_type, levels=(c("hsc", "cmp", "mep", "gmp", "clp"))),
-    cell_type = fct_recode(cell_type, 
-                         "HSC" = "hsc",
-                         "CMP" = "cmp",
-                         "MEP" = "mep",
-                         "GMP" = "gmp",
-                         "CLP" = "clp")) |>
-  filter(!is.na(keyword_function)) |> 
-  ggplot(mapping = aes(x=cell_type, fill=keyword_function)) +
-  geom_bar(position = position_dodge()) +
-  theme_classic() +
-  theme(
-  axis.text.x = element_text(size = 16),
-  axis.text.y = element_text(size = 16),
-  axis.title.x = element_text(size = 12),
-  axis.title.y = element_text(size = 12)) +
-  xlab("Population") +
-  ylab("Number Protein Groups")
-```

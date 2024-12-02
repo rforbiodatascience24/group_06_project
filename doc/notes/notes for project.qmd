@@ -24,6 +24,8 @@ From the very small bit of visualisation I wanted to do, I could see that the re
 
 ## Data analysis
 
+Making functions instead of repetivie code for the volcanoplot inputs...
+
 ### Ideal plots for proteomics
 
 #### Lasse
@@ -57,6 +59,10 @@ Simpler method is to plot the p-value instead of the log10(FDR) and we can use a
 Proteome coverage of the analyzed populations. A bar plot of the population counting the average protein group number.
 
 Column diagrams or densitograms for the expression of the cell
+
+## Presentation:
+
+-   It seems impossible to make the images go directly from the "results" folder into the presentation.qmd...Right now a workable solution is done but it is not what Leon wants.
 
 ## Already dealt with / Bin
 

@@ -48,7 +48,7 @@ df_mep <- read_csv2(file = here("data/_raw/group6_data_MEP_Report.csv"), na="NaN
 df_gmp <- read_csv2(file = here("data/_raw/group6_data_GMP_Report.csv"), na="NaN")
 df_clp <- read_csv2(file = here("data/_raw/group6_data_CLP_Report.csv"), na="NaN")
 df_cmp <- read_csv2(file = here("data/_raw/group6_data_CMP_Report.csv"), na="NaN")
-
+df_uniprot_mouse <- read_tsv(file = here("data/_raw/uniprotkb_mus_musculus.tsv"), na="NaN")
 
 #| echo: false
 #| eval: false
@@ -64,4 +64,5 @@ write_tsv(df_mep, file = here("data/01_mep.tsv.gz"))
 write_tsv(df_gmp, file = here("data/01_gmp.tsv.gz"))
 write_tsv(df_clp, file = here("data/01_clp.tsv.gz"))
 write_tsv(df_cmp, file = here("data/01_cmp.tsv.gz"))
+write_tsv(df_uniprot_mouse, file = here("data/01_dat_load_uniprot_mouse.tsv"))
 ```

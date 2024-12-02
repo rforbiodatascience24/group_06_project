@@ -12,7 +12,7 @@ output-dir: docs
 ```{r}
 #| echo: false
 #| include: false
-library(quarto)
+#library(quarto)
 library(rmarkdown)
 library(here)
 ```
@@ -56,7 +56,7 @@ options(knitr.duplicate.label = "allow")
 render(input = "04_describe.qmd", output_dir = here("results/"))
 ```
 
-#{{< include 05_analysis_pca.qmd >}}
+{{< include 05_analysis_pca.qmd >}}
 
 ```{r 05_render, message=FALSE, running=FALSE}
 #| echo: false

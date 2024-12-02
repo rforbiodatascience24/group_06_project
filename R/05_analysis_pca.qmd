@@ -4,9 +4,8 @@
 library(tidyr)
 library(graphics)
 library(broom)
-
-# Set the bitmap type to 'cairo' to avoid PNG issue
-options(bitmapType = 'cairo')
+source(here("R/99_functions.R"))
+#options(bitmapType = 'cairo')
 ```
 
 ## PCA plots and variance analysis
@@ -58,4 +57,16 @@ pc_varianceplot <- pc |>
 ggsave(plot = pca_plot, filename = "PCA_on_proteingroups_original.png", width = 15, height = 10, units = "cm", path = here("results"))
 
 ggsave(plot = pc_varianceplot, filename = "pca_variance_barplot.png", width = 15, height = 10, units = "cm", path = here("results"))
+```
+
+## Plot PCA
+
+```{r}
+pca_plot
+```
+
+## Plot Variance explained
+
+```{r}
+pc_varianceplot
 ```

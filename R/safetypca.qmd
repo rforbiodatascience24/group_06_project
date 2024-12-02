@@ -3,7 +3,7 @@
 ```{r 05_libraries_and_options, message=FALSE, running=FALSE}
 library(tidyr)
 library(graphics)
-
+source(here("R/99_functions.R"))
 # Set the bitmap type to 'cairo' to avoid PNG issue
 options(bitmapType = 'cairo')
 

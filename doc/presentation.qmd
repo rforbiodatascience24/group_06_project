@@ -148,86 +148,65 @@ pc$x |> as.data.frame() |>
 ``` {.r style="font-size: 0.7em"}
 ```
 
-## 6 Volcano - Function
+## Volcano - augmentation {.smaller}
 
--   although longer format is often preferred, we found that for calculating fold and q value (between two cell types) wider format is a better solution, q value is then simply added by using  `mutate()` .
+::: nonincremental
 
--   even if there is an existing function for T test, we made our own, which is more adjusted to our input
+- switching to wider dataframe (better for computation of fold and T test)
+- creating new dataframe using a function
 
--   as there is multiple possible comparisons between cell types, we decided to build a function which which as an output will have a new dataframe, with 2 cell types of interest
+:::
+```{r}
+
+library("tidyverse")
+library("here")
+
+df_sample_mean<- read_tsv(file = str_c(here("data"), "03_df_sample_mean.tsv.gz", sep = "/")) 
+
+sample_n(df_sample_mean, 5)
+
+```
 
 ``` {.r style="font-size: 0.7em"}
 volcano_augment <- function(df, later_cell, earlier_cell, n_later, n_earlier){
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+. . .
   return(data_set_for_visualisation)
 })
 ```
 
-## 7 Function {auto-animate="true"}
+```{r}
+df_volcano_cmp_hsc <- read_tsv(file = str_c(here("data"), "df_volcano_cmp_hsc.tsv.gz", sep = "/")) 
 
-``` {.r style="font-size: 0.7em"}
-volcano_augment <- function(df, later_cell, earlier_cell, n_later, n_earlier){
-  data_set_for_visualisation <- df |> 
-    ungroup() |> # Ungrup the data_frame to avoid miscalculations.
-    select(c(protein_groups,
-             !!sym(paste0("mean_", earlier_cell)), 
-             !!sym(paste0("mean_", later_cell)), 
-             !!sym(paste0("sd_", later_cell)), 
-             !!sym(paste0("sd_", earlier_cell)))) |> 
-    #!!sym() is used to evaluate the result as a column name.. 
-    mutate(fold_log2 = log2(!!sym(paste0("mean_", later_cell)) /!!sym(paste0("mean_", earlier_cell))), 
-           p_val = pval(!!sym(paste0("mean_", later_cell)),
-                        !!sym(paste0("mean_", earlier_cell)),
-                        n_later, n_earlier,
-                        !!sym(paste0("sd_", later_cell)),
-                        !!sym(paste0("sd_", earlier_cell))),
-           q_val = (p.adjust(p_val))) |> 
-    mutate(expression = case_when(fold_log2 > 0 & q_val <= 0.05 ~ "overexpressed",
-                                  fold_log2 < 0 & q_val <= 0.05 ~ "underexpressed",
-                                  q_val > 0.05  ~ "not significant")) |> 
-    select(protein_groups, fold_log2, q_val, expression)
-  return(data_set_for_visualisation)
-})
+sample_n(df_volcano_cmp_hsc, 5)
 ```
 
-## 7 Volcano Plot {.smaller}
+
+
+## Volcano - visualisation  {.smaller}
+
+
 
 ::: nonincremental
 -   log2(fold) vs log10(q_values) plot is a rule of thumb in proteomics
 :::
 
 ::: panel-tabset
-### CMP - GMP
+### HSC - CMP
 
-![](images/cmp_gmp_volcano_plot-02.png)
+![](images/hsc_cmp_volcano_plot.png)
 
-### CMP - MEP
+### CMP -MEP
 
-![](images/cmp_mep_volcano_plot-01.png)
+![](images/cmp_mep_volcano_plot.png)
+
+### CMP- GMP
+
+![](images/cmp_gmp_volcano_plot.png)
 
 ### HSC - CLP
 
-![](images/hsc_clp_volcano_plot-01.png)
-
-### HSC - CMP
-
-![](images/hsc_cmp_volcano_plot-02.png)
+![](images/hsc_clp_volcano_plot.png)
 :::
 
 ##8 Uniprot Arne talks about the uniprot function and how we automatized what Antonio talks about

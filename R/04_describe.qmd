@@ -32,11 +32,9 @@ df_sample_wise <- read_tsv(file = here("data/03_df_sample_wise.tsv.gz"))
 
 ## The Data Set
 
-
 We are working with an unpublished proteomics dataset from a research group on DTU. We have recieved permission to work with the data for the R for Bio Data Science Project. The dataset relates to a study that can be read about in this preprint. (insert link here).
 
 In the study, proteomics by mass spectrometry was applied to FACS-sorted populations of hematopoietic stem- and progenitor cells from the mouse bone marrow. Five populations were isolated based on known surface marker expression: Hematopoietic stem cells (HSC), common lymphoid progenitors (CLP), common myeloid progenitors (CMP), megakaryocyte-erythrocyte progenitors (MEP) and granulocyte-monocyte progenitors (GMP). According to literature, these cell populations represent different stages of hematopoiesis, meaning the differentiation of HSC into the different blood cell lineages. For each cell type, 500 cells were isolated in 4 replicates, except for CLP having 5 replicates. The sorted cells were lysed, digested with trypsin, and subjected to proteomics by mass spectrometry in data-independent acquisition (DIA) mode. Therefore our raw data consists of LS/MS DIA intensity values of identified protein groups (PG).
-
 
 | Cell Type                   | HSC  | CMP  | GMP  | CLP  | MEP  | Total |
 |-----------------------------|------|------|------|------|------|-------|
@@ -251,8 +249,6 @@ We observe a less apparent distortion of the density plots, instead of a new glo
 \
 Choice of NA imputation: We need to base our decision on the nature of the data we are working with. Both strategies would produce meaningful replacement values for NA's. Because the missingness in our data is MNAR, we chose sample-wise imputation, as it accounts better for biological missingness in DIA data.
 
-
-
 ## Protein type lookup
 
 ```{r}
@@ -263,14 +259,6 @@ df_uniprot_mouse <- read_tsv(file = here("data/01_dat_load_uniprot_mouse.tsv"))
 
 ```{r}
 library(rlang)
-uniprot_lookup <- function(gene_id, dataframe, id_column, keyword_column){
-  ## function that takes in string x and looks for string pattern in uniprot dataframe, giving back the value in keyword column.
-  Keywords <- dataframe |> 
-  filter(str_detect({{id_column}}, gene_id)) |> 
-  pull({{keyword_column}}) |> 
-  str_c(collapse ='; ')
-  return(Keywords)
-}
 
   
 df_type <- df_norm_intensities |> 
@@ -346,4 +334,3 @@ df_type |>
   xlab("Population") +
   ylab("Number Protein Groups")
 ```
-

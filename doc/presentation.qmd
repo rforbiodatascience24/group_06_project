@@ -37,18 +37,44 @@ raw data consists of LS/MS DIA intensity values of identified protein groups (PG
 -   name of the cell type and number of the replica are now merged, but we want to have them in 2 different colomns
 :::
 
-## Augmenting the data
+## Augmenting the data <br>
+
+::: columns
+::: {.column width="40%"}
+-   log2 transformation<br><br><br>
+
+-   Normalization<br><br><br>
+
+-   Missing value imputation<br><br><br>
+:::
+
+::: {.column width="60%"}
+![](images/plot_before_normalization,.png){width="600"}
+
+![](images/plot_after_normalization,.png){width="600"}<br><br><br>
+:::
+:::
+
+## Uniprot lookup <br>
 
 ::: nonincremental
--   log2 transformation of the values (common for mass spectrometry proteomics data)
+``` {.r style="font-size: 0.7em"}
+uniprot_lookup <- function(gene_id, dataframe, id_column, keyword_column){
+  # does lookup in uniprot df and returns Keywords
+  return(Keywords)
+}
 
--   individual protein intensities are normalised to the median of each sample
+df_type <- df_norm_intensities |> 
+  filter(!is.na(genes) & genes != "") |> 
+  mutate(description_column = map_chr(
+     .x = genes,
+     .f = ~uniprot_lookup(gene_id=.x, 
+                          dataframe=df_uniprot_mouse, 
+                          id_column=`Gene Names`, keyword_column=Keywords)
+   ))
+```
 
--   intensities across the different cell types are normalized (due different to cell count)
-
--   missing values (detection limit of the mass spectrometer) replacing sample-wise and feature-wise
-
--   which plots to showcase??????
+![](images/plot_uniprot-02.png)
 :::
 
 ## Issuses during tidyig and augmenting
@@ -248,6 +274,10 @@ Volcano plot and lookup
 -   Through the volcano plots we can filter and identify the truly overexpressed proteins, which can then be looked up and studied for biological significance.
 
 -   While we don't concldue any high level biological understanding, we showcase the possibility of using TidyverseR to extrapolate biological information
+```
+
+``` {.r style="font-size: 0.7em"}
+```
 
 :::
 

@@ -115,7 +115,7 @@ For certain operations it is easier to work with data frames in wide format. We 
 
 ```{r 03_wide_feature_wise}
 
-df_feature_wide <- df_feature_wise |>
+df_feature_wide <- df_sample_wise |>
   mutate(intensity = unname(intensity)) |>
   pivot_wider(id_cols = c(cell_type,replicate_n),
               names_from = 'protein_groups',

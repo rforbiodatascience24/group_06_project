@@ -24,9 +24,7 @@ summary(pc)
 ```
 
 ```{r 03_pca_plot}
-#Plots the principal component values (pc$x)  
-
-pca_plot <- pc$x |> as.data.frame() |>
+pca_plot <- predict(pc) |> as.data.frame() |> 
   ggplot(aes(x = PC1, y = PC2, color = colourby)) +
   geom_point(size = 2.5) +
   labs(title = 'Principal component analysis', 
@@ -34,7 +32,8 @@ pca_plot <- pc$x |> as.data.frame() |>
        color = 'Cell Type') +
   theme_classic() +
   theme(legend.position = 'right')
-  
+
+pca_plot
 ```
 
 ```{r 04_pc_variance_plot}
@@ -50,6 +49,8 @@ pc_varianceplot <- pc |>
   ) +
   theme_classic() +
   ylab('Porportion of Variance (%)')
+
+
 ```
 
 ## Save plot

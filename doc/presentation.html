@@ -464,15 +464,18 @@
 </div>
 </section>
 <section id="augmenting-the-data" class="slide level2">
-<h2>Augmenting the data</h2>
-<div>
+<h2>Augmenting the data <br></h2>
+<div class="columns">
+<div class="column" style="width:40%;">
 <ul>
-<li><p>log2 transformation of the values (common for mass spectrometry proteomics data)</p></li>
-<li><p>individual protein intensities are normalised to the median of each sample</p></li>
-<li><p>intensities across the different cell types are normalized (due different to cell count)</p></li>
-<li><p>missing values (detection limit of the mass spectrometer) replacing sample-wise and feature-wise</p></li>
-<li><p>which plots to showcase??????</p></li>
+<li><p>log2 transformation<br><br><br></p></li>
+<li><p>Normalization<br><br><br></p></li>
+<li><p>Missing value imputation<br><br><br></p></li>
 </ul>
+</div><div class="column" style="width:60%;">
+<p><img data-src="images/plot_before_normalization,.png" width="600"></p>
+<p><img data-src="images/plot_after_normalization,.png" width="600"><br><br><br></p>
+</div>
 </div>
 </section>
 <section id="issuses-during-tidyig-and-augmenting" class="slide level2">
@@ -506,10 +509,8 @@
 <span id="cb1-16"><a href=""></a></span>
 <span id="cb1-17"><a href=""></a></span>
 <span id="cb1-18"><a href=""></a></span>
-<span id="cb1-19"><a href=""></a></span>
-<span id="cb1-20"><a href=""></a></span>
-<span id="cb1-21"><a href=""></a>  <span class="fu">return</span>(data_set_for_visualisation)</span>
-<span id="cb1-22"><a href=""></a>}<span class="er">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-19"><a href=""></a>  <span class="fu">return</span>(data_set_for_visualisation)</span>
+<span id="cb1-20"><a href=""></a>}<span class="er">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
 <section id="function-1" class="slide level2" data-auto-animate="true">
 <h2 data-id="quarto-animate-title">Function</h2>
@@ -561,9 +562,83 @@
 </div>
 </div>
 </section>
-<section id="pca" class="slide level2">
-<h2>PCA</h2>
-<p>🙃</p>
+<section id="pca-function" class="slide level2">
+<h2>PCA Function</h2>
+<div class="sourceCode" id="cb3" style="font-size: 0.7em"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href=""></a><span class="co"># Set the bitmap type to 'cairo' to avoid PNG issue</span></span>
+<span id="cb3-2"><a href=""></a><span class="fu">options</span>(<span class="at">bitmapType =</span> <span class="st">'cairo'</span>)</span>
+<span id="cb3-3"><a href=""></a></span>
+<span id="cb3-4"><a href=""></a><span class="co">#Input data tois wide format, excluding columns with missing data.</span></span>
+<span id="cb3-5"><a href=""></a></span>
+<span id="cb3-6"><a href=""></a></span>
+<span id="cb3-7"><a href=""></a><span class="co"># The new data-frame for df_no_na_wide is called : df_feature_wide.</span></span>
+<span id="cb3-8"><a href=""></a><span class="co"># For creating a column sample as a guiding column use:</span></span>
+<span id="cb3-9"><a href=""></a><span class="co"># mutate</span></span>
+<span id="cb3-10"><a href=""></a></span>
+<span id="cb3-11"><a href=""></a>df_feature_wide <span class="sc">|&gt;</span> </span>
+<span id="cb3-12"><a href=""></a>  <span class="fu">mutate</span>(<span class="at">sample =</span> <span class="fu">str_c</span>(cell_type, replicate_n, <span class="at">sep =</span> <span class="st">"_"</span>))</span>
+<span id="cb3-13"><a href=""></a></span>
+<span id="cb3-14"><a href=""></a></span>
+<span id="cb3-15"><a href=""></a>df_input <span class="ot">&lt;-</span> df_no_na_wide <span class="sc">|&gt;</span> <span class="fu">select</span>(<span class="sc">-</span><span class="fu">c</span>(<span class="st">'sample'</span>,<span class="st">'cell_type'</span>)) <span class="sc">|&gt;</span> </span>
+<span id="cb3-16"><a href=""></a>  <span class="fu">mutate</span>(<span class="fu">across</span>(<span class="fu">where</span>(is.list), <span class="sc">~</span> <span class="fu">sapply</span>(., <span class="cf">function</span>(x) x[<span class="dv">1</span>]))) <span class="sc">|&gt;</span> </span>
+<span id="cb3-17"><a href=""></a>  <span class="fu">na.omit</span>() </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="pca-function-1" class="slide level2" data-auto-animate="true">
+<h2 data-id="quarto-animate-title">PCA Function</h2>
+<div class="sourceCode" id="cb4" style="font-size: 0.7em"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href=""></a><span class="co"># Set the bitmap type to 'cairo' to avoid PNG issue</span></span>
+<span id="cb4-2"><a href=""></a><span class="fu">options</span>(<span class="at">bitmapType =</span> <span class="st">'cairo'</span>)</span>
+<span id="cb4-3"><a href=""></a></span>
+<span id="cb4-4"><a href=""></a><span class="co">#Input data tois wide format, excluding columns with missing data.</span></span>
+<span id="cb4-5"><a href=""></a></span>
+<span id="cb4-6"><a href=""></a></span>
+<span id="cb4-7"><a href=""></a><span class="co"># The new data-frame for df_no_na_wide is called : df_feature_wide.</span></span>
+<span id="cb4-8"><a href=""></a><span class="co"># For creating a column sample as a guiding column use:</span></span>
+<span id="cb4-9"><a href=""></a><span class="co"># mutate</span></span>
+<span id="cb4-10"><a href=""></a></span>
+<span id="cb4-11"><a href=""></a>df_feature_wide <span class="sc">|&gt;</span> </span>
+<span id="cb4-12"><a href=""></a>  <span class="fu">mutate</span>(<span class="at">sample =</span> <span class="fu">str_c</span>(cell_type, replicate_n, <span class="at">sep =</span> <span class="st">"_"</span>))</span>
+<span id="cb4-13"><a href=""></a></span>
+<span id="cb4-14"><a href=""></a></span>
+<span id="cb4-15"><a href=""></a>df_input <span class="ot">&lt;-</span> df_no_na_wide <span class="sc">|&gt;</span> <span class="fu">select</span>(<span class="sc">-</span><span class="fu">c</span>(<span class="st">'sample'</span>,<span class="st">'cell_type'</span>)) <span class="sc">|&gt;</span> </span>
+<span id="cb4-16"><a href=""></a>  <span class="fu">mutate</span>(<span class="fu">across</span>(<span class="fu">where</span>(is.list), <span class="sc">~</span> <span class="fu">sapply</span>(., <span class="cf">function</span>(x) x[<span class="dv">1</span>]))) <span class="sc">|&gt;</span> </span>
+<span id="cb4-17"><a href=""></a>  <span class="fu">na.omit</span>() </span>
+<span id="cb4-18"><a href=""></a></span>
+<span id="cb4-19"><a href=""></a>colourby <span class="ot">&lt;-</span> df_no_na_wide<span class="sc">$</span>cell_type</span>
+<span id="cb4-20"><a href=""></a>  </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb5" style="font-size: 0.7em"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href=""></a><span class="co"># Set the bitmap type to 'cairo' to avoid PNG issue</span></span>
+<span id="cb5-2"><a href=""></a><span class="fu">options</span>(<span class="at">bitmapType =</span> <span class="st">'cairo'</span>)</span>
+<span id="cb5-3"><a href=""></a></span>
+<span id="cb5-4"><a href=""></a><span class="co">#Input data tois wide format, excluding columns with missing data.</span></span>
+<span id="cb5-5"><a href=""></a></span>
+<span id="cb5-6"><a href=""></a></span>
+<span id="cb5-7"><a href=""></a><span class="co"># The new data-frame for df_no_na_wide is called : df_feature_wide.</span></span>
+<span id="cb5-8"><a href=""></a><span class="co"># For creating a column sample as a guiding column use:</span></span>
+<span id="cb5-9"><a href=""></a><span class="co"># mutate</span></span>
+<span id="cb5-10"><a href=""></a></span>
+<span id="cb5-11"><a href=""></a>df_feature_wide <span class="sc">|&gt;</span> </span>
+<span id="cb5-12"><a href=""></a>  <span class="fu">mutate</span>(<span class="at">sample =</span> <span class="fu">str_c</span>(cell_type, replicate_n, <span class="at">sep =</span> <span class="st">"_"</span>))</span>
+<span id="cb5-13"><a href=""></a></span>
+<span id="cb5-14"><a href=""></a></span>
+<span id="cb5-15"><a href=""></a>df_input <span class="ot">&lt;-</span> df_no_na_wide <span class="sc">|&gt;</span> <span class="fu">select</span>(<span class="sc">-</span><span class="fu">c</span>(<span class="st">'sample'</span>,<span class="st">'cell_type'</span>)) <span class="sc">|&gt;</span> </span>
+<span id="cb5-16"><a href=""></a>  <span class="fu">mutate</span>(<span class="fu">across</span>(<span class="fu">where</span>(is.list), <span class="sc">~</span> <span class="fu">sapply</span>(., <span class="cf">function</span>(x) x[<span class="dv">1</span>]))) <span class="sc">|&gt;</span> </span>
+<span id="cb5-17"><a href=""></a>  <span class="fu">na.omit</span>() </span>
+<span id="cb5-18"><a href=""></a></span>
+<span id="cb5-19"><a href=""></a>colourby <span class="ot">&lt;-</span> df_no_na_wide<span class="sc">$</span>cell_type</span>
+<span id="cb5-20"><a href=""></a>  </span>
+<span id="cb5-21"><a href=""></a><span class="co">#Projecting data unto principal components (pc)</span></span>
+<span id="cb5-22"><a href=""></a>pc <span class="ot">&lt;-</span> <span class="fu">prcomp</span>(df_input, <span class="at">center =</span> <span class="cn">FALSE</span>, <span class="at">scale =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb5-23"><a href=""></a></span>
+<span id="cb5-24"><a href=""></a><span class="co">#Gives overview of variability of PC</span></span>
+<span id="cb5-25"><a href=""></a><span class="co">#print(pc)</span></span>
+<span id="cb5-26"><a href=""></a></span>
+<span id="cb5-27"><a href=""></a><span class="co">#Gives an overview, you should be able to tell the variance already here even without the plot</span></span>
+<span id="cb5-28"><a href=""></a><span class="fu">summary</span>(pc)</span>
+<span id="cb5-29"><a href=""></a></span>
+<span id="cb5-30"><a href=""></a><span class="co">#Takes the principal component values (pc$x)  </span></span>
+<span id="cb5-31"><a href=""></a>pc<span class="sc">$</span>x <span class="sc">|&gt;</span> <span class="fu">as.data.frame</span>() <span class="sc">|&gt;</span></span>
+<span id="cb5-32"><a href=""></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> PC1, <span class="at">y =</span> PC2, <span class="at">color =</span> colourby)) <span class="sc">+</span></span>
+<span id="cb5-33"><a href=""></a>  <span class="fu">geom_point</span>(<span class="at">size =</span> <span class="fl">2.5</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb6" style="font-size: 0.7em"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb7" style="font-size: 0.7em"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
 <section id="discussion" class="slide level2">
 <h2>Discussion</h2>

@@ -37,14 +37,22 @@ raw data consists of LS/MS DIA intensity values of identified protein groups (PG
 -   name of the cell type and number of the replica are now merged, but we want to have them in 2 different colomns
 :::
 
-## Augmenting the data
+## Augmenting the data <br>
 
-::: nonincremental
--   log2 transformation
+::: columns
+::: {.column width="40%"}
+-   log2 transformation<br><br><br>
 
--   Normalization
+-   Normalization<br><br><br>
 
--   Missing value imputation
+-   Missing value imputation<br><br><br>
+:::
+
+::: {.column width="60%"}
+![](images/plot_before_normalization,.png){width="600"}
+
+![](images/plot_after_normalization,.png){width="600"}<br><br><br>
+:::
 :::
 
 ## Issuses during tidyig and augmenting
@@ -155,7 +163,6 @@ df_feature_wide |>
 df_input <- df_no_na_wide |> select(-c('sample','cell_type')) |> 
   mutate(across(where(is.list), ~ sapply(., function(x) x[1]))) |> 
   na.omit() 
-
 ```
 
 ## PCA Function {auto-animate="true"}

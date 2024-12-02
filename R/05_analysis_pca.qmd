@@ -11,7 +11,7 @@ options(bitmapType = 'cairo')
 ## PCA plots and variance analysis
 
 ```{r 01_principal_components}
-df_feature_wide |> 
+df_input <- df_feature_wide |> 
   mutate(sample = str_c(cell_type, replicate_n, sep = "_"))
 
 colourby <- df_feature_wide$cell_type
@@ -28,7 +28,11 @@ summary(pc)
 
 pc$x |> as.data.frame() |>
   ggplot(aes(x = PC1, y = PC2, color = colourby)) +
-  geom_point(size = 2.5)
+  geom_point(size = 2.5) +
+  labs(title = 'Principal component analysis', 
+       subtitle = 'Clustering of cell types on protein expression',
+       color = 'Cell Type') +
+  theme(legend.position = 'right')
 ```
 
 ```{r 04_pc_variance_plot}

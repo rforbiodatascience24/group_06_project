@@ -56,33 +56,14 @@ options(knitr.duplicate.label = "allow")
 render(input = "04_describe.qmd", output_dir = here("results/"))
 ```
 
-#{{< include 05_analysis_pca.qmd >}}
-
-
-{{< include 05_analysis_pca.qmd >}}
-
+\#{{< include 05_analysis_pca.qmd >}}
 
 ```{r 05_render, message=FALSE, running=FALSE}
 #| echo: false
 #| include: false
 
-# Include this shortcode just above this code chunk (between 04-render and 05_render)
-# {{< include 05_analysis_pca.qmd >}}
-
-# Uncomment these: options... and render... when the pca is finally ready.
-
-
-
-#options(knitr.duplicate.label = "allow")
-# render(input = "05_analysis_pca.qmd", output_dir = here("results/"))
-
-#options(knitr.duplicate.label = "allow")
-#render(input = "05_analysis_pca.qmd", output_dir = here("results/"))
-
-
 options(knitr.duplicate.label = "allow")
 render(input = "05_analysis_pca.qmd", output_dir = here("results/"))
-
 ```
 
 {{< include 06_analysis_volcano.qmd >}}
@@ -90,12 +71,15 @@ render(input = "05_analysis_pca.qmd", output_dir = here("results/"))
 ```{r 06_render, message=FALSE, running=FALSE}
 #| echo: false
 #| include: false
+
 options(knitr.duplicate.label = "allow")
 render(input = "06_analysis_volcano.qmd", output_dir = here("results/"))
 ```
 
 ```{r 00_file2results}
-Sys.sleep(25)
+# Suspend execution to let the html render before the following codes try move the file into /results.
+Sys.sleep(60)
 
+# Moves the 00_all.html to the results folder.
 file.rename(from = here("R/00_all.html"), to = here("results/00_all.html"))
 ```

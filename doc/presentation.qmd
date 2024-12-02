@@ -5,39 +5,58 @@ editor: visual
 format: 
   revealjs:
     theme: white
+    footer: "Group 6"
 ---
 
+::: notes
 Read the following resources to become smarter on how to create presentations. Remember to have exactly 10 slides. https://quarto.org/docs/presentations/
 
 https://quarto.org/docs/presentations/revealjs/
-
-## Introduction to the data {.smaller}
-
-the data is obtained by applying mass spectrometry to FACS-sorted populations of hematopoietic stem- and progenitor cells from the mouse bone marrow
-
-five populations were isolated based on known surface marker expression: HSC, CLP, CMP, MEP, GMP
-
-500 cells were isolated in 4 replicates, except for CLP having 5 replicates
-
-raw data consists of LS/MS DIA intensity values of identified protein groups (PG)
-
-| Cell Type                   | HSC  | CMP  | GMP  | CLP  | MEP  | Total |
-|-----------------------------|------|------|------|------|------|-------|
-| No. of observations         | 2196 | 1986 | 2291 | 2382 | 2691 | 3765  |
-| No. of replicates (samples) | 4    | 4    | 4    | 5    | 4    | 21    |
-
-: Table 1: Number of replicates and observations across replicates for the analysed FACS-populations
-
-## Data tidying and data format
-
-::: nonincremental
--   5 dataframes (hsc, clp, cmp, mep, gmp) into one joint dataframe using function  `full_join()` , joined by both: ProteinGroup and Genes
--   variable names are simplified
--   5 cell types making up a total of 21 variables, we used  `pivot_longer()`  to get just one intensity colomn
--   name of the cell type and number of the replica are now merged, but we want to have them in 2 different colomns
 :::
 
-## Augmenting the data
+## 1 Introduction to the data {.smaller}
+
+-   Dataset is unpublished data from a research group at DTU
+
+Let this work
+
+-   Proteomics data from bone marrow of a single mouse measured by mass spectroscopy
+
+-   Intensity is a measure of how much each protein is expressed
+
+    ```{r}
+    library("tidyverse")
+    library("here")
+    df_sample_wise <- read_tsv(file = str_c(here("data"), "03_df_sample_wise.tsv.gz", sep = "/"))
+    sample_n(df_sample_wise,5)
+    ```
+
+| Cell Type                   | HSC  | CLP  | CMP  | GMP  | MEP  | Total |
+|-----------------------------|------|------|------|------|------|-------|
+| No. of Proteins             | 2196 | 2382 | 1986 | 2291 | 2691 | 3765  |
+| No. of replicates (samples) | 4    | 5    | 4    | 4    | 4    | 21    |
+
+::: notes
+We are working with an unpublished proteomics dataset from a research group on DTU. We have recieved permission to work with the data for the R for Bio Data Science Project. The dataset relates to a study that can be read about in this preprint. (insert link here).
+
+Hematopoietic stem cells (HSC), common lymphoid progenitors (CLP), common myeloid progenitors (CMP), megakaryocyte-erythrocyte progenitors (MEP) and granulocyte-monocyte progenitors (GMP). According to literature, these cell populations represent different stages of hematopoiesis, meaning the differentiation of HSC into the different blood cell lineages. For each cell type, 500 cells were isolated in 4 replicates, except for CLP having 5 replicates. The sorted cells were lysed, digested with trypsin, and subjected to proteomics by mass spectrometry in data-independent acquisition (DIA) mode. Therefore our raw data consists of LS/MS DIA intensity values of identified protein groups (PG).
+:::
+
+## 2 Data tidying and data format
+
+::: nonincremental
+-   5 dataframes joined using `full_join()`
+-   Simplified variable names
+-   Original data was in wide format
+-   `pivot_longer()` to get just one intensity colomn
+-   We discussed whether we wanted long or wide format
+:::
+
+::: notes
+We discussed a lot whether we should do long format or wide format Tidy data should have one observation in one row In the end we are working with a dataset
+:::
+
+## 3 Augmenting the data
 
 ::: nonincremental
 -   log2 transformation of the values (common for mass spectrometry proteomics data)
@@ -51,97 +70,15 @@ raw data consists of LS/MS DIA intensity values of identified protein groups (PG
 -   which plots to showcase??????
 :::
 
-## Issuses during tidyig and augmenting
+![](images/plot_before_normalization,.png)
 
-::: nonincremental
--   although longer format is often preferred, we found that for calculating fold and q value (between two cell types) wider format is a better solution, q value is then simply added by using  `mutate()` .
+![](images/plot_after_normalization,.png)
 
--   even if there is an existing function for T test, we made our own, which is more adjusted to our input
+## 4 PCA Function
 
--   as there is multiple possible comparisons between cell types, we decided to build a function which which as an output will have a new dataframe, with 2 cell types of interest
-
--   what other problems have we had? how did we solve it? why did we choose to do it in that way?
-:::
-
-## Function
+-here Saxe explains how the data was augmented for PCA and shows a snippet of the dataframe he is working with
 
 ``` {.r style="font-size: 0.7em"}
-volcano_augment <- function(df, later_cell, earlier_cell, n_later, n_earlier){
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  return(data_set_for_visualisation)
-})
-```
-
-## Function {auto-animate="true"}
-
-``` {.r style="font-size: 0.7em"}
-volcano_augment <- function(df, later_cell, earlier_cell, n_later, n_earlier){
-  data_set_for_visualisation <- df |> 
-    ungroup() |> # Ungrup the data_frame to avoid miscalculations.
-    select(c(protein_groups,
-             !!sym(paste0("mean_", earlier_cell)), 
-             !!sym(paste0("mean_", later_cell)), 
-             !!sym(paste0("sd_", later_cell)), 
-             !!sym(paste0("sd_", earlier_cell)))) |> 
-    #!!sym() is used to evaluate the result as a column name.. 
-    mutate(fold_log2 = log2(!!sym(paste0("mean_", later_cell)) /!!sym(paste0("mean_", earlier_cell))), 
-           p_val = pval(!!sym(paste0("mean_", later_cell)),
-                        !!sym(paste0("mean_", earlier_cell)),
-                        n_later, n_earlier,
-                        !!sym(paste0("sd_", later_cell)),
-                        !!sym(paste0("sd_", earlier_cell))),
-           q_val = (p.adjust(p_val))) |> 
-    mutate(expression = case_when(fold_log2 > 0 & q_val <= 0.05 ~ "overexpressed",
-                                  fold_log2 < 0 & q_val <= 0.05 ~ "underexpressed",
-                                  q_val > 0.05  ~ "not significant")) |> 
-    select(protein_groups, fold_log2, q_val, expression)
-  return(data_set_for_visualisation)
-})
-```
-
-## Volcano Plot {.smaller}
-
-::: nonincremental
--   log2(fold) vs log10(q_values) plot is a rule of thumb in proteomics
-:::
-
-::: panel-tabset
-### CMP - GMP
-
-![](images/cmp_gmp_volcano_plot-02.png)
-
-### CMP - MEP
-
-![](images/cmp_mep_volcano_plot-01.png)
-
-### HSC - CLP
-
-![](images/hsc_clp_volcano_plot-01.png)
-
-### HSC - CMP
-
-![](images/hsc_cmp_volcano_plot-02.png)
-:::
-
-## PCA Function
-
-```{.r style="font-size: 0.7em"}
 # Set the bitmap type to 'cairo' to avoid PNG issue
 options(bitmapType = 'cairo')
 
@@ -159,14 +96,13 @@ df_feature_wide |>
 df_input <- df_no_na_wide |> select(-c('sample','cell_type')) |> 
   mutate(across(where(is.list), ~ sapply(., function(x) x[1]))) |> 
   na.omit() 
-
-
-
 ```
 
-## PCA Function {auto-animate="true"}
+## 5 PCA Function {auto-animate="true"}
 
-```{.r style="font-size: 0.7em"}
+-here Saxe shows PCA plots and interprets them
+
+``` {.r style="font-size: 0.7em"}
 # Set the bitmap type to 'cairo' to avoid PNG issue
 options(bitmapType = 'cairo')
 
@@ -187,10 +123,9 @@ df_input <- df_no_na_wide |> select(-c('sample','cell_type')) |>
 
 colourby <- df_no_na_wide$cell_type
   
-
 ```
 
-```{.r style="font-size: 0.7em"}
+``` {.r style="font-size: 0.7em"}
 # Set the bitmap type to 'cairo' to avoid PNG issue
 options(bitmapType = 'cairo')
 
@@ -226,14 +161,97 @@ pc$x |> as.data.frame() |>
   geom_point(size = 2.5)
 ```
 
-```{.r style="font-size: 0.7em"}
-
+``` {.r style="font-size: 0.7em"}
 ```
 
-```{.r style="font-size: 0.7em"}
+``` {.r style="font-size: 0.7em"}
+```
 
-``` 
-## Discussion
+## 6 Volcano - Function
+
+-   although longer format is often preferred, we found that for calculating fold and q value (between two cell types) wider format is a better solution, q value is then simply added by using  `mutate()` .
+
+-   even if there is an existing function for T test, we made our own, which is more adjusted to our input
+
+-   as there is multiple possible comparisons between cell types, we decided to build a function which which as an output will have a new dataframe, with 2 cell types of interest
+
+``` {.r style="font-size: 0.7em"}
+volcano_augment <- function(df, later_cell, earlier_cell, n_later, n_earlier){
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  return(data_set_for_visualisation)
+})
+```
+
+## 7 Function {auto-animate="true"}
+
+``` {.r style="font-size: 0.7em"}
+volcano_augment <- function(df, later_cell, earlier_cell, n_later, n_earlier){
+  data_set_for_visualisation <- df |> 
+    ungroup() |> # Ungrup the data_frame to avoid miscalculations.
+    select(c(protein_groups,
+             !!sym(paste0("mean_", earlier_cell)), 
+             !!sym(paste0("mean_", later_cell)), 
+             !!sym(paste0("sd_", later_cell)), 
+             !!sym(paste0("sd_", earlier_cell)))) |> 
+    #!!sym() is used to evaluate the result as a column name.. 
+    mutate(fold_log2 = log2(!!sym(paste0("mean_", later_cell)) /!!sym(paste0("mean_", earlier_cell))), 
+           p_val = pval(!!sym(paste0("mean_", later_cell)),
+                        !!sym(paste0("mean_", earlier_cell)),
+                        n_later, n_earlier,
+                        !!sym(paste0("sd_", later_cell)),
+                        !!sym(paste0("sd_", earlier_cell))),
+           q_val = (p.adjust(p_val))) |> 
+    mutate(expression = case_when(fold_log2 > 0 & q_val <= 0.05 ~ "overexpressed",
+                                  fold_log2 < 0 & q_val <= 0.05 ~ "underexpressed",
+                                  q_val > 0.05  ~ "not significant")) |> 
+    select(protein_groups, fold_log2, q_val, expression)
+  return(data_set_for_visualisation)
+})
+```
+
+## 7 Volcano Plot {.smaller}
+
+::: nonincremental
+-   log2(fold) vs log10(q_values) plot is a rule of thumb in proteomics
+:::
+
+::: panel-tabset
+### CMP - GMP
+
+![](images/cmp_gmp_volcano_plot-02.png)
+
+### CMP - MEP
+
+![](images/cmp_mep_volcano_plot-01.png)
+
+### HSC - CLP
+
+![](images/hsc_clp_volcano_plot-01.png)
+
+### HSC - CMP
+
+![](images/hsc_cmp_volcano_plot-02.png)
+:::
+
+##8 Uniprot Arne talks about the uniprot function and how we automatized what Antonio talks about
+
+## 9 Discussion
 
 ::: nonincremental
 -   5 dataframes are merged into 1
@@ -244,10 +262,8 @@ pc$x |> as.data.frame() |>
 -   PCA shows us simmilarity between different cell types, and potentialy pathway of stem cell development
 :::
 
-## Discussion
+-   what other problems have we had? how did we solve it? why did we choose to do it in that way?
 
-Another Discussion slide
-
-## Take away messages / Conclusion
+## 10 Take away messages / Conclusion
 
 Write some conclusion here

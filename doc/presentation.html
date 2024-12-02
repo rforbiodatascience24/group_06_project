@@ -399,17 +399,41 @@
 </section>
 <section class="slide level2">
 
+<aside class="notes">
 <p>Read the following resources to become smarter on how to create presentations. Remember to have exactly 10 slides. https://quarto.org/docs/presentations/</p>
 <p>https://quarto.org/docs/presentations/revealjs/</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
 </section>
 <section id="introduction-to-the-data" class="slide level2 smaller">
-<h2>Introduction to the data</h2>
-<p>the data is obtained by applying mass spectrometry to FACS-sorted populations of hematopoietic stem- and progenitor cells from the mouse bone marrow</p>
-<p>five populations were isolated based on known surface marker expression: HSC, CLP, CMP, MEP, GMP</p>
-<p>500 cells were isolated in 4 replicates, except for CLP having 5 replicates</p>
-<p>raw data consists of LS/MS DIA intensity values of identified protein groups (PG)</p>
+<h2>1 Introduction to the data</h2>
+<ul>
+<li><p>Dataset is unpublished data from a research group at DTU</p></li>
+<li><p>Proteomics data from bone marrow of a single mouse measured by mass spectroscopy</p></li>
+<li><p>Intensity is a measure of how much each protein is expressed</p>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 5 × 5
+  protein_groups genes    cell_type replicate_n intensity
+  &lt;chr&gt;          &lt;chr&gt;    &lt;chr&gt;           &lt;dbl&gt;     &lt;dbl&gt;
+1 P62141         Ppp1cb   gmp                 4     0.942
+2 P50518         Atp6v1e1 clp                 2     1.07 
+3 O70496         Clcn7    cmp                 1     0.330
+4 P47739         Aldh3a1  mep                 4     0.383
+5 Q9JJY4         Ddx20    clp                 1     0.352</code></pre>
+</div>
+</div></li>
+</ul>
 <table class="caption-top">
-<caption>Table 1: Number of replicates and observations across replicates for the analysed FACS-populations</caption>
 <colgroup>
 <col style="width: 43%">
 <col style="width: 9%">
@@ -423,48 +447,76 @@
 <tr class="header">
 <th>Cell Type</th>
 <th>HSC</th>
+<th>CLP</th>
 <th>CMP</th>
 <th>GMP</th>
-<th>CLP</th>
 <th>MEP</th>
 <th>Total</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td>No.&nbsp;of observations</td>
+<td>No.&nbsp;of Proteins</td>
 <td>2196</td>
+<td>2382</td>
 <td>1986</td>
 <td>2291</td>
-<td>2382</td>
 <td>2691</td>
 <td>3765</td>
 </tr>
 <tr class="even">
 <td>No.&nbsp;of replicates (samples)</td>
 <td>4</td>
-<td>4</td>
-<td>4</td>
 <td>5</td>
+<td>4</td>
+<td>4</td>
 <td>4</td>
 <td>21</td>
 </tr>
 </tbody>
 </table>
+<aside class="notes">
+<p>We are working with an unpublished proteomics dataset from a research group on DTU. We have recieved permission to work with the data for the R for Bio Data Science Project. The dataset relates to a study that can be read about in this preprint. (insert link here).</p>
+<p>Hematopoietic stem cells (HSC), common lymphoid progenitors (CLP), common myeloid progenitors (CMP), megakaryocyte-erythrocyte progenitors (MEP) and granulocyte-monocyte progenitors (GMP). According to literature, these cell populations represent different stages of hematopoiesis, meaning the differentiation of HSC into the different blood cell lineages. For each cell type, 500 cells were isolated in 4 replicates, except for CLP having 5 replicates. The sorted cells were lysed, digested with trypsin, and subjected to proteomics by mass spectrometry in data-independent acquisition (DIA) mode. Therefore our raw data consists of LS/MS DIA intensity values of identified protein groups (PG).</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
 </section>
 <section id="data-tidying-and-data-format" class="slide level2">
-<h2>Data tidying and data format</h2>
+<h2>2 Data tidying and data format</h2>
 <div>
 <ul>
-<li>5 dataframes (hsc, clp, cmp, mep, gmp) into one joint dataframe using function &nbsp;<code>full_join()</code>&nbsp;, joined by both: ProteinGroup and Genes</li>
-<li>variable names are simplified</li>
-<li>5 cell types making up a total of 21 variables, we used &nbsp;<code>pivot_longer()</code>&nbsp; to get just one intensity colomn</li>
-<li>name of the cell type and number of the replica are now merged, but we want to have them in 2 different colomns</li>
+<li>5 dataframes joined using&nbsp;<code>full_join()</code></li>
+<li>Simplified variable names</li>
+<li>Original data was in wide format</li>
+<li><code>pivot_longer()</code>&nbsp;to get just one intensity colomn</li>
+<li>We discussed whether we wanted long or wide format</li>
 </ul>
 </div>
+<aside class="notes">
+<p>We discussed a lot whether we should do long format or wide format Tidy data should have one observation in one row In the end we are working with a dataset</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
 </section>
 <section id="augmenting-the-data" class="slide level2">
-<h2>Augmenting the data</h2>
+<h2>3 Augmenting the data</h2>
 <div>
 <ul>
 <li><p>log2 transformation of the values (common for mass spectrometry proteomics data)</p></li>
@@ -474,70 +526,144 @@
 <li><p>which plots to showcase??????</p></li>
 </ul>
 </div>
+<p><img data-src="images/plot_before_normalization,.png"></p>
+<p><img data-src="images/plot_after_normalization,.png"></p>
 </section>
-<section id="issuses-during-tidyig-and-augmenting" class="slide level2">
-<h2>Issuses during tidyig and augmenting</h2>
-<div>
+<section id="pca-function" class="slide level2">
+<h2>4 PCA Function</h2>
+<p>-here Saxe explains how the data was augmented for PCA and shows a snippet of the dataframe he is working with</p>
+<div class="sourceCode" id="cb2" style="font-size: 0.7em"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href=""></a><span class="co"># Set the bitmap type to 'cairo' to avoid PNG issue</span></span>
+<span id="cb2-2"><a href=""></a><span class="fu">options</span>(<span class="at">bitmapType =</span> <span class="st">'cairo'</span>)</span>
+<span id="cb2-3"><a href=""></a></span>
+<span id="cb2-4"><a href=""></a><span class="co">#Input data tois wide format, excluding columns with missing data.</span></span>
+<span id="cb2-5"><a href=""></a></span>
+<span id="cb2-6"><a href=""></a></span>
+<span id="cb2-7"><a href=""></a><span class="co"># The new data-frame for df_no_na_wide is called : df_feature_wide.</span></span>
+<span id="cb2-8"><a href=""></a><span class="co"># For creating a column sample as a guiding column use:</span></span>
+<span id="cb2-9"><a href=""></a><span class="co"># mutate</span></span>
+<span id="cb2-10"><a href=""></a></span>
+<span id="cb2-11"><a href=""></a>df_feature_wide <span class="sc">|&gt;</span> </span>
+<span id="cb2-12"><a href=""></a>  <span class="fu">mutate</span>(<span class="at">sample =</span> <span class="fu">str_c</span>(cell_type, replicate_n, <span class="at">sep =</span> <span class="st">"_"</span>))</span>
+<span id="cb2-13"><a href=""></a></span>
+<span id="cb2-14"><a href=""></a></span>
+<span id="cb2-15"><a href=""></a>df_input <span class="ot">&lt;-</span> df_no_na_wide <span class="sc">|&gt;</span> <span class="fu">select</span>(<span class="sc">-</span><span class="fu">c</span>(<span class="st">'sample'</span>,<span class="st">'cell_type'</span>)) <span class="sc">|&gt;</span> </span>
+<span id="cb2-16"><a href=""></a>  <span class="fu">mutate</span>(<span class="fu">across</span>(<span class="fu">where</span>(is.list), <span class="sc">~</span> <span class="fu">sapply</span>(., <span class="cf">function</span>(x) x[<span class="dv">1</span>]))) <span class="sc">|&gt;</span> </span>
+<span id="cb2-17"><a href=""></a>  <span class="fu">na.omit</span>() </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="pca-function-1" class="slide level2" data-auto-animate="true">
+<h2 data-id="quarto-animate-title">5 PCA Function</h2>
+<p>-here Saxe shows PCA plots and interprets them</p>
+<div class="sourceCode" id="cb3" style="font-size: 0.7em"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href=""></a><span class="co"># Set the bitmap type to 'cairo' to avoid PNG issue</span></span>
+<span id="cb3-2"><a href=""></a><span class="fu">options</span>(<span class="at">bitmapType =</span> <span class="st">'cairo'</span>)</span>
+<span id="cb3-3"><a href=""></a></span>
+<span id="cb3-4"><a href=""></a><span class="co">#Input data tois wide format, excluding columns with missing data.</span></span>
+<span id="cb3-5"><a href=""></a></span>
+<span id="cb3-6"><a href=""></a></span>
+<span id="cb3-7"><a href=""></a><span class="co"># The new data-frame for df_no_na_wide is called : df_feature_wide.</span></span>
+<span id="cb3-8"><a href=""></a><span class="co"># For creating a column sample as a guiding column use:</span></span>
+<span id="cb3-9"><a href=""></a><span class="co"># mutate</span></span>
+<span id="cb3-10"><a href=""></a></span>
+<span id="cb3-11"><a href=""></a>df_feature_wide <span class="sc">|&gt;</span> </span>
+<span id="cb3-12"><a href=""></a>  <span class="fu">mutate</span>(<span class="at">sample =</span> <span class="fu">str_c</span>(cell_type, replicate_n, <span class="at">sep =</span> <span class="st">"_"</span>))</span>
+<span id="cb3-13"><a href=""></a></span>
+<span id="cb3-14"><a href=""></a></span>
+<span id="cb3-15"><a href=""></a>df_input <span class="ot">&lt;-</span> df_no_na_wide <span class="sc">|&gt;</span> <span class="fu">select</span>(<span class="sc">-</span><span class="fu">c</span>(<span class="st">'sample'</span>,<span class="st">'cell_type'</span>)) <span class="sc">|&gt;</span> </span>
+<span id="cb3-16"><a href=""></a>  <span class="fu">mutate</span>(<span class="fu">across</span>(<span class="fu">where</span>(is.list), <span class="sc">~</span> <span class="fu">sapply</span>(., <span class="cf">function</span>(x) x[<span class="dv">1</span>]))) <span class="sc">|&gt;</span> </span>
+<span id="cb3-17"><a href=""></a>  <span class="fu">na.omit</span>() </span>
+<span id="cb3-18"><a href=""></a></span>
+<span id="cb3-19"><a href=""></a>colourby <span class="ot">&lt;-</span> df_no_na_wide<span class="sc">$</span>cell_type</span>
+<span id="cb3-20"><a href=""></a>  </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb4" style="font-size: 0.7em"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href=""></a><span class="co"># Set the bitmap type to 'cairo' to avoid PNG issue</span></span>
+<span id="cb4-2"><a href=""></a><span class="fu">options</span>(<span class="at">bitmapType =</span> <span class="st">'cairo'</span>)</span>
+<span id="cb4-3"><a href=""></a></span>
+<span id="cb4-4"><a href=""></a><span class="co">#Input data tois wide format, excluding columns with missing data.</span></span>
+<span id="cb4-5"><a href=""></a></span>
+<span id="cb4-6"><a href=""></a></span>
+<span id="cb4-7"><a href=""></a><span class="co"># The new data-frame for df_no_na_wide is called : df_feature_wide.</span></span>
+<span id="cb4-8"><a href=""></a><span class="co"># For creating a column sample as a guiding column use:</span></span>
+<span id="cb4-9"><a href=""></a><span class="co"># mutate</span></span>
+<span id="cb4-10"><a href=""></a></span>
+<span id="cb4-11"><a href=""></a>df_feature_wide <span class="sc">|&gt;</span> </span>
+<span id="cb4-12"><a href=""></a>  <span class="fu">mutate</span>(<span class="at">sample =</span> <span class="fu">str_c</span>(cell_type, replicate_n, <span class="at">sep =</span> <span class="st">"_"</span>))</span>
+<span id="cb4-13"><a href=""></a></span>
+<span id="cb4-14"><a href=""></a></span>
+<span id="cb4-15"><a href=""></a>df_input <span class="ot">&lt;-</span> df_no_na_wide <span class="sc">|&gt;</span> <span class="fu">select</span>(<span class="sc">-</span><span class="fu">c</span>(<span class="st">'sample'</span>,<span class="st">'cell_type'</span>)) <span class="sc">|&gt;</span> </span>
+<span id="cb4-16"><a href=""></a>  <span class="fu">mutate</span>(<span class="fu">across</span>(<span class="fu">where</span>(is.list), <span class="sc">~</span> <span class="fu">sapply</span>(., <span class="cf">function</span>(x) x[<span class="dv">1</span>]))) <span class="sc">|&gt;</span> </span>
+<span id="cb4-17"><a href=""></a>  <span class="fu">na.omit</span>() </span>
+<span id="cb4-18"><a href=""></a></span>
+<span id="cb4-19"><a href=""></a>colourby <span class="ot">&lt;-</span> df_no_na_wide<span class="sc">$</span>cell_type</span>
+<span id="cb4-20"><a href=""></a>  </span>
+<span id="cb4-21"><a href=""></a><span class="co">#Projecting data unto principal components (pc)</span></span>
+<span id="cb4-22"><a href=""></a>pc <span class="ot">&lt;-</span> <span class="fu">prcomp</span>(df_input, <span class="at">center =</span> <span class="cn">FALSE</span>, <span class="at">scale =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb4-23"><a href=""></a></span>
+<span id="cb4-24"><a href=""></a><span class="co">#Gives overview of variability of PC</span></span>
+<span id="cb4-25"><a href=""></a><span class="co">#print(pc)</span></span>
+<span id="cb4-26"><a href=""></a></span>
+<span id="cb4-27"><a href=""></a><span class="co">#Gives an overview, you should be able to tell the variance already here even without the plot</span></span>
+<span id="cb4-28"><a href=""></a><span class="fu">summary</span>(pc)</span>
+<span id="cb4-29"><a href=""></a></span>
+<span id="cb4-30"><a href=""></a><span class="co">#Takes the principal component values (pc$x)  </span></span>
+<span id="cb4-31"><a href=""></a>pc<span class="sc">$</span>x <span class="sc">|&gt;</span> <span class="fu">as.data.frame</span>() <span class="sc">|&gt;</span></span>
+<span id="cb4-32"><a href=""></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> PC1, <span class="at">y =</span> PC2, <span class="at">color =</span> colourby)) <span class="sc">+</span></span>
+<span id="cb4-33"><a href=""></a>  <span class="fu">geom_point</span>(<span class="at">size =</span> <span class="fl">2.5</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb5" style="font-size: 0.7em"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb6" style="font-size: 0.7em"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="volcano---function" class="slide level2">
+<h2>6 Volcano - Function</h2>
 <ul>
 <li><p>although longer format is often preferred, we found that for calculating fold and q value (between two cell types) wider format is a better solution, q value is then simply added by using &nbsp;<code>mutate()</code>&nbsp;.</p></li>
 <li><p>even if there is an existing function for T test, we made our own, which is more adjusted to our input</p></li>
 <li><p>as there is multiple possible comparisons between cell types, we decided to build a function which which as an output will have a new dataframe, with 2 cell types of interest</p></li>
-<li><p>what other problems have we had? how did we solve it? why did we choose to do it in that way?</p></li>
 </ul>
-</div>
+<div class="sourceCode" id="cb7" style="font-size: 0.7em"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href=""></a>volcano_augment <span class="ot">&lt;-</span> <span class="cf">function</span>(df, later_cell, earlier_cell, n_later, n_earlier){</span>
+<span id="cb7-2"><a href=""></a></span>
+<span id="cb7-3"><a href=""></a></span>
+<span id="cb7-4"><a href=""></a></span>
+<span id="cb7-5"><a href=""></a></span>
+<span id="cb7-6"><a href=""></a></span>
+<span id="cb7-7"><a href=""></a></span>
+<span id="cb7-8"><a href=""></a></span>
+<span id="cb7-9"><a href=""></a></span>
+<span id="cb7-10"><a href=""></a></span>
+<span id="cb7-11"><a href=""></a></span>
+<span id="cb7-12"><a href=""></a></span>
+<span id="cb7-13"><a href=""></a></span>
+<span id="cb7-14"><a href=""></a></span>
+<span id="cb7-15"><a href=""></a></span>
+<span id="cb7-16"><a href=""></a></span>
+<span id="cb7-17"><a href=""></a></span>
+<span id="cb7-18"><a href=""></a></span>
+<span id="cb7-19"><a href=""></a>  <span class="fu">return</span>(data_set_for_visualisation)</span>
+<span id="cb7-20"><a href=""></a>}<span class="er">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
-<section id="function" class="slide level2">
-<h2>Function</h2>
-<div class="sourceCode" id="cb1" style="font-size: 0.7em"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href=""></a>volcano_augment <span class="ot">&lt;-</span> <span class="cf">function</span>(df, later_cell, earlier_cell, n_later, n_earlier){</span>
-<span id="cb1-2"><a href=""></a></span>
-<span id="cb1-3"><a href=""></a></span>
-<span id="cb1-4"><a href=""></a></span>
-<span id="cb1-5"><a href=""></a></span>
-<span id="cb1-6"><a href=""></a></span>
-<span id="cb1-7"><a href=""></a></span>
-<span id="cb1-8"><a href=""></a></span>
-<span id="cb1-9"><a href=""></a></span>
-<span id="cb1-10"><a href=""></a></span>
-<span id="cb1-11"><a href=""></a></span>
-<span id="cb1-12"><a href=""></a></span>
-<span id="cb1-13"><a href=""></a></span>
-<span id="cb1-14"><a href=""></a></span>
-<span id="cb1-15"><a href=""></a></span>
-<span id="cb1-16"><a href=""></a></span>
-<span id="cb1-17"><a href=""></a></span>
-<span id="cb1-18"><a href=""></a></span>
-<span id="cb1-19"><a href=""></a></span>
-<span id="cb1-20"><a href=""></a></span>
-<span id="cb1-21"><a href=""></a>  <span class="fu">return</span>(data_set_for_visualisation)</span>
-<span id="cb1-22"><a href=""></a>}<span class="er">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</section>
-<section id="function-1" class="slide level2" data-auto-animate="true">
-<h2 data-id="quarto-animate-title">Function</h2>
-<div class="sourceCode" id="cb2" style="font-size: 0.7em"><pre class="sourceCode numberSource r number-lines code-with-copy" data-id="quarto-animate-code"><code class="sourceCode r hljs"><span id="cb2-1" class="hljs-ln-code"><a href=""></a>volcano_augment <span class="ot">&lt;-</span> <span class="cf">function</span>(df, later_cell, earlier_cell, n_later, n_earlier){</span>
-<span id="cb2-2" class="hljs-ln-code"><a href=""></a>  data_set_for_visualisation <span class="ot">&lt;-</span> df <span class="sc">|&gt;</span> </span>
-<span id="cb2-3" class="hljs-ln-code"><a href=""></a>    <span class="fu">ungroup</span>() <span class="sc">|&gt;</span> <span class="co"># Ungrup the data_frame to avoid miscalculations.</span></span>
-<span id="cb2-4" class="hljs-ln-code"><a href=""></a>    <span class="fu">select</span>(<span class="fu">c</span>(protein_groups,</span>
-<span id="cb2-5" class="hljs-ln-code"><a href=""></a>             <span class="sc">!!</span><span class="fu">sym</span>(<span class="fu">paste0</span>(<span class="st">"mean_"</span>, earlier_cell)), </span>
-<span id="cb2-6" class="hljs-ln-code"><a href=""></a>             <span class="sc">!!</span><span class="fu">sym</span>(<span class="fu">paste0</span>(<span class="st">"mean_"</span>, later_cell)), </span>
-<span id="cb2-7" class="hljs-ln-code"><a href=""></a>             <span class="sc">!!</span><span class="fu">sym</span>(<span class="fu">paste0</span>(<span class="st">"sd_"</span>, later_cell)), </span>
-<span id="cb2-8" class="hljs-ln-code"><a href=""></a>             <span class="sc">!!</span><span class="fu">sym</span>(<span class="fu">paste0</span>(<span class="st">"sd_"</span>, earlier_cell)))) <span class="sc">|&gt;</span> </span>
-<span id="cb2-9" class="hljs-ln-code"><a href=""></a>    <span class="co">#!!sym() is used to evaluate the result as a column name.. </span></span>
-<span id="cb2-10" class="hljs-ln-code"><a href=""></a>    <span class="fu">mutate</span>(<span class="at">fold_log2 =</span> <span class="fu">log2</span>(<span class="sc">!!</span><span class="fu">sym</span>(<span class="fu">paste0</span>(<span class="st">"mean_"</span>, later_cell)) <span class="sc">/!!</span><span class="fu">sym</span>(<span class="fu">paste0</span>(<span class="st">"mean_"</span>, earlier_cell))), </span>
-<span id="cb2-11" class="hljs-ln-code"><a href=""></a>           <span class="at">p_val =</span> <span class="fu">pval</span>(<span class="sc">!!</span><span class="fu">sym</span>(<span class="fu">paste0</span>(<span class="st">"mean_"</span>, later_cell)),</span>
-<span id="cb2-12" class="hljs-ln-code"><a href=""></a>                        <span class="sc">!!</span><span class="fu">sym</span>(<span class="fu">paste0</span>(<span class="st">"mean_"</span>, earlier_cell)),</span>
-<span id="cb2-13" class="hljs-ln-code"><a href=""></a>                        n_later, n_earlier,</span>
-<span id="cb2-14" class="hljs-ln-code"><a href=""></a>                        <span class="sc">!!</span><span class="fu">sym</span>(<span class="fu">paste0</span>(<span class="st">"sd_"</span>, later_cell)),</span>
-<span id="cb2-15" class="hljs-ln-code"><a href=""></a>                        <span class="sc">!!</span><span class="fu">sym</span>(<span class="fu">paste0</span>(<span class="st">"sd_"</span>, earlier_cell))),</span>
-<span id="cb2-16" class="hljs-ln-code"><a href=""></a>           <span class="at">q_val =</span> (<span class="fu">p.adjust</span>(p_val))) <span class="sc">|&gt;</span> </span>
-<span id="cb2-17" class="hljs-ln-code"><a href=""></a>    <span class="fu">mutate</span>(<span class="at">expression =</span> <span class="fu">case_when</span>(fold_log2 <span class="sc">&gt;</span> <span class="dv">0</span> <span class="sc">&amp;</span> q_val <span class="sc">&lt;=</span> <span class="fl">0.05</span> <span class="sc">~</span> <span class="st">"overexpressed"</span>,</span>
-<span id="cb2-18" class="hljs-ln-code"><a href=""></a>                                  fold_log2 <span class="sc">&lt;</span> <span class="dv">0</span> <span class="sc">&amp;</span> q_val <span class="sc">&lt;=</span> <span class="fl">0.05</span> <span class="sc">~</span> <span class="st">"underexpressed"</span>,</span>
-<span id="cb2-19" class="hljs-ln-code"><a href=""></a>                                  q_val <span class="sc">&gt;</span> <span class="fl">0.05</span>  <span class="sc">~</span> <span class="st">"not significant"</span>)) <span class="sc">|&gt;</span> </span>
-<span id="cb2-20" class="hljs-ln-code"><a href=""></a>    <span class="fu">select</span>(protein_groups, fold_log2, q_val, expression)</span>
-<span id="cb2-21" class="hljs-ln-code"><a href=""></a>  <span class="fu">return</span>(data_set_for_visualisation)</span>
-<span id="cb2-22" class="hljs-ln-code"><a href=""></a>}<span class="er">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<section id="function" class="slide level2" data-auto-animate="true">
+<h2 data-id="quarto-animate-title">7 Function</h2>
+<div class="sourceCode" id="cb8" style="font-size: 0.7em"><pre class="sourceCode numberSource r number-lines code-with-copy" data-id="quarto-animate-code"><code class="sourceCode r hljs"><span id="cb8-1" class="hljs-ln-code"><a href=""></a>volcano_augment <span class="ot">&lt;-</span> <span class="cf">function</span>(df, later_cell, earlier_cell, n_later, n_earlier){</span>
+<span id="cb8-2" class="hljs-ln-code"><a href=""></a>  data_set_for_visualisation <span class="ot">&lt;-</span> df <span class="sc">|&gt;</span> </span>
+<span id="cb8-3" class="hljs-ln-code"><a href=""></a>    <span class="fu">ungroup</span>() <span class="sc">|&gt;</span> <span class="co"># Ungrup the data_frame to avoid miscalculations.</span></span>
+<span id="cb8-4" class="hljs-ln-code"><a href=""></a>    <span class="fu">select</span>(<span class="fu">c</span>(protein_groups,</span>
+<span id="cb8-5" class="hljs-ln-code"><a href=""></a>             <span class="sc">!!</span><span class="fu">sym</span>(<span class="fu">paste0</span>(<span class="st">"mean_"</span>, earlier_cell)), </span>
+<span id="cb8-6" class="hljs-ln-code"><a href=""></a>             <span class="sc">!!</span><span class="fu">sym</span>(<span class="fu">paste0</span>(<span class="st">"mean_"</span>, later_cell)), </span>
+<span id="cb8-7" class="hljs-ln-code"><a href=""></a>             <span class="sc">!!</span><span class="fu">sym</span>(<span class="fu">paste0</span>(<span class="st">"sd_"</span>, later_cell)), </span>
+<span id="cb8-8" class="hljs-ln-code"><a href=""></a>             <span class="sc">!!</span><span class="fu">sym</span>(<span class="fu">paste0</span>(<span class="st">"sd_"</span>, earlier_cell)))) <span class="sc">|&gt;</span> </span>
+<span id="cb8-9" class="hljs-ln-code"><a href=""></a>    <span class="co">#!!sym() is used to evaluate the result as a column name.. </span></span>
+<span id="cb8-10" class="hljs-ln-code"><a href=""></a>    <span class="fu">mutate</span>(<span class="at">fold_log2 =</span> <span class="fu">log2</span>(<span class="sc">!!</span><span class="fu">sym</span>(<span class="fu">paste0</span>(<span class="st">"mean_"</span>, later_cell)) <span class="sc">/!!</span><span class="fu">sym</span>(<span class="fu">paste0</span>(<span class="st">"mean_"</span>, earlier_cell))), </span>
+<span id="cb8-11" class="hljs-ln-code"><a href=""></a>           <span class="at">p_val =</span> <span class="fu">pval</span>(<span class="sc">!!</span><span class="fu">sym</span>(<span class="fu">paste0</span>(<span class="st">"mean_"</span>, later_cell)),</span>
+<span id="cb8-12" class="hljs-ln-code"><a href=""></a>                        <span class="sc">!!</span><span class="fu">sym</span>(<span class="fu">paste0</span>(<span class="st">"mean_"</span>, earlier_cell)),</span>
+<span id="cb8-13" class="hljs-ln-code"><a href=""></a>                        n_later, n_earlier,</span>
+<span id="cb8-14" class="hljs-ln-code"><a href=""></a>                        <span class="sc">!!</span><span class="fu">sym</span>(<span class="fu">paste0</span>(<span class="st">"sd_"</span>, later_cell)),</span>
+<span id="cb8-15" class="hljs-ln-code"><a href=""></a>                        <span class="sc">!!</span><span class="fu">sym</span>(<span class="fu">paste0</span>(<span class="st">"sd_"</span>, earlier_cell))),</span>
+<span id="cb8-16" class="hljs-ln-code"><a href=""></a>           <span class="at">q_val =</span> (<span class="fu">p.adjust</span>(p_val))) <span class="sc">|&gt;</span> </span>
+<span id="cb8-17" class="hljs-ln-code"><a href=""></a>    <span class="fu">mutate</span>(<span class="at">expression =</span> <span class="fu">case_when</span>(fold_log2 <span class="sc">&gt;</span> <span class="dv">0</span> <span class="sc">&amp;</span> q_val <span class="sc">&lt;=</span> <span class="fl">0.05</span> <span class="sc">~</span> <span class="st">"overexpressed"</span>,</span>
+<span id="cb8-18" class="hljs-ln-code"><a href=""></a>                                  fold_log2 <span class="sc">&lt;</span> <span class="dv">0</span> <span class="sc">&amp;</span> q_val <span class="sc">&lt;=</span> <span class="fl">0.05</span> <span class="sc">~</span> <span class="st">"underexpressed"</span>,</span>
+<span id="cb8-19" class="hljs-ln-code"><a href=""></a>                                  q_val <span class="sc">&gt;</span> <span class="fl">0.05</span>  <span class="sc">~</span> <span class="st">"not significant"</span>)) <span class="sc">|&gt;</span> </span>
+<span id="cb8-20" class="hljs-ln-code"><a href=""></a>    <span class="fu">select</span>(protein_groups, fold_log2, q_val, expression)</span>
+<span id="cb8-21" class="hljs-ln-code"><a href=""></a>  <span class="fu">return</span>(data_set_for_visualisation)</span>
+<span id="cb8-22" class="hljs-ln-code"><a href=""></a>}<span class="er">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
 <section id="volcano-plot" class="slide level2 smaller">
-<h2>Volcano Plot</h2>
+<h2>7 Volcano Plot</h2>
 <div>
 <ul>
 <li>log2(fold) vs log10(q_values) plot is a rule of thumb in proteomics</li>
@@ -560,13 +686,10 @@
 </div>
 </div>
 </div>
-</section>
-<section id="pca" class="slide level2">
-<h2>PCA</h2>
-<p>🙃</p>
+<p>##8 Uniprot Arne talks about the uniprot function and how we automatized what Antonio talks about</p>
 </section>
 <section id="discussion" class="slide level2">
-<h2>Discussion</h2>
+<h2>9 Discussion</h2>
 <div>
 <ul>
 <li>5 dataframes are merged into 1</li>
@@ -577,17 +700,16 @@
 <li>PCA shows us simmilarity between different cell types, and potentialy pathway of stem cell development</li>
 </ul>
 </div>
-</section>
-<section id="discussion-1" class="slide level2">
-<h2>Discussion</h2>
-<p>Another Discussion slide</p>
+<ul>
+<li>what other problems have we had? how did we solve it? why did we choose to do it in that way?</li>
+</ul>
 </section>
 <section id="take-away-messages-conclusion" class="slide level2">
-<h2>Take away messages / Conclusion</h2>
+<h2>10 Take away messages / Conclusion</h2>
 <p>Write some conclusion here</p>
 <div class="quarto-auto-generated-content">
 <div class="footer footer-default">
-
+<p>Group 6</p>
 </div>
 </div>
 </section>
@@ -801,6 +923,44 @@
         ]
       });
     </script>
+    
+    <script>
+      // htmlwidgets need to know to resize themselves when slides are shown/hidden.
+      // Fire the "slideenter" event (handled by htmlwidgets.js) when the current
+      // slide changes (different for each slide format).
+      (function () {
+        // dispatch for htmlwidgets
+        function fireSlideEnter() {
+          const event = window.document.createEvent("Event");
+          event.initEvent("slideenter", true, true);
+          window.document.dispatchEvent(event);
+        }
+
+        function fireSlideChanged(previousSlide, currentSlide) {
+          fireSlideEnter();
+
+          // dispatch for shiny
+          if (window.jQuery) {
+            if (previousSlide) {
+              window.jQuery(previousSlide).trigger("hidden");
+            }
+            if (currentSlide) {
+              window.jQuery(currentSlide).trigger("shown");
+            }
+          }
+        }
+
+        // hookup for slidy
+        if (window.w3c_slidy) {
+          window.w3c_slidy.add_observer(function (slide_num) {
+            // slide_num starts at position 1
+            fireSlideChanged(null, w3c_slidy.slides[slide_num - 1]);
+          });
+        }
+
+      })();
+    </script>
+
     <script id="quarto-html-after-body" type="application/javascript">
     window.document.addEventListener("DOMContentLoaded", function (event) {
       const toggleBodyColorMode = (bsSheetEl) => {

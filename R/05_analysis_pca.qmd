@@ -1,0 +1,63 @@
+## Libraries
+
+```{r 05_libraries_and_options, message=FALSE, running=FALSE}
+library(tidyr)
+library(graphics)
+
+# Set the bitmap type to 'cairo' to avoid PNG issue
+options(bitmapType = 'cairo')
+
+```
+
+## Load data
+
+```{r 05_load data, message=FALSE, running=FALSE}
+# loading data into the environment
+
+df_feature_wide <- read_tsv(file = str_c(here("data"),"03_df_feature_wide.tsv.gz",sep="/"))
+
+```
+
+
+
+## PCA plots and variance analysis
+
+```{r 05_principal_components}
+df_feature_wide |> 
+  mutate(sample = str_c(cell_type, replicate_n, sep = "_"))
+
+colourby <- df_feature_wide$cell_type
+  
+#Projecting data unto principal components (pc)
+pc <- prcomp(df_input, center = FALSE, scale = FALSE)
+
+#Gives an overview, you should be able to tell the variance already here even without the plot
+summary(pc)
+```
+
+```{r 05_pca_plot}
+#Plots the principal component values (pc$x)  
+
+pc$x |> as.data.frame() |>
+  ggplot(aes(x = PC1, y = PC2, color = colourby)) +
+  geom_point(size = 2.5)
+```
+
+```{r 05_pc_variance_plot}
+pc |>
+  tidy(matrix = "eigenvalues") |>
+  filter(PC <= 5) |>
+  ggplot(aes(PC, percent)) +
+  geom_col(fill = "#56B4E9", alpha = 0.8) +
+  scale_x_continuous(breaks = 1:9) +
+  scale_y_continuous(
+    labels = scales::percent_format(),
+    expand = expansion(mult = c(0, 0.01))
+  ) 
+```
+
+## Save plot
+
+```{r 05_save_plots}
+ggsave(plot = biplot, filename = "PCA_on_proteingroups_original.png", width = 20, height = 10, units = "cm", path = here("results"))
+```

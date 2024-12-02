@@ -26,10 +26,6 @@ data_file <- "mouse_cell_stages.zip"
 data_location <- "https://www.dropbox.com/scl/fi/xo2tgbhknzelxazhu6qcg/group_6_data_2.zip?rlkey=q0awssn7v4vgi4xfpk2pgl142&st=qxeppogo&dl=1"
 
 
-# Dropbox url
-url <- "https://www.dropbox.com/scl/fi/xo2tgbhknzelxazhu6qcg/group_6_data_2.zip?rlkey=q0awssn7v4vgi4xfpk2pgl142&st=blph5keq&dl=1"
-
-
 if( !dir.exists(raw_dir) ){ # Check if the path already exists and creates it if it doesn't  exist
   dir.create(path = raw_dir)
 } 
@@ -54,29 +50,18 @@ df_clp <- read_csv2(file = here("data/_raw/group6_data_CLP_Report.csv"), na="NaN
 df_cmp <- read_csv2(file = here("data/_raw/group6_data_CMP_Report.csv"), na="NaN")
 
 
-# read in tsv file for mus musculus uniprot file
-
-.df_uniprot_mouse <- read_csv2(file = here("raw_data/uniprotkb_mus_musculus.tsv"), na= "NaN")
-
-
 #| echo: false
 #| eval: false
 
 ```
 
-
 ### Save the data-file for 02_clean.qmd
 
 ```{r 01_write_csv}
-project_path = here()
-setwd(project_path)
 
 write_tsv(df_hsc, file = here("data/01_hsc.tsv.gz"))
 write_tsv(df_mep, file = here("data/01_mep.tsv.gz"))
 write_tsv(df_gmp, file = here("data/01_gmp.tsv.gz"))
 write_tsv(df_clp, file = here("data/01_clp.tsv.gz"))
 write_tsv(df_cmp, file = here("data/01_cmp.tsv.gz"))
-
-write_tsv(.df_uniprot_mouse, "data/01_dat_load_uniprot_mouse.tsv")
-
 ```

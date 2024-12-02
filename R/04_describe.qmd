@@ -201,6 +201,3 @@ We observe a less apparent distortion of the density plots, instead of a new glo
 \
 Choice of NA imputation: We need to base our decision on the nature of the data we are working with. Both strategies would produce meaningful replacement values for NA's. Because the missingness in our data is MNAR, we chose sample-wise imputation, as it accounts better for biological missingness in DIA data.
 
-
-
-

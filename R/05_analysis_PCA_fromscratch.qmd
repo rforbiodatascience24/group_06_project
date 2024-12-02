@@ -1,12 +1,15 @@
 ```{r 01_libraries_and_options}
 library(tidyr)
+library('ggbiplot')
 library(graphics)
 
 # Set the bitmap type to 'cairo' to avoid PNG issue
 options(bitmapType = 'cairo')
 ```
 
+<<<<<<< HEAD:R/05_analysis_pca.qmd
 ## Make PCA plot
+
 
 ```{r 01_principal_components}
 df_feature_wide |> 
@@ -19,16 +22,16 @@ pc <- prcomp(df_input, center = FALSE, scale = FALSE)
 
 #Gives an overview, you should be able to tell the variance already here even without the plot
 summary(pc)
-
-
 ```
 
 ```{r 03_pca_plot}
 #Plots the principal component values (pc$x)  
+
 pc$x |> as.data.frame() |>
   ggplot(aes(x = PC1, y = PC2, color = colourby)) +
   geom_point(size = 2.5)
 ```
+
 
 ```{r 04_pc_variance_plot}
 pc |>
@@ -43,8 +46,8 @@ pc |>
   ) 
 ```
 
-## Save plot
 
+## Save plot
 ```{r 05_save_plots}
 ggsave(plot = biplot, filename = "PCA_on_proteingroups_original.png", width = 20, height = 10, units = "cm", path = here("results"))
 ```

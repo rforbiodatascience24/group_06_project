@@ -32,11 +32,9 @@ df_sample_wise <- read_tsv(file = here("data/03_df_sample_wise.tsv.gz"))
 
 ## The Data Set
 
-
 We are working with an unpublished proteomics dataset from a research group on DTU. We have recieved permission to work with the data for the R for Bio Data Science Project. The dataset relates to a study that can be read about in this preprint. (insert link here).
 
 In the study, proteomics by mass spectrometry was applied to FACS-sorted populations of hematopoietic stem- and progenitor cells from the mouse bone marrow. Five populations were isolated based on known surface marker expression: Hematopoietic stem cells (HSC), common lymphoid progenitors (CLP), common myeloid progenitors (CMP), megakaryocyte-erythrocyte progenitors (MEP) and granulocyte-monocyte progenitors (GMP). According to literature, these cell populations represent different stages of hematopoiesis, meaning the differentiation of HSC into the different blood cell lineages. For each cell type, 500 cells were isolated in 4 replicates, except for CLP having 5 replicates. The sorted cells were lysed, digested with trypsin, and subjected to proteomics by mass spectrometry in data-independent acquisition (DIA) mode. Therefore our raw data consists of LS/MS DIA intensity values of identified protein groups (PG).
-
 
 | Cell Type                   | HSC  | CMP  | GMP  | CLP  | MEP  | Total |
 |-----------------------------|------|------|------|------|------|-------|
@@ -251,18 +249,19 @@ We observe a less apparent distortion of the density plots, instead of a new glo
 \
 Choice of NA imputation: We need to base our decision on the nature of the data we are working with. Both strategies would produce meaningful replacement values for NA's. Because the missingness in our data is MNAR, we chose sample-wise imputation, as it accounts better for biological missingness in DIA data.
 
-
-
 ## Protein type lookup
 
-```{r}
+To get deeper insight in our data, we wanted to explore how many proteins in each sample are involved in regulation of gene expression. We follow the central dogma of biology, consisting of transcription, mRNA processing, translation and protein degradation. One way to do that is by systematic lookup of gene ontology (GO) terms or pathways in data bases like uniprot. Because we're limited to few packages, we did not make use of the uniprot API, to access the data base directly. Instead, we downloaded a tsv file with all reviewed mouse proteins, to do a manual lookup. For simplicity, we used uniprot keywords instead of GO terms or pathways. This is mainly a showcase of a manual lookup, instead of a solid biological interrogation.
 
+```{r}
 # load mouse uniprot db file for lookup
+
 df_uniprot_mouse <- read_tsv(file = here("data/01_dat_load_uniprot_mouse.tsv"))
 ```
 
 ```{r}
-library(rlang)
+# make function for manual keyword lookup
+
 uniprot_lookup <- function(gene_id, dataframe, id_column, keyword_column){
   ## function that takes in string x and looks for string pattern in uniprot dataframe, giving back the value in keyword column.
   Keywords <- dataframe |> 
@@ -272,7 +271,8 @@ uniprot_lookup <- function(gene_id, dataframe, id_column, keyword_column){
   return(Keywords)
 }
 
-  
+# make new data frame with keyword column, using unipro_lookup to lookup keywords for all found proteins in the uniprot file. This will take a reasonable amount of time (about 3 minutes).
+
 df_type <- df_norm_intensities |> 
   filter(!is.na(genes) & genes != "") |> 
   mutate(description_column = map_chr(
@@ -291,27 +291,8 @@ df_type <- df_type |>
 ```
 
 ```{r}
-# make nested df with multiple cell types
+# make column with extracted keywords (selected by us)
 
-df_multi <- df_type |> 
-  group_by(cell_type) |> 
-  nest() |> 
-  mutate(transcription_pgs = map(.x = data,
-                                 .f = ~.x |> filter(str_detect(description_column,
-                                                         "Transcription regulation"))),
-         translation_pgs = map(.x = data,
-                                 .f = ~.x |> filter(str_detect(description_column,
-                                                         "Translation regulation"))),
-         mrna_splicing_pgs = map(.x = data,
-                                 .f = ~.x |> filter(str_detect(description_column,
-                                                         "mRNA splicing"))),
-         proteasome_pgs = map(.x = data,
-                                 .f = ~.x |> filter(str_detect(description_column,
-                                                         "Proteasome"))))
-
-```
-
-```{r}
 df_type <- df_type |> 
   mutate(
     keyword_function = case_when(
@@ -325,6 +306,8 @@ df_type <- df_type |>
 ```
 
 ```{r}
+# make simple grouped bar plot to show absolute numbers of protein groups for each keyword category across cell types
+
 df_type |> 
   mutate(
     cell_type = factor(cell_type, levels=(c("hsc", "cmp", "mep", "gmp", "clp"))),
@@ -347,3 +330,6 @@ df_type |>
   ylab("Number Protein Groups")
 ```
 
+Those results do not reflect common knowledge about proteomics data of gene regulation. Although transcription factors make up 10% of protein-coding genes and are therefore the biggest functional group of proteins, they are usually low expressed and not easily picked up by low-input proteomics. Especially since only about 3700 protein groups were detected in this data set. It seems that uniprot keywords are very broad descriptions of protein function, e.g. include proteins in "Transcription regulation" that are active in pathways remotely connected to this term.
+
+It should be noted that the performance of the lookup is bad, as it takes considerable time to complete it. Reason is that for every protein group in our data, the whole uniprot data frame is parsed. This is suboptimal, however the only solution we could come up with to do the pattern matching of proteins in the protein groups. If this wasn't necessary, a simple join could be made which would increase performance considerably.

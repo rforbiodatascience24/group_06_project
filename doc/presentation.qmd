@@ -5,36 +5,53 @@ editor: visual
 format: 
   revealjs:
     theme: white
+    footer: "Group 6"
 ---
 
+::: notes
 Read the following resources to become smarter on how to create presentations. Remember to have exactly 10 slides. https://quarto.org/docs/presentations/
 
 https://quarto.org/docs/presentations/revealjs/
+:::
 
 ## 1 Introduction to the data {.smaller}
 
-the data is obtained by applying mass spectrometry to FACS-sorted populations of hematopoietic stem- and progenitor cells from the mouse bone marrow
+-   Dataset is unpublished data from a research group at DTU
 
-five populations were isolated based on known surface marker expression: HSC, CLP, CMP, MEP, GMP
+-   Proteomics data from bone marrow of a single mouse measured by mass spectroscopy
 
-500 cells were isolated in 4 replicates, except for CLP having 5 replicates
+-   Intensity is a measure of how much each protein is expressed
 
-raw data consists of LS/MS DIA intensity values of identified protein groups (PG)
+    ```{r}
+    library("tidyverse")
+    library("here")
+    df_sample_wise <- read_tsv(file = str_c(here("data"), "03_df_sample_wise.tsv.gz", sep = "/"))
+    sample_n(df_sample_wise,5)
+    ```
 
-| Cell Type                   | HSC  | CMP  | GMP  | CLP  | MEP  | Total |
+| Cell Type                   | HSC  | CLP  | CMP  | GMP  | MEP  | Total |
 |-----------------------------|------|------|------|------|------|-------|
-| No. of observations         | 2196 | 1986 | 2291 | 2382 | 2691 | 3765  |
-| No. of replicates (samples) | 4    | 4    | 4    | 5    | 4    | 21    |
+| No. of Proteins             | 2196 | 2382 | 1986 | 2291 | 2691 | 3765  |
+| No. of replicates (samples) | 4    | 5    | 4    | 4    | 4    | 21    |
 
-: Table 1: Number of replicates and observations across replicates for the analysed FACS-populations
+::: notes
+We are working with an unpublished proteomics dataset from a research group on DTU. We have recieved permission to work with the data for the R for Bio Data Science Project. The dataset relates to a study that can be read about in this preprint. (insert link here).
+
+Hematopoietic stem cells (HSC), common lymphoid progenitors (CLP), common myeloid progenitors (CMP), megakaryocyte-erythrocyte progenitors (MEP) and granulocyte-monocyte progenitors (GMP). According to literature, these cell populations represent different stages of hematopoiesis, meaning the differentiation of HSC into the different blood cell lineages. For each cell type, 500 cells were isolated in 4 replicates, except for CLP having 5 replicates. The sorted cells were lysed, digested with trypsin, and subjected to proteomics by mass spectrometry in data-independent acquisition (DIA) mode. Therefore our raw data consists of LS/MS DIA intensity values of identified protein groups (PG).
+:::
 
 ## 2 Data tidying and data format
 
 ::: nonincremental
--   5 dataframes (hsc, clp, cmp, mep, gmp) into one joint dataframe using function  `full_join()` , joined by both: ProteinGroup and Genes
--   variable names are simplified
--   5 cell types making up a total of 21 variables, we used  `pivot_longer()`  to get just one intensity colomn
--   name of the cell type and number of the replica are now merged, but we want to have them in 2 different colomns
+-   5 dataframes joined using `full_join()`
+-   Simplified variable names
+-   Original data was in wide format
+-   `pivot_longer()` to get just one intensity colomn
+-   We discussed whether we wanted long or wide format
+:::
+
+::: notes
+We discussed a lot whether we should do long format or wide format Tidy data should have one observation in one row In the end we are working with a dataset
 :::
 
 ## 3 Augmenting the data

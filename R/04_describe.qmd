@@ -101,7 +101,8 @@ df_intensities |>
                         sep ="_"),.before = cell_type) |>
   ggplot(aes(x=intensity, colour = sample)) +
   geom_density() +
-  theme_classic()
+  theme_classic()+
+  labs(title = "Density of Intensity Prior to Log2 Transformation")
 
 ```
 
@@ -117,7 +118,8 @@ df_log_intensities |>
                         sep ="_"),.before = cell_type) |> 
   ggplot(aes(x=intensity, colour = sample)) +
   geom_density() +
-  theme_classic()
+  theme_classic()+
+  labs(title = "Density of Intensity After Log2 Transformation")
 ```
 
 ```{r 04_log2}
@@ -143,7 +145,8 @@ df_norm_intensities |>
   ggplot(aes(x=intensity,
   colour = sample)) +
   geom_density() +
-  theme_classic()
+  theme_classic()+
+  labs(title = "Density of log2-transformed Intensity after Normalization")
 ```
 
 ```{r 04_norm2}
@@ -171,7 +174,8 @@ df_sample_wise |>
                         sep ="_"),.before = cell_type) |> 
   ggplot(aes(x=intensity, colour = sample)) +
   geom_density() +
-  theme_classic()
+  theme_classic()+
+  labs(title = "Density of log2-transformed Intensity", subtitle = "When NA's are imputeted sample-wise")
 ```
 
 We can observe a heavy distortion of the density plots in all samples, provoked by replacing NA's sample-wise. This is not necessarily bad, as we needed the log-normal distribution to calculate the z-scores for replacement.
@@ -186,7 +190,8 @@ df_feature_wise |>
   ggplot(aes(x=intensity, colour = sample,
              color = replicate_n)) +
   geom_density() +
-  theme_classic()
+  theme_classic()+
+  labs(title = "Density of log2-transformed Intensity", subtitle = "When NA's are imputeted feature-wise")
 ```
 
 We observe a less apparent distortion of the density plots, instead of a new global maximum at the 0.1 percentile mark, we have left-skewed densities.\

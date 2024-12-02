@@ -23,7 +23,7 @@ Downloading data from dropbox containing the proteomics dataset.
 #defining path to store data in the folder data_raw
 raw_dir <- here("data/_raw")
 data_file <- "mouse_cell_stages.zip"
-data_location <- "https://www.dropbox.com/scl/fi/d63o8sgp03fyu2s6tsqau/group_6_data.zip?rlkey=50z2rrfaowoizqivttdmyym2i&st=kngr6y9j&dl=1"
+data_location <- "https://www.dropbox.com/scl/fi/xo2tgbhknzelxazhu6qcg/group_6_data_2.zip?rlkey=q0awssn7v4vgi4xfpk2pgl142&st=qxeppogo&dl=1"
 
 
 if( !dir.exists(raw_dir) ){ # Check if the path already exists and creates it if it doesn't  exist

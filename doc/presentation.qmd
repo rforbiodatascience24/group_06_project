@@ -63,30 +63,25 @@ raw data consists of LS/MS DIA intensity values of identified protein groups (PG
 -   what other problems have we had? how did we solve it? why did we choose to do it in that way?
 :::
 
-## PCA Function
+## Augmenting data for principal component analysis
 
 ``` {.r style="font-size: 0.7em"}
-# Set the bitmap type to 'cairo' to avoid PNG issue
-options(bitmapType = 'cairo')
 
-#Input data tois wide format, excluding columns with missing data.
+#Get numerical inputs
+df_input <- df_feature_wide |> select(-c('replicate_n','cell_type'))
 
-
-# The new data-frame for df_no_na_wide is called : df_feature_wide.
-# For creating a column sample as a guiding column use:
-# mutate
-
-df_feature_wide |> 
-  mutate(sample = str_c(cell_type, replicate_n, sep = "_"))
-
-
-df_input <- df_no_na_wide |> select(-c('sample','cell_type')) |> 
-  mutate(across(where(is.list), ~ sapply(., function(x) x[1]))) |> 
-  na.omit() 
-
+#Group datapoints by cell types
+colourby <- pull(df_feature_wide, 'cell_type')
+   
+#Projecting data unto principal components (pc)
+pc <- prcomp(df_input, center = FALSE, scale = FALSE)
 ```
 
-## PCA Function {auto-animate="true"}
+## PCA Results {auto-animate="true"}
+
+![](images/PCA_on_proteingroups_original.png){.absolute top=150 left=0 width="500" height="350"}
+
+![](images/pca_variance_barplot.png){.absolute top=150 right=0 width="500" height="350"}
 
 ## Function
 

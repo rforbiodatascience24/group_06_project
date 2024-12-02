@@ -388,7 +388,7 @@ df_mep &lt;- read_csv2(file = here(&quot;data/_raw/group6_data_MEP_Report.csv&qu
 df_gmp &lt;- read_csv2(file = here(&quot;data/_raw/group6_data_GMP_Report.csv&quot;), na=&quot;NaN&quot;)
 df_clp &lt;- read_csv2(file = here(&quot;data/_raw/group6_data_CLP_Report.csv&quot;), na=&quot;NaN&quot;)
 df_cmp &lt;- read_csv2(file = here(&quot;data/_raw/group6_data_CMP_Report.csv&quot;), na=&quot;NaN&quot;)
-
+df_uniprot_mouse &lt;- read_tsv(file = here(&quot;data/_raw/uniprotkb_mus_musculus.tsv&quot;), na=&quot;NaN&quot;)
 
 #| echo: false
 #| eval: false</code></pre>
@@ -398,7 +398,8 @@ df_cmp &lt;- read_csv2(file = here(&quot;data/_raw/group6_data_CMP_Report.csv&qu
 write_tsv(df_mep, file = here(&quot;data/01_mep.tsv.gz&quot;))
 write_tsv(df_gmp, file = here(&quot;data/01_gmp.tsv.gz&quot;))
 write_tsv(df_clp, file = here(&quot;data/01_clp.tsv.gz&quot;))
-write_tsv(df_cmp, file = here(&quot;data/01_cmp.tsv.gz&quot;))</code></pre>
+write_tsv(df_cmp, file = here(&quot;data/01_cmp.tsv.gz&quot;))
+write_tsv(df_uniprot_mouse, file = here(&quot;data/01_dat_load_uniprot_mouse.tsv&quot;))</code></pre>
 </div>
 </div>
 

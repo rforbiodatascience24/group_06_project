@@ -11,11 +11,10 @@ options(bitmapType = 'cairo')
 ## PCA plots and variance analysis
 
 ```{r 01_principal_components}
-df_input <- df_feature_wide |> 
-  mutate(sample = str_c(cell_type, replicate_n, sep = "_"))
-
-colourby <- df_feature_wide$cell_type
+df_input <- df_feature_wide |> select(-c('replicate_n','cell_type'))
   
+colourby <- pull(df_feature_wide, 'cell_type')
+   
 #Projecting data unto principal components (pc)
 pc <- prcomp(df_input, center = FALSE, scale = FALSE)
 
@@ -32,6 +31,7 @@ pc$x |> as.data.frame() |>
   labs(title = 'Principal component analysis', 
        subtitle = 'Clustering of cell types on protein expression',
        color = 'Cell Type') +
+  theme_classic() +
   theme(legend.position = 'right')
 ```
 
@@ -45,7 +45,8 @@ pc |>
   scale_y_continuous(
     labels = scales::percent_format(),
     expand = expansion(mult = c(0, 0.01))
-  ) 
+  ) +
+  theme_classic()
 ```
 
 ## Save plot

@@ -40,15 +40,11 @@ raw data consists of LS/MS DIA intensity values of identified protein groups (PG
 ## Augmenting the data
 
 ::: nonincremental
--   log2 transformation of the values (common for mass spectrometry proteomics data)
+-   log2 transformation
 
--   individual protein intensities are normalised to the median of each sample
+-   Normalization
 
--   intensities across the different cell types are normalized (due different to cell count)
-
--   missing values (detection limit of the mass spectrometer) replacing sample-wise and feature-wise
-
--   which plots to showcase??????
+-   Missing value imputation
 :::
 
 ## Issuses during tidyig and augmenting
@@ -141,7 +137,7 @@ volcano_augment <- function(df, later_cell, earlier_cell, n_later, n_earlier){
 
 ## PCA Function
 
-```{.r style="font-size: 0.7em"}
+``` {.r style="font-size: 0.7em"}
 # Set the bitmap type to 'cairo' to avoid PNG issue
 options(bitmapType = 'cairo')
 
@@ -160,13 +156,11 @@ df_input <- df_no_na_wide |> select(-c('sample','cell_type')) |>
   mutate(across(where(is.list), ~ sapply(., function(x) x[1]))) |> 
   na.omit() 
 
-
-
 ```
 
 ## PCA Function {auto-animate="true"}
 
-```{.r style="font-size: 0.7em"}
+``` {.r style="font-size: 0.7em"}
 # Set the bitmap type to 'cairo' to avoid PNG issue
 options(bitmapType = 'cairo')
 
@@ -187,10 +181,9 @@ df_input <- df_no_na_wide |> select(-c('sample','cell_type')) |>
 
 colourby <- df_no_na_wide$cell_type
   
-
 ```
 
-```{.r style="font-size: 0.7em"}
+``` {.r style="font-size: 0.7em"}
 # Set the bitmap type to 'cairo' to avoid PNG issue
 options(bitmapType = 'cairo')
 
@@ -226,13 +219,12 @@ pc$x |> as.data.frame() |>
   geom_point(size = 2.5)
 ```
 
-```{.r style="font-size: 0.7em"}
-
+``` {.r style="font-size: 0.7em"}
 ```
 
-```{.r style="font-size: 0.7em"}
+``` {.r style="font-size: 0.7em"}
+```
 
-``` 
 ## Discussion
 
 ::: nonincremental

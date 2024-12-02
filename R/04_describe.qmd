@@ -200,10 +200,4 @@ df_feature_wise |>
 We observe a less apparent distortion of the density plots, instead of a new global maximum at the 0.1 percentile mark, we have left-skewed densities.\
 \
 Choice of NA imputation: We need to base our decision on the nature of the data we are working with. Both strategies would produce meaningful replacement values for NA's. Because the missingness in our data is MNAR, we chose sample-wise imputation, as it accounts better for biological missingness in DIA data.
-<<<<<<< HEAD
-=======
 
-
-
-
->>>>>>> d11448a68b052bdf726fe5122f9fd3ea3ae5a00d

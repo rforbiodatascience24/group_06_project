@@ -94,7 +94,7 @@ df_type <- df_norm_intensities |>
 ``` {.r style="font-size: 0.7em"}
 
 #Pivot to wider format for principal component analysis
-df_feature_wide <- df_feature_wise |>
+df_feature_wide <- df_sample_wise |>
   mutate(intensity = unname(intensity)) |>
   pivot_wider(id_cols = c(cell_type,replicate_n),
               names_from = 'protein_groups',

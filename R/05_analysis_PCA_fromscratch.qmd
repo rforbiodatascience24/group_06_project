@@ -1,15 +1,14 @@
+## Libraries
+
 ```{r 01_libraries_and_options}
 library(tidyr)
-library('ggbiplot')
 library(graphics)
 
 # Set the bitmap type to 'cairo' to avoid PNG issue
 options(bitmapType = 'cairo')
 ```
 
-<<<<<<< HEAD:R/05_analysis_pca.qmd
-## Make PCA plot
-
+## PCA plots and variance analysis
 
 ```{r 01_principal_components}
 df_feature_wide |> 
@@ -32,7 +31,6 @@ pc$x |> as.data.frame() |>
   geom_point(size = 2.5)
 ```
 
-
 ```{r 04_pc_variance_plot}
 pc |>
   tidy(matrix = "eigenvalues") |>
@@ -46,8 +44,8 @@ pc |>
   ) 
 ```
 
-
 ## Save plot
+
 ```{r 05_save_plots}
 ggsave(plot = biplot, filename = "PCA_on_proteingroups_original.png", width = 20, height = 10, units = "cm", path = here("results"))
 ```

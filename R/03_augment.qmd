@@ -143,7 +143,7 @@ df_sample_mean <- df_sample_wise|>
   group_by(protein_groups,
            cell_type) |> # take the mean/sd of of the replicates for the protein groups and cell types
   summarise(
-    mean = mean(intensity),
+    mean = mean(intensity),  
     sd = sd(intensity)
     ) |> 
   pivot_wider(names_from = cell_type,
@@ -151,6 +151,9 @@ df_sample_mean <- df_sample_wise|>
 
 # Showing 10 rows of the df_sample mean table
 sample_n(df_sample_mean, 1)
+
+# Saving the dataframe for presentation purposes
+write_tsv(df_sample_mean, file = here("data/03_df_sample_mean.tsv.gz"))
 ```
 
 ### Estamating p.value, log2fold change and q.value

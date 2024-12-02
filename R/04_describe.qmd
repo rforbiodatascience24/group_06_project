@@ -259,16 +259,7 @@ df_uniprot_mouse <- read_tsv(file = here("data/01_dat_load_uniprot_mouse.tsv"))
 ```
 
 ```{r}
-# make function for manual keyword lookup
 
-uniprot_lookup <- function(gene_id, dataframe, id_column, keyword_column){
-  ## function that takes in string x and looks for string pattern in uniprot dataframe, giving back the value in keyword column.
-  Keywords <- dataframe |> 
-  filter(str_detect({{id_column}}, gene_id)) |> 
-  pull({{keyword_column}}) |> 
-  str_c(collapse ='; ')
-  return(Keywords)
-}
 
 # make new data frame with keyword column, using unipro_lookup to lookup keywords for all found proteins in the uniprot file. This will take a reasonable amount of time (about 3 minutes).
 
@@ -341,6 +332,7 @@ plot_uniprot <- df_type |>
 print(plot_uniprot)
 ```
 
+
 ```{r}
 # save plot
 
@@ -352,3 +344,4 @@ plot_uniprot <- ggsave(filename = "plot_uniprot.png",
 Those results do not reflect common knowledge about proteomics data of gene regulation. Although transcription factors make up 10% of protein-coding genes and are therefore the biggest functional group of proteins, they are usually low expressed and not easily picked up by low-input proteomics. Especially since only about 3700 protein groups were detected in this data set. It seems that uniprot keywords are very broad descriptions of protein function, e.g. include proteins in "Transcription regulation" that are active in pathways remotely connected to this term.
 
 It should be noted that the performance of the lookup is bad, as it takes considerable time to complete it. Reason is that for every protein group in our data, the whole uniprot data frame is parsed. This is suboptimal, however the only solution we could come up with to do the pattern matching of proteins in the protein groups. If this wasn't necessary, a simple join could be made which would increase performance considerably.
+

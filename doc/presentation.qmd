@@ -284,6 +284,67 @@ pc$x |> as.data.frame() |>
 ``` {.r style="font-size: 0.7em"}
 ```
 
+
+## Volcano - augmentation {.smaller}
+
+::: nonincremental
+
+- switching to wider dataframe (better for computation of fold and T test)
+- creating new dataframe using a function
+
+:::
+```{r}
+
+library("tidyverse")
+library("here")
+
+df_sample_mean<- read_tsv(file = str_c(here("data"), "03_df_sample_mean.tsv.gz", sep = "/")) 
+
+sample_n(df_sample_mean, 5)
+
+```
+
+``` {.r style="font-size: 0.7em"}
+volcano_augment <- function(df, later_cell, earlier_cell, n_later, n_earlier){
+
+. . .
+  return(data_set_for_visualisation)
+})
+```
+
+```{r}
+df_volcano_cmp_hsc <- read_tsv(file = str_c(here("data"), "df_volcano_cmp_hsc.tsv.gz", sep = "/")) 
+
+sample_n(df_volcano_cmp_hsc, 5)
+```
+
+
+
+## Volcano - visualisation  {.smaller}
+
+
+
+::: nonincremental
+-   log2(fold) vs log10(q_values) plot is a rule of thumb in proteomics
+:::
+
+::: panel-tabset
+### HSC - CMP
+
+![](images/hsc_cmp_volcano_plot.png)
+
+### CMP -MEP
+
+![](images/cmp_mep_volcano_plot.png)
+
+### CMP- GMP
+
+![](images/cmp_gmp_volcano_plot.png)
+
+### HSC - CLP
+
+![](images/hsc_clp_volcano_plot.png)
+=======
 ::: incremental
 ## Discussion {.smaller}
 
@@ -309,6 +370,7 @@ Volcano plot and lookup
 ``` {.r style="font-size: 0.7em"}
 
 ```
+
 
 :::
 

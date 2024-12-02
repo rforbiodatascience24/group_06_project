@@ -59,3 +59,22 @@ volcano_augment <- function(df, later_cell, earlier_cell, n_later, n_earlier){
   return(data_set_for_visualisation)
 }
 
+#' uniprot lookup function
+#'
+#' @param gene_id 
+#' @param dataframe 
+#' @param id_column 
+#' @param keyword_column 
+#'
+#' @return
+#' @export
+#'
+#' @examples
+uniprot_lookup <- function(gene_id, dataframe, id_column, keyword_column){
+  ## function that takes in string x and looks for string pattern in uniprot dataframe, giving back the value in keyword column.
+  Keywords <- dataframe |> 
+    filter(str_detect({{id_column}}, gene_id)) |> 
+    pull({{keyword_column}}) |> 
+    str_c(collapse ='; ')
+  return(Keywords)
+}

@@ -1,0 +1,87 @@
+## Libraries
+
+```{r 05_libraries_and_options, message=FALSE, running=FALSE}
+library(tidyr)
+library(graphics)
+
+# Set the bitmap type to 'cairo' to avoid PNG issue
+options(bitmapType = 'cairo')
+
+
+```
+
+## Load data
+
+```{r 05_load data, message=FALSE, running=FALSE}
+# loading data into the environment
+
+df_feature_wide <- read_tsv(file = str_c(here("data"),"03_df_feature_wide.tsv.gz",sep="/"))
+
+```
+
+## PCA plots and variance analysis
+
+```{r 05_principal_components}
+
+df_feature_wide |> 
+  mutate(sample = str_c(cell_type, replicate_n, sep = "_"))
+
+
+df_input <- df_no_na_wide |> select(-c('sample','cell_type')) |> 
+  mutate(across(where(is.list), ~ sapply(., function(x) x[1]))) |> 
+  na.omit() 
+
+colourby <- df_no_na_wide$cell_type
+
+```
+
+## PCA plots and variance analysis
+
+```{r 01_principal_components}
+
+df_input <- df_feature_wide |> select(-c('replicate_n','cell_type'))
+
+colourby <- pull(df_feature_wide, 'cell_type')
+   
+#Projecting data unto principal components (pc)
+pc <- prcomp(df_input, center = FALSE, scale = FALSE)
+
+
+#Gives overview of variability of PC
+#print(pc)
+
+#Gives an overview, you should be able to tell the variance already here even without the plot
+summary(pc)
+```
+
+```{r 05_pca_plot}
+#Plots the principal component values (pc$x)  
+pc |> pull(x) |> as.data.frame() |>
+  ggplot(aes(x = PC1, y = PC2, color = colourby)) +
+  geom_point(size = 2.5) +
+  labs(title = 'Principal component analysis', 
+       subtitle = 'Clustering of cell types on protein expression',
+       color = 'Cell Type') +
+  theme_classic() +
+  theme(legend.position = 'right')
+```
+
+```{r 05_pc_variance_plot}
+pc |>
+  tidy(matrix = "eigenvalues") |>
+  filter(PC <= 5) |>
+  ggplot(aes(PC, percent)) +
+  geom_col(fill = "#56B4E9", alpha = 0.8) +
+  scale_x_continuous(breaks = 1:9) +
+  scale_y_continuous(
+    labels = scales::percent_format(),
+    expand = expansion(mult = c(0, 0.01))
+  ) +
+  theme_classic()
+```
+
+## Save plot
+
+```{r 05_save_plots}
+ggsave(plot = biplot, filename = "PCA_on_proteingroups_original.png", width = 20, height = 10, units = "cm", path = here("results"))
+```

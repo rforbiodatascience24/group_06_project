@@ -3,9 +3,10 @@
 .RData
 .Ruserdata
 .Project_data
-/local_data/
+.local_data
+/local_data/*
 .DS_Store
-.Data_preprocessing.pptx
 /data/*
-/data/_raw/*
+/raw_data/*
+
 /results/*

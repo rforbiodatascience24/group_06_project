@@ -40,17 +40,17 @@ volcano_augment <- function(df, later_cell, earlier_cell, n_later, n_earlier){
   data_set_for_visualisation <- df |> 
     ungroup() |> # Ungrup the data_frame to avoid miscalculations.
     select(c(protein_groups,
-             !!sym(str_c("mean_", earlier_cell)), 
-             !!sym(str_c("mean_", later_cell)), 
-             !!sym(str_c("sd_", later_cell)), 
-             !!sym(str_c("sd_", earlier_cell)))) |> 
+             !!sym(paste0("mean_", earlier_cell)), 
+             !!sym(paste0("mean_", later_cell)), 
+             !!sym(paste0("sd_", later_cell)), 
+             !!sym(paste0("sd_", earlier_cell)))) |> 
     #!!sym() is used to evaluate the result as a column name.. 
-    mutate(fold_log2 = log2(!!sym(str_c("mean_", later_cell)) /!!sym(str_c("mean_", earlier_cell))), 
-           p_val = pval(!!sym(str_c("mean_", later_cell)),
-                        !!sym(str_c("mean_", earlier_cell)),
+    mutate(fold_log2 = log2(!!sym(paste0("mean_", later_cell)) /!!sym(paste0("mean_", earlier_cell))), 
+           p_val = pval(!!sym(paste0("mean_", later_cell)),
+                        !!sym(paste0("mean_", earlier_cell)),
                         n_later, n_earlier,
-                        !!sym(str_c("sd_", later_cell)),
-                        !!sym(str_c("sd_", earlier_cell))),
+                        !!sym(paste0("sd_", later_cell)),
+                        !!sym(paste0("sd_", earlier_cell))),
            q_val = (p.adjust(p_val))) |> 
     mutate(expression = case_when(fold_log2 > 0 & q_val <= 0.05 ~ "overexpressed",
                                   fold_log2 < 0 & q_val <= 0.05 ~ "underexpressed",

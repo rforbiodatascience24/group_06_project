@@ -26,6 +26,8 @@ df_feature_wise <- read_tsv(file = here("data/03_df_feature_wise.tsv.gz"))
 
 df_sample_wise <- read_tsv(file = here("data/03_df_sample_wise.tsv.gz"))
 
+df_uniprot_mouse <- read_tsv(file = here("data/01_dat_load_uniprot_mouse.tsv"))
+
 
 ```
 
@@ -251,12 +253,6 @@ Choice of NA imputation: We need to base our decision on the nature of the data 
 ## Protein type lookup
 
 To get deeper insight in our data, we wanted to explore how many proteins in each sample are involved in regulation of gene expression. We follow the central dogma of biology, consisting of transcription, mRNA processing, translation and protein degradation. One way to do that is by systematic lookup of gene ontology (GO) terms or pathways in data bases like uniprot. Because we're limited to few packages, we did not make use of the uniprot API, to access the data base directly. Instead, we downloaded a tsv file with all reviewed mouse proteins, to do a manual lookup. For simplicity, we used uniprot keywords instead of GO terms or pathways. This is mainly a showcase of a manual lookup, instead of a solid biological interrogation.
-
-```{r}
-# load mouse uniprot db file for lookup
-
-df_uniprot_mouse <- read_tsv(file = here("data/01_dat_load_uniprot_mouse.tsv"))
-```
 
 ```{r}
 # make function for manual keyword lookup

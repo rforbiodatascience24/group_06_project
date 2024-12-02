@@ -1,123 +1,44 @@
-<<<<<<< HEAD
-## Libraries
-
-```{r 05_libraries_and_options, message=FALSE, running=FALSE}
-library(tidyr)
-=======
-
-## Make PCA plot
-
-```{r}
-library(tidyr)
-library('ggbiplot')
-
 ## Libraries
 
 ```{r 01_libraries_and_options}
 library(tidyr)
-
->>>>>>> 823d303423fdc4fce09234f09e0137be4757b25f
 library(graphics)
+library(broom)
 
 # Set the bitmap type to 'cairo' to avoid PNG issue
 options(bitmapType = 'cairo')
-
-<<<<<<< HEAD
-```
-
-## Load data
-
-```{r 05_load data, message=FALSE, running=FALSE}
-# loading data into the environment
-
-df_feature_wide <- read_tsv(file = str_c(here("data"),"03_df_feature_wide.tsv.gz",sep="/"))
-
-```
-
-
-
-## PCA plots and variance analysis
-
-```{r 05_principal_components}
-=======
-
-#Input data tois wide format, excluding columns with missing data.
-
-
-# The new data-frame for df_no_na_wide is called : df_feature_wide.
-# For creating a column sample as a guiding column use:
-# mutate
-
-df_feature_wide |> 
-  mutate(sample = str_c(cell_type, replicate_n, sep = "_"))
-
-
-df_input <- df_no_na_wide |> select(-c('sample','cell_type')) |> 
-  mutate(across(where(is.list), ~ sapply(., function(x) x[1]))) |> 
-  na.omit() 
-
-colourby <- df_no_na_wide$cell_type
-
 ```
 
 ## PCA plots and variance analysis
 
 ```{r 01_principal_components}
->>>>>>> 823d303423fdc4fce09234f09e0137be4757b25f
-df_feature_wide |> 
-  mutate(sample = str_c(cell_type, replicate_n, sep = "_"))
-
-colourby <- df_feature_wide$cell_type
-<<<<<<< HEAD
+df_input <- df_feature_wide |> select(-c('replicate_n','cell_type'))
   
+colourby <- pull(df_feature_wide, 'cell_type')
+   
 #Projecting data unto principal components (pc)
 pc <- prcomp(df_input, center = FALSE, scale = FALSE)
 
-=======
-
-#Projecting data unto principal components (pc)
-pc <- prcomp(df_input, center = FALSE, scale = FALSE)
-
-
-#Gives overview of variability of PC
-#print(pc)
-
-#Gives an overview, you should be able to tell the variance already here even without the plot
-summary(pc)
-
-#Takes the principal component values (pc$x)  
-
->>>>>>> 823d303423fdc4fce09234f09e0137be4757b25f
 #Gives an overview, you should be able to tell the variance already here even without the plot
 summary(pc)
 ```
 
-<<<<<<< HEAD
-```{r 05_pca_plot}
-#Plots the principal component values (pc$x)  
-
-=======
 ```{r 03_pca_plot}
 #Plots the principal component values (pc$x)  
 
-
->>>>>>> 823d303423fdc4fce09234f09e0137be4757b25f
-pc$x |> as.data.frame() |>
+pca_plot <- pc$x |> as.data.frame() |>
   ggplot(aes(x = PC1, y = PC2, color = colourby)) +
-  geom_point(size = 2.5)
+  geom_point(size = 2.5) +
+  labs(title = 'Principal component analysis', 
+       subtitle = 'Clustering of cell types on protein expression',
+       color = 'Cell Type') +
+  theme_classic() +
+  theme(legend.position = 'right')
+  
 ```
 
-<<<<<<< HEAD
-```{r 05_pc_variance_plot}
-=======
-
-## Save plot
-
-```{r}
-
 ```{r 04_pc_variance_plot}
->>>>>>> 823d303423fdc4fce09234f09e0137be4757b25f
-pc |>
+pc_varianceplot <- pc |>
   tidy(matrix = "eigenvalues") |>
   filter(PC <= 5) |>
   ggplot(aes(PC, percent)) +
@@ -126,15 +47,15 @@ pc |>
   scale_y_continuous(
     labels = scales::percent_format(),
     expand = expansion(mult = c(0, 0.01))
-  ) 
+  ) +
+  theme_classic() +
+  ylab('Porportion of Variance (%)')
 ```
 
 ## Save plot
 
 ```{r 05_save_plots}
-<<<<<<< HEAD
-=======
+ggsave(plot = pca_plot, filename = "PCA_on_proteingroups_original.png", width = 15, height = 10, units = "cm", path = here("results"))
 
->>>>>>> 823d303423fdc4fce09234f09e0137be4757b25f
-ggsave(plot = biplot, filename = "PCA_on_proteingroups_original.png", width = 20, height = 10, units = "cm", path = here("results"))
+ggsave(plot = pc_varianceplot, filename = "pca_variance_barplot.png", width = 15, height = 10, units = "cm", path = here("results"))
 ```

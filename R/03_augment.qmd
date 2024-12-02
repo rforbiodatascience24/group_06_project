@@ -53,7 +53,7 @@ df_log_intensities |>
 
 The intensities across the different cell types are normalized so that e.g cell count doesn't affect the intensity read, making the intensities comparable across the 5 cell types.
 
-```{r 03_normalzie}
+```{r 03_normalize}
 #Normalize data
 df_norm_intensities <- df_log_intensities |> 
   group_by(cell_type,

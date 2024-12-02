@@ -11,7 +11,7 @@ Read the following resources to become smarter on how to create presentations. R
 
 https://quarto.org/docs/presentations/revealjs/
 
-## 1 Introduction to the data {.smaller}
+## Introduction to the data {.smaller}
 
 the data is obtained by applying mass spectrometry to FACS-sorted populations of hematopoietic stem- and progenitor cells from the mouse bone marrow
 
@@ -28,7 +28,7 @@ raw data consists of LS/MS DIA intensity values of identified protein groups (PG
 
 : Table 1: Number of replicates and observations across replicates for the analysed FACS-populations
 
-## 2 Data tidying and data format
+## Data tidying and data format
 
 ::: nonincremental
 -   5 dataframes (hsc, clp, cmp, mep, gmp) into one joint dataframe using function  `full_join()` , joined by both: ProteinGroup and Genes
@@ -37,27 +37,165 @@ raw data consists of LS/MS DIA intensity values of identified protein groups (PG
 -   name of the cell type and number of the replica are now merged, but we want to have them in 2 different colomns
 :::
 
-## 3 Augmenting the data
+## Augmenting the data <br>
 
-::: nonincremental
--   log2 transformation of the values (common for mass spectrometry proteomics data)
+::: columns
+::: {.column width="40%"}
+-   log2 transformation<br><br><br>
 
--   individual protein intensities are normalised to the median of each sample
+-   Normalization<br><br><br>
 
--   intensities across the different cell types are normalized (due different to cell count)
-
--   missing values (detection limit of the mass spectrometer) replacing sample-wise and feature-wise
-
--   which plots to showcase??????
+-   Missing value imputation<br><br><br>
 :::
 
-![](images/plot_before_normalization,.png)
+::: {.column width="60%"}
+![](images/plot_before_normalization,.png){width="600"}
 
-![](images/plot_after_normalization,.png)
+![](images/plot_after_normalization,.png){width="600"}<br><br><br>
+:::
+:::
 
-## 4 PCA Function
+## Uniprot lookup <br>
 
--here Saxe explains how the data was augmented for PCA and shows a snippet of the dataframe he is working with
+::: nonincremental
+``` {.r style="font-size: 0.7em"}
+uniprot_lookup <- function(gene_id, dataframe, id_column, keyword_column){
+  # does lookup in uniprot df and returns Keywords
+  return(Keywords)
+}
+
+df_type <- df_norm_intensities |> 
+  filter(!is.na(genes) & genes != "") |> 
+  mutate(description_column = map_chr(
+     .x = genes,
+     .f = ~uniprot_lookup(gene_id=.x, 
+                          dataframe=df_uniprot_mouse, 
+                          id_column=`Gene Names`, keyword_column=Keywords)
+   ))
+```
+
+![](images/plot_uniprot-02.png)
+:::
+
+## Issuses during tidyig and augmenting
+
+::: nonincremental
+-   although longer format is often preferred, we found that for calculating fold and q value (between two cell types) wider format is a better solution, q value is then simply added by using  `mutate()` .
+
+-   even if there is an existing function for T test, we made our own, which is more adjusted to our input
+
+-   as there is multiple possible comparisons between cell types, we decided to build a function which which as an output will have a new dataframe, with 2 cell types of interest
+
+-   what other problems have we had? how did we solve it? why did we choose to do it in that way?
+:::
+
+## Augmenting data for principal component analysis
+
+``` {.r style="font-size: 0.7em"}
+
+#Pivot to wider format for principal component analysis
+df_feature_wide <- df_feature_wise |>
+  mutate(intensity = unname(intensity)) |>
+  pivot_wider(id_cols = c(cell_type,replicate_n),
+              names_from = 'protein_groups',
+              values_from = 'intensity') |>
+  select(where(~ !any(is.na(.)))) #Selects only columns without N/A
+  
+
+#Get numerical inputs
+df_input <- df_feature_wide |> select(-c('replicate_n','cell_type'))
+
+#Group datapoints by cell types
+colourby <- pull(df_feature_wide, 'cell_type')
+   
+#Projecting data unto principal components (pc)
+pc <- prcomp(df_input, center = FALSE, scale = FALSE)
+```
+
+## PCA Results {auto-animate="true"}
+
+![](images/PCA_on_proteingroups_original.png){.absolute top=150 left=0 width="500" height="350"}
+
+![](images/pca_variance_barplot.png){.absolute top=150 right=0 width="500" height="350"}
+
+## Function
+
+``` {.r style="font-size: 0.7em"}
+volcano_augment <- function(df, later_cell, earlier_cell, n_later, n_earlier){
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  return(data_set_for_visualisation)
+})
+```
+
+## Function {auto-animate="true"}
+
+``` {.r style="font-size: 0.7em"}
+volcano_augment <- function(df, later_cell, earlier_cell, n_later, n_earlier){
+  data_set_for_visualisation <- df |> 
+    ungroup() |> # Ungrup the data_frame to avoid miscalculations.
+    select(c(protein_groups,
+             !!sym(paste0("mean_", earlier_cell)), 
+             !!sym(paste0("mean_", later_cell)), 
+             !!sym(paste0("sd_", later_cell)), 
+             !!sym(paste0("sd_", earlier_cell)))) |> 
+    #!!sym() is used to evaluate the result as a column name.. 
+    mutate(fold_log2 = log2(!!sym(paste0("mean_", later_cell)) /!!sym(paste0("mean_", earlier_cell))), 
+           p_val = pval(!!sym(paste0("mean_", later_cell)),
+                        !!sym(paste0("mean_", earlier_cell)),
+                        n_later, n_earlier,
+                        !!sym(paste0("sd_", later_cell)),
+                        !!sym(paste0("sd_", earlier_cell))),
+           q_val = (p.adjust(p_val))) |> 
+    mutate(expression = case_when(fold_log2 > 0 & q_val <= 0.05 ~ "overexpressed",
+                                  fold_log2 < 0 & q_val <= 0.05 ~ "underexpressed",
+                                  q_val > 0.05  ~ "not significant")) |> 
+    select(protein_groups, fold_log2, q_val, expression)
+  return(data_set_for_visualisation)
+})
+```
+
+## Volcano Plot {.smaller}
+
+::: nonincremental
+-   log2(fold) vs log10(q_values) plot is a rule of thumb in proteomics
+:::
+
+::: panel-tabset
+### CMP - GMP
+
+![](images/cmp_gmp_volcano_plot-02.png)
+
+### CMP - MEP
+
+![](images/cmp_mep_volcano_plot-01.png)
+
+### HSC - CLP
+
+![](images/hsc_clp_volcano_plot-01.png)
+
+### HSC - CMP
+
+![](images/hsc_cmp_volcano_plot-02.png)
+:::
+
+
+## PCA Function
 
 ``` {.r style="font-size: 0.7em"}
 # Set the bitmap type to 'cairo' to avoid PNG issue
@@ -79,9 +217,7 @@ df_input <- df_no_na_wide |> select(-c('sample','cell_type')) |>
   na.omit() 
 ```
 
-## 5 PCA Function {auto-animate="true"}
-
--here Saxe shows PCA plots and interprets them
+## PCA Function {auto-animate="true"}
 
 ``` {.r style="font-size: 0.7em"}
 # Set the bitmap type to 'cairo' to avoid PNG issue
@@ -148,6 +284,7 @@ pc$x |> as.data.frame() |>
 ``` {.r style="font-size: 0.7em"}
 ```
 
+
 ## Volcano - augmentation {.smaller}
 
 ::: nonincremental
@@ -207,23 +344,44 @@ sample_n(df_volcano_cmp_hsc, 5)
 ### HSC - CLP
 
 ![](images/hsc_clp_volcano_plot.png)
+=======
+::: incremental
+## Discussion {.smaller}
+
+Data may take many shapes and forms
+
+-   TidyverseR is nice and structured, but can also be restricting.
+
+-   Some functions necessary like the t.test is for BaseR and not TidyR
+
+Principal Component Analysis
+
+-   The PCA in this case can be used to identify the cell differentiation pattern
+
+-   This is in line with what was presented in literature for this data.
+
+Volcano plot and lookup
+
+-   Through the volcano plots we can filter and identify the truly overexpressed proteins, which can then be looked up and studied for biological significance.
+
+-   While we don't concldue any high level biological understanding, we showcase the possibility of using TidyverseR to extrapolate biological information
+```
+
+``` {.r style="font-size: 0.7em"}
+
+```
+
+
 :::
 
-##8 Uniprot Arne talks about the uniprot function and how we automatized what Antonio talks about
+## Conclusion {.smaller}
+While we have been going through many internal frustrations, we have been able to...
 
-## 9 Discussion
+- We have created code that is able to clean, tidy and transform data containing 3700 observations accross 5 cell types into "almost" meaningful information.
 
-::: nonincremental
--   5 dataframes are merged into 1
--   data is cleaned and pivoted longer in order to separate cell type and number of measurment
--   data is log2 transformed and normalised
--   data is pivoted wider again in order to do the calculations between cell groups
--   results are showcased with 4 volcano plots
--   PCA shows us simmilarity between different cell types, and potentialy pathway of stem cell development
-:::
+- Create 2 functions that can create dataframes for volcanoplots, and 1 lookk up function to annotate keywords for protein groups.
 
--   what other problems have we had? how did we solve it? why did we choose to do it in that way?
+- With the project scope in mind - we were unable to extract deeper biological meaning.
 
-## 10 Take away messages / Conclusion
+- For future projects/studies, a higher number of observations and cell-types could be included to increase the resolution, and downstream experiments could be performed to increase the biological meaning.
 
-Write some conclusion here

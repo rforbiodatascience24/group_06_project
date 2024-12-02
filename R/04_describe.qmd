@@ -32,7 +32,9 @@ df_sample_wise <- read_tsv(file = here("data/03_df_sample_wise.tsv.gz"))
 
 ## The Data Set
 
-In this study, proteomics by mass spectrometry was applied to FACS-sorted populations of hematopoietic stem- and progenitor cells from the mouse bone marrow. Five populations were isolated based on known surface marker expression: Hematopoietic stem cells (HSC), common lymphoid progenitors (CLP), common myeloid progenitors (CMP), megakaryocyte-erythrocyte progenitors (MEP) and granulocyte-monocyte progenitors (GMP). According to literature, these cell populations represent different stages of hematopoiesis, meaning the differentiation of HSC into the different blood cell lineages. For each cell type, 500 cells were isolated in 4 replicates, except for CLP having 5 replicates. The sorted cells were lysed, digested with trypsin, and subjected to proteomics by mass spectrometry in data-independent acquisition (DIA) mode. Therefore our raw data consists of LS/MS DIA intensity values of identified protein groups (PG).
+We are working with an unpublished proteomics dataset from a research group on DTU. We have recieved permission to work with the data for the R for Bio Data Science Project. The dataset relates to a study that can be read about in this preprint. (insert link here).
+
+In the study, proteomics by mass spectrometry was applied to FACS-sorted populations of hematopoietic stem- and progenitor cells from the mouse bone marrow. Five populations were isolated based on known surface marker expression: Hematopoietic stem cells (HSC), common lymphoid progenitors (CLP), common myeloid progenitors (CMP), megakaryocyte-erythrocyte progenitors (MEP) and granulocyte-monocyte progenitors (GMP). According to literature, these cell populations represent different stages of hematopoiesis, meaning the differentiation of HSC into the different blood cell lineages. For each cell type, 500 cells were isolated in 4 replicates, except for CLP having 5 replicates. The sorted cells were lysed, digested with trypsin, and subjected to proteomics by mass spectrometry in data-independent acquisition (DIA) mode. Therefore our raw data consists of LS/MS DIA intensity values of identified protein groups (PG).
 
 | Cell Type                   | HSC  | CMP  | GMP  | CLP  | MEP  | Total |
 |-----------------------------|------|------|------|------|------|-------|
@@ -105,8 +107,7 @@ df_intensities |>
   ggplot(aes(x=intensity, colour = sample)) +
   geom_density() +
   theme_classic()+
-  labs(title = "Density of Intensity Prior to Log2 Transformation")
-
+  labs(title = "Density of Intensity", subtitle = "Prior to Log2 Transformation") 
 ```
 
 As seen in the plot, the PG intensities span a large dynamic range. For the reasons explained before, we log2-transformed the data.
@@ -122,7 +123,10 @@ df_log_intensities |>
   ggplot(aes(x=intensity, colour = sample)) +
   geom_density() +
   theme_classic()+
-  labs(title = "Density of Intensity After Log2 Transformation")
+  labs(title = "Density of log2-transformed Intensity", subtitle = "Before Normalization")
+  ggsave(filename = "plot_before_normalization,.png",
+       width = 20, height = 10, units = "cm",
+       path = here("results"))
 ```
 
 ```{r 04_log2}
@@ -149,7 +153,10 @@ df_norm_intensities |>
   colour = sample)) +
   geom_density() +
   theme_classic()+
-  labs(title = "Density of log2-transformed Intensity after Normalization")
+  labs(title = "Density of log2-transformed Intensity", subtitle = "After Normalization to the Median Value")
+  ggsave(filename = "plot_after_normalization,.png",
+       width = 20, height = 10, units = "cm",
+       path = here("results"))
 ```
 
 ```{r 04_norm2}
@@ -200,4 +207,3 @@ df_feature_wise |>
 We observe a less apparent distortion of the density plots, instead of a new global maximum at the 0.1 percentile mark, we have left-skewed densities.\
 \
 Choice of NA imputation: We need to base our decision on the nature of the data we are working with. Both strategies would produce meaningful replacement values for NA's. Because the missingness in our data is MNAR, we chose sample-wise imputation, as it accounts better for biological missingness in DIA data.
-

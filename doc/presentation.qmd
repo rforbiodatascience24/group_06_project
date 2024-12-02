@@ -254,21 +254,41 @@ pc$x |> as.data.frame() |>
 ``` {.r style="font-size: 0.7em"}
 ```
 
-## Discussion
+::: incremental
+## Discussion {.smaller}
 
-::: nonincremental
--   5 dataframes are merged into 1
--   data is cleaned and pivoted longer in order to separate cell type and number of measurment
--   data is log2 transformed and normalised
--   data is pivoted wider again in order to do the calculations between cell groups
--   results are showcased with 4 volcano plots
--   PCA shows us simmilarity between different cell types, and potentialy pathway of stem cell development
+Data may take many shapes and forms
+
+-   TidyverseR is nice and structured, but can also be restricting.
+
+-   Some functions necessary like the t.test is for BaseR and not TidyR
+
+Principal Component Analysis
+
+-   The PCA in this case can be used to identify the cell differentiation pattern
+
+-   This is in line with what was presented in literature for this data.
+
+Volcano plot and lookup
+
+-   Through the volcano plots we can filter and identify the truly overexpressed proteins, which can then be looked up and studied for biological significance.
+
+-   While we don't concldue any high level biological understanding, we showcase the possibility of using TidyverseR to extrapolate biological information
+```
+
+``` {.r style="font-size: 0.7em"}
+```
+
 :::
 
-## Discussion
+## Conclusion {.smaller}
+While we have been going through many internal frustrations, we have been able to...
 
-Another Discussion slide
+- We have created code that is able to clean, tidy and transform data containing 3700 observations accross 5 cell types into "almost" meaningful information.
 
-## Take away messages / Conclusion
+- Create 2 functions that can create dataframes for volcanoplots, and 1 lookk up function to annotate keywords for protein groups.
 
-Write some conclusion here
+- With the project scope in mind - we were unable to extract deeper biological meaning.
+
+- For future projects/studies, a higher number of observations and cell-types could be included to increase the resolution, and downstream experiments could be performed to increase the biological meaning.
+

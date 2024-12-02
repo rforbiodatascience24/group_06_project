@@ -26,6 +26,7 @@ data_file <- "mouse_cell_stages.zip"
 data_location <- "https://www.dropbox.com/scl/fi/xo2tgbhknzelxazhu6qcg/group_6_data_2.zip?rlkey=q0awssn7v4vgi4xfpk2pgl142&st=8x0m2v8d&dl=1"
 
 
+
 if( !dir.exists(raw_dir) ){ # Check if the path already exists and creates it if it doesn't  exist
   dir.create(path = raw_dir)
 } 

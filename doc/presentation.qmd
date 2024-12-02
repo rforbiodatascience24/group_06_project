@@ -67,6 +67,15 @@ raw data consists of LS/MS DIA intensity values of identified protein groups (PG
 
 ``` {.r style="font-size: 0.7em"}
 
+#Pivot to wider format for principal component analysis
+df_feature_wide <- df_feature_wise |>
+  mutate(intensity = unname(intensity)) |>
+  pivot_wider(id_cols = c(cell_type,replicate_n),
+              names_from = 'protein_groups',
+              values_from = 'intensity') |>
+  select(where(~ !any(is.na(.)))) #Selects only columns without N/A
+  
+
 #Get numerical inputs
 df_input <- df_feature_wide |> select(-c('replicate_n','cell_type'))
 

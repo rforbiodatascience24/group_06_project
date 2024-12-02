@@ -307,8 +307,12 @@ df_type <- df_type |>
 ```{r}
 # make simple grouped bar plot to show absolute numbers of protein groups for each keyword category across cell types
 
-df_type |> 
+plot_uniprot <- df_type |> 
   mutate(
+    keyword_function = factor(keyword_function, levels=(c("Transcription regulation",
+                                                          "mRNA splicing",
+                                                          "Translation regulation",
+                                                          "Proteasome"))),
     cell_type = factor(cell_type, levels=(c("hsc", "cmp", "mep", "gmp", "clp"))),
     cell_type = fct_recode(cell_type, 
                          "HSC" = "hsc",
@@ -326,7 +330,23 @@ df_type |>
   axis.title.x = element_text(size = 12),
   axis.title.y = element_text(size = 12)) +
   xlab("Population") +
-  ylab("Number Protein Groups")
+  ylab("Number Protein Groups") +
+  guides(fill = guide_legend(title = "Keywords")) +
+  theme(
+    legend.text = element_text(size = 14),
+    legend.title = element_text(size = 16)
+  )
+  
+
+print(plot_uniprot)
+```
+
+```{r}
+# save plot
+
+plot_uniprot <- ggsave(filename = "plot_uniprot.png",
+       width = 30, height = 10, units = "cm",
+       path = here("results"))
 ```
 
 Those results do not reflect common knowledge about proteomics data of gene regulation. Although transcription factors make up 10% of protein-coding genes and are therefore the biggest functional group of proteins, they are usually low expressed and not easily picked up by low-input proteomics. Especially since only about 3700 protein groups were detected in this data set. It seems that uniprot keywords are very broad descriptions of protein function, e.g. include proteins in "Transcription regulation" that are active in pathways remotely connected to this term.

@@ -55,6 +55,28 @@ raw data consists of LS/MS DIA intensity values of identified protein groups (PG
 :::
 :::
 
+## Uniprot lookup <br>
+
+::: nonincremental
+``` {.r style="font-size: 0.7em"}
+uniprot_lookup <- function(gene_id, dataframe, id_column, keyword_column){
+  # does lookup in uniprot df and returns Keywords
+  return(Keywords)
+}
+
+df_type <- df_norm_intensities |> 
+  filter(!is.na(genes) & genes != "") |> 
+  mutate(description_column = map_chr(
+     .x = genes,
+     .f = ~uniprot_lookup(gene_id=.x, 
+                          dataframe=df_uniprot_mouse, 
+                          id_column=`Gene Names`, keyword_column=Keywords)
+   ))
+```
+
+![](images/plot_uniprot-02.png)
+:::
+
 ## Issuses during tidyig and augmenting
 
 ::: nonincremental

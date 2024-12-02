@@ -9,6 +9,9 @@ editor: visual
 ```{r 04_library, message=FALSE, running=FALSE}
 library(tidyverse)
 library(ggplot2)
+library(UpSetR)
+library(here)
+
 ```
 
 ## Load data
@@ -49,7 +52,7 @@ To understand the proteomic changes over the course of stem cell differentiation
 list_hsc <- df_intensities |> 
   filter(cell_type=="hsc") |> 
   filter(!is.na(intensity)) |> 
-  pull(protein_groups) |>
+  pull(protein_groups) |> 
   unique()
 
 list_cmp <- df_intensities |> 
@@ -197,3 +200,10 @@ df_feature_wise |>
 We observe a less apparent distortion of the density plots, instead of a new global maximum at the 0.1 percentile mark, we have left-skewed densities.\
 \
 Choice of NA imputation: We need to base our decision on the nature of the data we are working with. Both strategies would produce meaningful replacement values for NA's. Because the missingness in our data is MNAR, we chose sample-wise imputation, as it accounts better for biological missingness in DIA data.
+<<<<<<< HEAD
+=======
+
+
+
+
+>>>>>>> d11448a68b052bdf726fe5122f9fd3ea3ae5a00d

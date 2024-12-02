@@ -2,9 +2,11 @@
 title: "Proteomics Data from Murine Blood Cells"
 subtitle: "A Collaborative Data Science Project by Group 6"
 editor: visual
-format: 
+format:
   revealjs:
+    self-contained: true
     theme: white
+    number: true
 ---
 
 ## Introduction to the data {.smaller}
@@ -58,7 +60,8 @@ format:
 :::
 
 ## Augmenting data for principal component analysis
-```{.r style="font-size: 0.7em"}
+
+``` {.r style="font-size: 0.7em"}
 #Pivot to wider format for principal component analysis 
 df_feature_wide\<- df_sample_wise \|\> 
   mutate(intensity = unname(intensity)) \|\>
@@ -78,13 +81,11 @@ colourby \<- pull(df_feature_wide, 'cell_type')
 pc \<- prcomp(df_input, center = FALSE, scale = FALSE)
 ```
 
-
 ## PCA Results {auto-animate="true"}
 
 ![](images/PCA_on_proteingroups_original.png){.absolute top="150" left="0" width="500" height="350"}
 
 ![](images/pca_variance_barplot.png){.absolute top="150" right="0" width="500" height="350"}
-
 
 ## Volcano - augmentation {.smaller}
 
@@ -124,7 +125,6 @@ sample_n(df_volcano_cmp_hsc, 5)
 ::: nonincremental
 -   log2(fold) vs log10(q_values) plot is a rule of thumb in proteomics
 :::
-
 
 ::: panel-tabset
 ### HSC - CMP
@@ -169,19 +169,19 @@ df_type <- df_norm_intensities |>
 ::: incremental
 ## Discussion {.smaller}
 
-* Data may take many shapes and forms
+*Data may take many shapes and forms*
 
 -   TidyverseR is nice and structured, but can also be restricting.
 
 -   Some functions necessary like the t.test is for BaseR and not TidyR - making it difficult.
 
-* Principal Component Analysis showed cell differentiation
+    *Principal Component Analysis showed cell differentiation*
 
 -   The PCA in this case can be used to identify the cell differentiation pattern
 
 -   This is in line with what was presented in literature for this data.
 
-* Volcano plot and lookup to find overexpressed proteins
+    *Volcano plot and lookup to find overexpressed proteins*
 
 -   Through the volcano plots we can filter and identify the truly overexpressed proteins, which can then be looked up and studied for biological significance.
 
@@ -191,7 +191,7 @@ df_type <- df_norm_intensities |>
 ::: incremental
 ## Conclusion {.smaller}
 
-* While we have been going through many internal frustrations, we have been able to...
+*While we have been going through many internal frustrations, we have been able to...*
 
 -   We have created code that is able to load, tidy and transform and visualize data containing 3700 observations across 5 cell types - and extrapolating biological meaning.
 

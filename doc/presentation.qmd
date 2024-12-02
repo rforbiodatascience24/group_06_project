@@ -8,22 +8,19 @@ format:
     footer: "Group 6"
 ---
 
-::: notes
-Read the following resources to become smarter on how to create presentations. Remember to have exactly 10 slides. https://quarto.org/docs/presentations/
-
-https://quarto.org/docs/presentations/revealjs/
-:::
-
 ## 1 Introduction to the data {.smaller}
+:::: {.columns}
 
+::: {.column width="40%"}
 -   Dataset is unpublished data from a research group at DTU
-
-Let this work
 
 -   Proteomics data from bone marrow of a single mouse measured by mass spectroscopy
 
 -   Intensity is a measure of how much each protein is expressed
+:::
 
+::: {.column width="60%"}
+Right column
     ```{r}
     library("tidyverse")
     library("here")
@@ -31,11 +28,15 @@ Let this work
     sample_n(df_sample_wise,5)
     ```
 
+    ![](images/cell_types.png){.absolute bottom=0 right=50 width="300" height="300"}
+
 | Cell Type                   | HSC  | CLP  | CMP  | GMP  | MEP  | Total |
 |-----------------------------|------|------|------|------|------|-------|
 | No. of Proteins             | 2196 | 2382 | 1986 | 2291 | 2691 | 3765  |
 | No. of replicates (samples) | 4    | 5    | 4    | 4    | 4    | 21    |
+:::
 
+::::
 ::: notes
 We are working with an unpublished proteomics dataset from a research group on DTU. We have recieved permission to work with the data for the R for Bio Data Science Project. The dataset relates to a study that can be read about in this preprint. (insert link here).
 
@@ -267,3 +268,9 @@ volcano_augment <- function(df, later_cell, earlier_cell, n_later, n_earlier){
 ## 10 Take away messages / Conclusion
 
 Write some conclusion here
+
+::: notes
+Read the following resources to become smarter on how to create presentations. Remember to have exactly 10 slides. https://quarto.org/docs/presentations/
+
+https://quarto.org/docs/presentations/revealjs/
+:::

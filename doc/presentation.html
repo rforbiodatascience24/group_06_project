@@ -397,42 +397,37 @@
 </div>
 
 </section>
-<section class="slide level2">
-
-<aside class="notes">
-<p>Read the following resources to become smarter on how to create presentations. Remember to have exactly 10 slides. https://quarto.org/docs/presentations/</p>
-<p>https://quarto.org/docs/presentations/revealjs/</p>
-<style type="text/css">
-        span.MJX_Assistive_MathML {
-          position:absolute!important;
-          clip: rect(1px, 1px, 1px, 1px);
-          padding: 1px 0 0 0!important;
-          border: 0!important;
-          height: 1px!important;
-          width: 1px!important;
-          overflow: hidden!important;
-          display:block!important;
-      }</style></aside>
-</section>
 <section id="introduction-to-the-data" class="slide level2 smaller">
 <h2>1 Introduction to the data</h2>
+<div class="columns">
+<div class="column" style="width:40%;">
 <ul>
 <li><p>Dataset is unpublished data from a research group at DTU</p></li>
 <li><p>Proteomics data from bone marrow of a single mouse measured by mass spectroscopy</p></li>
-<li><p>Intensity is a measure of how much each protein is expressed</p>
-<div class="cell">
-<div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 5 × 5
-  protein_groups genes    cell_type replicate_n intensity
-  &lt;chr&gt;          &lt;chr&gt;    &lt;chr&gt;           &lt;dbl&gt;     &lt;dbl&gt;
-1 P62141         Ppp1cb   gmp                 4     0.942
-2 P50518         Atp6v1e1 clp                 2     1.07 
-3 O70496         Clcn7    cmp                 1     0.330
-4 P47739         Aldh3a1  mep                 4     0.383
-5 Q9JJY4         Ddx20    clp                 1     0.352</code></pre>
-</div>
-</div></li>
+<li><p>Intensity is a measure of how much each protein is expressed</p></li>
 </ul>
+</div><div class="column" style="width:60%;">
+<p>Right column</p>
+<pre><code>::: {.cell}
+::: {.cell-output .cell-output-stdout}
+
+```
+# A tibble: 5 × 5
+  protein_groups  genes   cell_type replicate_n intensity
+  &lt;chr&gt;           &lt;chr&gt;   &lt;chr&gt;           &lt;dbl&gt;     &lt;dbl&gt;
+1 Q9EPK6          Sil1    clp                 4     0.298
+2 P41216          Acsl1   clp                 4     1.00 
+3 P56960          Exosc10 clp                 5     0.349
+4 Q9QYC0;Q9QYC0-2 Add1    hsc                 1     1.07 
+5 A2APB8          Tpx2    clp                 5     0.349
+```
+
+
+:::
+:::
+
+
+![](images/cell_types.png){.absolute bottom=0 right=50 width="300" height="300"}</code></pre>
 <table class="caption-top">
 <colgroup>
 <col style="width: 43%">
@@ -475,6 +470,8 @@
 </tr>
 </tbody>
 </table>
+</div>
+</div>
 <aside class="notes">
 <p>We are working with an unpublished proteomics dataset from a research group on DTU. We have recieved permission to work with the data for the R for Bio Data Science Project. The dataset relates to a study that can be read about in this preprint. (insert link here).</p>
 <p>Hematopoietic stem cells (HSC), common lymphoid progenitors (CLP), common myeloid progenitors (CMP), megakaryocyte-erythrocyte progenitors (MEP) and granulocyte-monocyte progenitors (GMP). According to literature, these cell populations represent different stages of hematopoiesis, meaning the differentiation of HSC into the different blood cell lineages. For each cell type, 500 cells were isolated in 4 replicates, except for CLP having 5 replicates. The sorted cells were lysed, digested with trypsin, and subjected to proteomics by mass spectrometry in data-independent acquisition (DIA) mode. Therefore our raw data consists of LS/MS DIA intensity values of identified protein groups (PG).</p>
@@ -707,6 +704,20 @@
 <section id="take-away-messages-conclusion" class="slide level2">
 <h2>10 Take away messages / Conclusion</h2>
 <p>Write some conclusion here</p>
+<aside class="notes">
+<p>Read the following resources to become smarter on how to create presentations. Remember to have exactly 10 slides. https://quarto.org/docs/presentations/</p>
+<p>https://quarto.org/docs/presentations/revealjs/</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
 <div class="quarto-auto-generated-content">
 <div class="footer footer-default">
 <p>Group 6</p>

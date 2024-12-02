@@ -29,7 +29,7 @@ df_sample_wise <- read_tsv(file = here("data/03_df_sample_wise.tsv.gz"))
 
 ## The Data Set
 
-In this study, proteomics by mass spectrometry was applied to FACS-sorted populations of hematopoietic stem- and progenitor cells from the mouse bone marrow. Five populations were isolated based on known surface marker expression: Hematopoietic stem cells (HSC), common lymphoid progenitors (CLP), common myeloid progenitors (CMP), megakaryocyte-erythrocyte progenitors (MEP) and granulocyte-monocyte progenitors (GMP). According to literature, these cell populations represent different stages of hematopoiesis, meaning the differentiation of HSC into the different blood cell lineages. For each cell type, 500 cells were isolated in 4 replicates, except for CLP having 5 replicates. The sorted cells were lysed, digested with trypsin, and subjected to proteomics by mass spectrometry in data-independent acquisition (DIA) mode. Therefore our raw data consists of LS/MS DIA intensity values of identified protein groups (PG).
+In this study, proteomics by mass spectrometry was applied to FACS-sorted populations of hematopoietic stem- and progenitor cells from the mouse bone marrow. Five populations were isolated based on known surface marker expression: Hematopoietic stem cells (HSC), common lymphoid progenitors (CLP), common myeloid progenitors (CMP), megakaryocyte-erythrocyte progenitors (MEP) and granulocyte-monocyte progenitors (GMP). According to literature, these cell populations represent different stages of hematopoiesis, meaning the differentiation of HSC into the different blood cell lineages. For each cell type, 500 cells were isolated in 4 replicates, except for CLP having 5 replicates. The sorted cells were lysed, digested with trypsin, and subjected to proteomics by mass spectrometry in data-independent acquisition (DIA) mode. Therefore our raw data consists of LS/MS DIA intensity values of identified protein groups (PG). The number of protein groups per cell type is displayed below.
 
 | Cell Type                   | HSC  | CMP  | GMP  | CLP  | MEP  | Total |
 |-----------------------------|------|------|------|------|------|-------|
@@ -38,9 +38,53 @@ In this study, proteomics by mass spectrometry was applied to FACS-sorted popula
 
 : Table 1: Number of replicates and observations across replicates for the analysed FACS-populations
 
-### Investigate shared observations between cell types with UpSetPlot
+```{r}
+# simple bar chart with total number protein groups per cell type
+df_norm_intensities |> 
+  mutate(
+    cell_type = factor(cell_type, levels=(c("clp", "gmp", "mep", "cmp", "hsc"))),
+    cell_type = fct_recode(cell_type, 
+                         "HSC" = "hsc",
+                         "CMP" = "cmp",
+                         "MEP" = "mep",
+                         "GMP" = "gmp",
+                         "CLP" = "clp")) |> 
+  filter(!is.na(intensity)) |> 
+  group_by(protein_groups) |> 
+  distinct(cell_type, .keep_all=TRUE) |> 
+  ggplot(mapping = aes(y=cell_type)) +
+  geom_bar(aes(fill = cell_type), width = 0.7) +
+  geom_text(stat = "count", aes(label = ..count..), hjust = 1.3, size = 6, color = "white") +
+  theme_classic() +
+  theme(
+    axis.text.x = element_text(size = 16),
+    axis.text.y = element_text(size = 16),
+    axis.title.x = element_text(size = 12),
+    axis.title.y = element_text(size = 12)
+  ) +
+  guides(fill = "none") +
+  xlab("Protein Groups") +
+  ylab("Population")
+```
 
-To understand the proteomic changes over the course of stem cell differentiation, it is helpful to visualize the overlap of the PG's identified in each cell type. This has implications for further data processing, guiding decisions like handling of NA's.
+### Data completeness: Percentage of missing values
+
+For many downstream analyses, it is important to know the data completeness, meaning the percentage of non-NA values in the data.
+
+```{r}
+# print percentage of missing values for each cell type
+df_norm_intensities |> 
+  group_by(cell_type) |> 
+  summarise(total_NA = sum(is.na(intensity)),
+            total_non_NA = sum(!is.na(intensity))) |> 
+  mutate(data_completeness = total_non_NA/(total_NA + total_non_NA))
+```
+
+We can see that we have only about 50 percent data completeness for each cell type. This makes sense, because the proteome changes with differentiation.
+
+### Investigate shared observations between cell types
+
+To understand the proteomic changes over the course of stem cell differentiation, it is helpful to calculate the overlap of the PG's identified in each cell type. This has implications for further data processing, guiding decisions like handling of NA's.
 
 ```{r}
 
@@ -76,18 +120,15 @@ list_mep <- df_intensities |>
   pull(protein_groups) |> 
   unique()
 
-# make list of vectors for UpSetPlot input
+# Make list intersection to see number of protein groups in samples of all cell types
+combined_lists <- list(list_hsc, list_clp, list_cmp, list_gmp, list_cmp)
 
-list_input <- list(HSC=list_hsc, CMP=list_cmp, GMP=list_gmp, CLP=list_clp, MEP=list_mep)
+# Find the intersection of all lists
+intersection <- reduce(combined_lists, intersect)
+print(str_c(" There are ", length(intersection), " protein groups detected across all cell types"))
 ```
 
-Make UpSetPlot to visualize overlapping PG sets
-
-```{r}
-# upset(fromList(list_input), order.by = "freq")
-```
-
-As seen in the plot, the biggest intersection of PG is between all cell types. This intersection however only consists of 1353 PG's, which is only a fraction of all 3765 PG's observed in the data set. This makes sense, as during differentiation, the proteome changes, driving differentiation and defining the differentiated cell types. With changing proteome, many PG's become so low abundant, that they fall below the limit of detection. It is therefore essential to preserve PG's in this data set, even though they are only observed in a subset of cell types. Careful imputation of missing values, instead of dropping them, is imperative.
+The intersection of PG's across all cell types only consists of 1473 PG's, which is only a fraction of all 3765 PG's observed in the data set. This makes sense, as during differentiation, the proteome changes, driving differentiation and defining the differentiated cell types. With changing proteome, many PG's become so low abundant, that they fall below the limit of detection. It is therefore essential to preserve PG's in this data set, even though they are only observed in a subset of cell types. Careful imputation of missing values, instead of dropping them, is imperative.
 
 ## Log2 Transformation
 
@@ -193,15 +234,98 @@ We observe a less apparent distortion of the density plots, instead of a new glo
 \
 Choice of NA imputation: We need to base our decision on the nature of the data we are working with. Both strategies would produce meaningful replacement values for NA's. Because the missingness in our data is MNAR, we chose sample-wise imputation, as it accounts better for biological missingness in DIA data.
 
-## Summary Statistics / descriptive plots
+## 
 
--   here we could have some scatter plots, density plots etc.
-
-## Scatter PlotsDensity plots
+## Protein type lookup
 
 ```{r}
-#df_no_na_long |> 
- # ggplot(aes(x=intensity, colour=cell_type)) +
-  #geom_density() +
-  #theme_classic()
+
+# load mouse uniprot db file for lookup
+df_uniprot_mouse <- read_tsv(file = here("data/01_dat_load_uniprot_mouse.tsv"))
+```
+
+```{r}
+library(rlang)
+uniprot_lookup <- function(gene_id, dataframe, id_column, keyword_column){
+  ## function that takes in string x and looks for string pattern in uniprot dataframe, giving back the value in keyword column.
+  Keywords <- dataframe |> 
+  filter(str_detect({{id_column}}, gene_id)) |> 
+  pull({{keyword_column}}) |> 
+  str_c(collapse ='; ')
+  return(Keywords)
+}
+
+  
+df_type <- df_norm_intensities |> 
+  filter(!is.na(genes) & genes != "") |> 
+  mutate(description_column = map_chr(
+     .x = genes,
+     .f = ~uniprot_lookup(gene_id=.x, dataframe=df_uniprot_mouse, id_column=`Gene Names`, keyword_column=Keywords)
+   ))
+```
+
+```{r}
+# Make rule for presence in a sample: needs to be present in at least 2 replicates
+
+df_type <- df_type |> 
+  group_by(protein_groups, cell_type) |> 
+  filter(sum(!is.na(intensity)) >= 2) |> 
+  ungroup()
+```
+
+```{r}
+# make nested df with multiple cell types
+
+df_multi <- df_type |> 
+  group_by(cell_type) |> 
+  nest() |> 
+  mutate(transcription_pgs = map(.x = data,
+                                 .f = ~.x |> filter(str_detect(description_column,
+                                                         "Transcription regulation"))),
+         translation_pgs = map(.x = data,
+                                 .f = ~.x |> filter(str_detect(description_column,
+                                                         "Translation regulation"))),
+         mrna_splicing_pgs = map(.x = data,
+                                 .f = ~.x |> filter(str_detect(description_column,
+                                                         "mRNA splicing"))),
+         proteasome_pgs = map(.x = data,
+                                 .f = ~.x |> filter(str_detect(description_column,
+                                                         "Proteasome"))))
+
+```
+
+```{r}
+df_type <- df_type |> 
+  mutate(
+    keyword_function = case_when(
+      str_detect(description_column, "Transcription regulation") ~ "Transcription regulation",
+      str_detect(description_column, "mRNA splicing") ~ "mRNA splicing",
+      str_detect(description_column, "Translation regulation") ~ "Translation regulation",
+      str_detect(description_column, "Proteasome") ~ "Proteasome",
+      TRUE ~ NA
+    )
+  ) 
+```
+
+```{r}
+df_type |> 
+  mutate(
+    cell_type = factor(cell_type, levels=(c("hsc", "cmp", "mep", "gmp", "clp"))),
+    cell_type = fct_recode(cell_type, 
+                         "HSC" = "hsc",
+                         "CMP" = "cmp",
+                         "MEP" = "mep",
+                         "GMP" = "gmp",
+                         "CLP" = "clp")) |>
+  filter(!is.na(keyword_function)) |> 
+  ggplot(mapping = aes(x=cell_type, fill=keyword_function)) +
+  geom_bar(position = position_dodge()) +
+  theme_classic() +
+  theme(
+  axis.text.x = element_text(size = 16),
+  axis.text.y = element_text(size = 16),
+  axis.title.x = element_text(size = 12),
+  axis.title.y = element_text(size = 12)) +
+  xlab("Population") +
+  ylab("Number Protein Groups")
 ```

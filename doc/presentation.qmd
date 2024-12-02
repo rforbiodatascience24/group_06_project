@@ -11,7 +11,7 @@ Read the following resources to become smarter on how to create presentations. R
 
 https://quarto.org/docs/presentations/revealjs/
 
-## 1 Introduction to the data {.smaller}
+## Introduction to the data {.smaller}
 
 the data is obtained by applying mass spectrometry to FACS-sorted populations of hematopoietic stem- and progenitor cells from the mouse bone marrow
 
@@ -28,7 +28,7 @@ raw data consists of LS/MS DIA intensity values of identified protein groups (PG
 
 : Table 1: Number of replicates and observations across replicates for the analysed FACS-populations
 
-## 2 Data tidying and data format
+## Data tidying and data format
 
 ::: nonincremental
 -   5 dataframes (hsc, clp, cmp, mep, gmp) into one joint dataframe using function  `full_join()` , joined by both: ProteinGroup and Genes
@@ -37,7 +37,7 @@ raw data consists of LS/MS DIA intensity values of identified protein groups (PG
 -   name of the cell type and number of the replica are now merged, but we want to have them in 2 different colomns
 :::
 
-## 3 Augmenting the data
+## Augmenting the data
 
 ::: nonincremental
 -   log2 transformation of the values (common for mass spectrometry proteomics data)
@@ -51,15 +51,97 @@ raw data consists of LS/MS DIA intensity values of identified protein groups (PG
 -   which plots to showcase??????
 :::
 
-![](images/plot_before_normalization,.png)
+## Issuses during tidyig and augmenting
 
-![](images/plot_after_normalization,.png)
+::: nonincremental
+-   although longer format is often preferred, we found that for calculating fold and q value (between two cell types) wider format is a better solution, q value is then simply added by using  `mutate()` .
 
-## 4 PCA Function
+-   even if there is an existing function for T test, we made our own, which is more adjusted to our input
 
--here Saxe explains how the data was augmented for PCA and shows a snippet of the dataframe he is working with
+-   as there is multiple possible comparisons between cell types, we decided to build a function which which as an output will have a new dataframe, with 2 cell types of interest
+
+-   what other problems have we had? how did we solve it? why did we choose to do it in that way?
+:::
+
+## Function
 
 ``` {.r style="font-size: 0.7em"}
+volcano_augment <- function(df, later_cell, earlier_cell, n_later, n_earlier){
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  return(data_set_for_visualisation)
+})
+```
+
+## Function {auto-animate="true"}
+
+``` {.r style="font-size: 0.7em"}
+volcano_augment <- function(df, later_cell, earlier_cell, n_later, n_earlier){
+  data_set_for_visualisation <- df |> 
+    ungroup() |> # Ungrup the data_frame to avoid miscalculations.
+    select(c(protein_groups,
+             !!sym(paste0("mean_", earlier_cell)), 
+             !!sym(paste0("mean_", later_cell)), 
+             !!sym(paste0("sd_", later_cell)), 
+             !!sym(paste0("sd_", earlier_cell)))) |> 
+    #!!sym() is used to evaluate the result as a column name.. 
+    mutate(fold_log2 = log2(!!sym(paste0("mean_", later_cell)) /!!sym(paste0("mean_", earlier_cell))), 
+           p_val = pval(!!sym(paste0("mean_", later_cell)),
+                        !!sym(paste0("mean_", earlier_cell)),
+                        n_later, n_earlier,
+                        !!sym(paste0("sd_", later_cell)),
+                        !!sym(paste0("sd_", earlier_cell))),
+           q_val = (p.adjust(p_val))) |> 
+    mutate(expression = case_when(fold_log2 > 0 & q_val <= 0.05 ~ "overexpressed",
+                                  fold_log2 < 0 & q_val <= 0.05 ~ "underexpressed",
+                                  q_val > 0.05  ~ "not significant")) |> 
+    select(protein_groups, fold_log2, q_val, expression)
+  return(data_set_for_visualisation)
+})
+```
+
+## Volcano Plot {.smaller}
+
+::: nonincremental
+-   log2(fold) vs log10(q_values) plot is a rule of thumb in proteomics
+:::
+
+::: panel-tabset
+### CMP - GMP
+
+![](images/cmp_gmp_volcano_plot-02.png)
+
+### CMP - MEP
+
+![](images/cmp_mep_volcano_plot-01.png)
+
+### HSC - CLP
+
+![](images/hsc_clp_volcano_plot-01.png)
+
+### HSC - CMP
+
+![](images/hsc_cmp_volcano_plot-02.png)
+:::
+
+## PCA Function
+
+```{.r style="font-size: 0.7em"}
 # Set the bitmap type to 'cairo' to avoid PNG issue
 options(bitmapType = 'cairo')
 
@@ -77,13 +159,14 @@ df_feature_wide |>
 df_input <- df_no_na_wide |> select(-c('sample','cell_type')) |> 
   mutate(across(where(is.list), ~ sapply(., function(x) x[1]))) |> 
   na.omit() 
+
+
+
 ```
 
-## 5 PCA Function {auto-animate="true"}
+## PCA Function {auto-animate="true"}
 
--here Saxe shows PCA plots and interprets them
-
-``` {.r style="font-size: 0.7em"}
+```{.r style="font-size: 0.7em"}
 # Set the bitmap type to 'cairo' to avoid PNG issue
 options(bitmapType = 'cairo')
 
@@ -104,9 +187,10 @@ df_input <- df_no_na_wide |> select(-c('sample','cell_type')) |>
 
 colourby <- df_no_na_wide$cell_type
   
+
 ```
 
-``` {.r style="font-size: 0.7em"}
+```{.r style="font-size: 0.7em"}
 # Set the bitmap type to 'cairo' to avoid PNG issue
 options(bitmapType = 'cairo')
 
@@ -142,97 +226,14 @@ pc$x |> as.data.frame() |>
   geom_point(size = 2.5)
 ```
 
-``` {.r style="font-size: 0.7em"}
+```{.r style="font-size: 0.7em"}
+
 ```
 
-``` {.r style="font-size: 0.7em"}
-```
+```{.r style="font-size: 0.7em"}
 
-## 6 Volcano - Function
-
--   although longer format is often preferred, we found that for calculating fold and q value (between two cell types) wider format is a better solution, q value is then simply added by using  `mutate()` .
-
--   even if there is an existing function for T test, we made our own, which is more adjusted to our input
-
--   as there is multiple possible comparisons between cell types, we decided to build a function which which as an output will have a new dataframe, with 2 cell types of interest
-
-``` {.r style="font-size: 0.7em"}
-volcano_augment <- function(df, later_cell, earlier_cell, n_later, n_earlier){
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  return(data_set_for_visualisation)
-})
-```
-
-## 7 Function {auto-animate="true"}
-
-``` {.r style="font-size: 0.7em"}
-volcano_augment <- function(df, later_cell, earlier_cell, n_later, n_earlier){
-  data_set_for_visualisation <- df |> 
-    ungroup() |> # Ungrup the data_frame to avoid miscalculations.
-    select(c(protein_groups,
-             !!sym(paste0("mean_", earlier_cell)), 
-             !!sym(paste0("mean_", later_cell)), 
-             !!sym(paste0("sd_", later_cell)), 
-             !!sym(paste0("sd_", earlier_cell)))) |> 
-    #!!sym() is used to evaluate the result as a column name.. 
-    mutate(fold_log2 = log2(!!sym(paste0("mean_", later_cell)) /!!sym(paste0("mean_", earlier_cell))), 
-           p_val = pval(!!sym(paste0("mean_", later_cell)),
-                        !!sym(paste0("mean_", earlier_cell)),
-                        n_later, n_earlier,
-                        !!sym(paste0("sd_", later_cell)),
-                        !!sym(paste0("sd_", earlier_cell))),
-           q_val = (p.adjust(p_val))) |> 
-    mutate(expression = case_when(fold_log2 > 0 & q_val <= 0.05 ~ "overexpressed",
-                                  fold_log2 < 0 & q_val <= 0.05 ~ "underexpressed",
-                                  q_val > 0.05  ~ "not significant")) |> 
-    select(protein_groups, fold_log2, q_val, expression)
-  return(data_set_for_visualisation)
-})
-```
-
-## 7 Volcano Plot {.smaller}
-
-::: nonincremental
--   log2(fold) vs log10(q_values) plot is a rule of thumb in proteomics
-:::
-
-::: panel-tabset
-### CMP - GMP
-
-![](images/cmp_gmp_volcano_plot-02.png)
-
-### CMP - MEP
-
-![](images/cmp_mep_volcano_plot-01.png)
-
-### HSC - CLP
-
-![](images/hsc_clp_volcano_plot-01.png)
-
-### HSC - CMP
-
-![](images/hsc_cmp_volcano_plot-02.png)
-:::
-
-##8 Uniprot Arne talks about the uniprot function and how we automatized what Antonio talks about
-
-## 9 Discussion
+``` 
+## Discussion
 
 ::: nonincremental
 -   5 dataframes are merged into 1
@@ -243,8 +244,10 @@ volcano_augment <- function(df, later_cell, earlier_cell, n_later, n_earlier){
 -   PCA shows us simmilarity between different cell types, and potentialy pathway of stem cell development
 :::
 
--   what other problems have we had? how did we solve it? why did we choose to do it in that way?
+## Discussion
 
-## 10 Take away messages / Conclusion
+Another Discussion slide
+
+## Take away messages / Conclusion
 
 Write some conclusion here

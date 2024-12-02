@@ -9,9 +9,6 @@ editor: visual
 ```{r 04_library, message=FALSE, running=FALSE}
 library(tidyverse)
 library(ggplot2)
-library(UpSetR)
-library(here)
-
 ```
 
 ## Load data
@@ -32,9 +29,11 @@ df_sample_wise <- read_tsv(file = here("data/03_df_sample_wise.tsv.gz"))
 
 ## The Data Set
 
+
 We are working with an unpublished proteomics dataset from a research group on DTU. We have recieved permission to work with the data for the R for Bio Data Science Project. The dataset relates to a study that can be read about in this preprint. (insert link here).
 
 In the study, proteomics by mass spectrometry was applied to FACS-sorted populations of hematopoietic stem- and progenitor cells from the mouse bone marrow. Five populations were isolated based on known surface marker expression: Hematopoietic stem cells (HSC), common lymphoid progenitors (CLP), common myeloid progenitors (CMP), megakaryocyte-erythrocyte progenitors (MEP) and granulocyte-monocyte progenitors (GMP). According to literature, these cell populations represent different stages of hematopoiesis, meaning the differentiation of HSC into the different blood cell lineages. For each cell type, 500 cells were isolated in 4 replicates, except for CLP having 5 replicates. The sorted cells were lysed, digested with trypsin, and subjected to proteomics by mass spectrometry in data-independent acquisition (DIA) mode. Therefore our raw data consists of LS/MS DIA intensity values of identified protein groups (PG).
+
 
 | Cell Type                   | HSC  | CMP  | GMP  | CLP  | MEP  | Total |
 |-----------------------------|------|------|------|------|------|-------|
@@ -43,53 +42,9 @@ In the study, proteomics by mass spectrometry was applied to FACS-sorted populat
 
 : Table 1: Number of replicates and observations across replicates for the analysed FACS-populations
 
-```{r}
-# simple bar chart with total number protein groups per cell type
-df_norm_intensities |> 
-  mutate(
-    cell_type = factor(cell_type, levels=(c("clp", "gmp", "mep", "cmp", "hsc"))),
-    cell_type = fct_recode(cell_type, 
-                         "HSC" = "hsc",
-                         "CMP" = "cmp",
-                         "MEP" = "mep",
-                         "GMP" = "gmp",
-                         "CLP" = "clp")) |> 
-  filter(!is.na(intensity)) |> 
-  group_by(protein_groups) |> 
-  distinct(cell_type, .keep_all=TRUE) |> 
-  ggplot(mapping = aes(y=cell_type)) +
-  geom_bar(aes(fill = cell_type), width = 0.7) +
-  geom_text(stat = "count", aes(label = ..count..), hjust = 1.3, size = 6, color = "white") +
-  theme_classic() +
-  theme(
-    axis.text.x = element_text(size = 16),
-    axis.text.y = element_text(size = 16),
-    axis.title.x = element_text(size = 12),
-    axis.title.y = element_text(size = 12)
-  ) +
-  guides(fill = "none") +
-  xlab("Protein Groups") +
-  ylab("Population")
-```
+### Investigate shared observations between cell types with UpSetPlot
 
-### Data completeness: Percentage of missing values
-
-For many downstream analyses, it is important to know the data completeness, meaning the percentage of non-NA values in the data.
-
-```{r}
-# print percentage of missing values for each cell type
-df_norm_intensities |> 
-  group_by(cell_type) |> 
-  summarise(total_NA = sum(is.na(intensity)),
-            total_non_NA = sum(!is.na(intensity))) |> 
-  mutate(data_completeness = total_non_NA/(total_NA + total_non_NA))
-```
-
-We can see that we have only about 50 percent data completeness for each cell type. This makes sense, because the proteome changes with differentiation.
-
-### Investigate shared observations between cell types
-
-To understand the proteomic changes over the course of stem cell differentiation, it is helpful to calculate the overlap of the PG's identified in each cell type. This has implications for further data processing, guiding decisions like handling of NA's.
+To understand the proteomic changes over the course of stem cell differentiation, it is helpful to visualize the overlap of the PG's identified in each cell type. This has implications for further data processing, guiding decisions like handling of NA's.
 
 ```{r}
 
@@ -98,7 +53,7 @@ To understand the proteomic changes over the course of stem cell differentiation
 list_hsc <- df_intensities |> 
   filter(cell_type=="hsc") |> 
   filter(!is.na(intensity)) |> 
-  pull(protein_groups) |> 
+  pull(protein_groups) |>
   unique()
 
 list_cmp <- df_intensities |> 
@@ -125,15 +80,18 @@ list_mep <- df_intensities |>
   pull(protein_groups) |> 
   unique()
 
-# Make list intersection to see number of protein groups in samples of all cell types
-combined_lists <- list(list_hsc, list_clp, list_cmp, list_gmp, list_cmp)
+# make list of vectors for UpSetPlot input
 
-# Find the intersection of all lists
-intersection <- reduce(combined_lists, intersect)
-print(str_c(" There are ", length(intersection), " protein groups detected across all cell types"))
+list_input <- list(HSC=list_hsc, CMP=list_cmp, GMP=list_gmp, CLP=list_clp, MEP=list_mep)
 ```
 
-The intersection of PG's across all cell types only consists of 1473 PG's, which is only a fraction of all 3765 PG's observed in the data set. This makes sense, as during differentiation, the proteome changes, driving differentiation and defining the differentiated cell types. With changing proteome, many PG's become so low abundant, that they fall below the limit of detection. It is therefore essential to preserve PG's in this data set, even though they are only observed in a subset of cell types. Careful imputation of missing values, instead of dropping them, is imperative.
+Make UpSetPlot to visualize overlapping PG sets
+
+```{r}
+# upset(fromList(list_input), order.by = "freq")
+```
+
+As seen in the plot, the biggest intersection of PG is between all cell types. This intersection however only consists of 1353 PG's, which is only a fraction of all 3765 PG's observed in the data set. This makes sense, as during differentiation, the proteome changes, driving differentiation and defining the differentiated cell types. With changing proteome, many PG's become so low abundant, that they fall below the limit of detection. It is therefore essential to preserve PG's in this data set, even though they are only observed in a subset of cell types. Careful imputation of missing values, instead of dropping them, is imperative.
 
 ## Log2 Transformation
 
@@ -147,8 +105,8 @@ df_intensities |>
                         sep ="_"),.before = cell_type) |>
   ggplot(aes(x=intensity, colour = sample)) +
   geom_density() +
-  theme_classic()+
-  labs(title = "Density of Intensity", subtitle = "Prior to Log2 Transformation") 
+  theme_classic()
+
 ```
 
 As seen in the plot, the PG intensities span a large dynamic range. For the reasons explained before, we log2-transformed the data.
@@ -163,11 +121,7 @@ df_log_intensities |>
                         sep ="_"),.before = cell_type) |> 
   ggplot(aes(x=intensity, colour = sample)) +
   geom_density() +
-  theme_classic()+
-  labs(title = "Density of log2-transformed Intensity", subtitle = "Before Normalization")
-  ggsave(filename = "plot_before_normalization,.png",
-       width = 20, height = 10, units = "cm",
-       path = here("results"))
+  theme_classic()
 ```
 
 ```{r 04_log2}
@@ -193,11 +147,7 @@ df_norm_intensities |>
   ggplot(aes(x=intensity,
   colour = sample)) +
   geom_density() +
-  theme_classic()+
-  labs(title = "Density of log2-transformed Intensity", subtitle = "After Normalization to the Median Value")
-  ggsave(filename = "plot_after_normalization,.png",
-       width = 20, height = 10, units = "cm",
-       path = here("results"))
+  theme_classic()
 ```
 
 ```{r 04_norm2}
@@ -225,8 +175,7 @@ df_sample_wise |>
                         sep ="_"),.before = cell_type) |> 
   ggplot(aes(x=intensity, colour = sample)) +
   geom_density() +
-  theme_classic()+
-  labs(title = "Density of log2-transformed Intensity", subtitle = "When NA's are imputeted sample-wise")
+  theme_classic()
 ```
 
 We can observe a heavy distortion of the density plots in all samples, provoked by replacing NA's sample-wise. This is not necessarily bad, as we needed the log-normal distribution to calculate the z-scores for replacement.
@@ -241,13 +190,13 @@ df_feature_wise |>
   ggplot(aes(x=intensity, colour = sample,
              color = replicate_n)) +
   geom_density() +
-  theme_classic()+
-  labs(title = "Density of log2-transformed Intensity", subtitle = "When NA's are imputeted feature-wise")
+  theme_classic()
 ```
 
 We observe a less apparent distortion of the density plots, instead of a new global maximum at the 0.1 percentile mark, we have left-skewed densities.\
 \
 Choice of NA imputation: We need to base our decision on the nature of the data we are working with. Both strategies would produce meaningful replacement values for NA's. Because the missingness in our data is MNAR, we chose sample-wise imputation, as it accounts better for biological missingness in DIA data.
+
 
 ## Protein type lookup
 
@@ -333,3 +282,17 @@ df_type |>
 Those results do not reflect common knowledge about proteomics data of gene regulation. Although transcription factors make up 10% of protein-coding genes and are therefore the biggest functional group of proteins, they are usually low expressed and not easily picked up by low-input proteomics. Especially since only about 3700 protein groups were detected in this data set. It seems that uniprot keywords are very broad descriptions of protein function, e.g. include proteins in "Transcription regulation" that are active in pathways remotely connected to this term.
 
 It should be noted that the performance of the lookup is bad, as it takes considerable time to complete it. Reason is that for every protein group in our data, the whole uniprot data frame is parsed. This is suboptimal, however the only solution we could come up with to do the pattern matching of proteins in the protein groups. If this wasn't necessary, a simple join could be made which would increase performance considerably.
+=======
+## Summary Statistics / descriptive plots
+
+-   here we could have some scatter plots, density plots etc.
+
+## Scatter PlotsDensity plots
+
+```{r}
+#df_no_na_long |> 
+ # ggplot(aes(x=intensity, colour=cell_type)) +
+  #geom_density() +
+  #theme_classic()
+```
+

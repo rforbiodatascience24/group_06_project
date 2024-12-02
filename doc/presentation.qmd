@@ -63,6 +63,31 @@ raw data consists of LS/MS DIA intensity values of identified protein groups (PG
 -   what other problems have we had? how did we solve it? why did we choose to do it in that way?
 :::
 
+## PCA Function
+
+``` {.r style="font-size: 0.7em"}
+# Set the bitmap type to 'cairo' to avoid PNG issue
+options(bitmapType = 'cairo')
+
+#Input data tois wide format, excluding columns with missing data.
+
+
+# The new data-frame for df_no_na_wide is called : df_feature_wide.
+# For creating a column sample as a guiding column use:
+# mutate
+
+df_feature_wide |> 
+  mutate(sample = str_c(cell_type, replicate_n, sep = "_"))
+
+
+df_input <- df_no_na_wide |> select(-c('sample','cell_type')) |> 
+  mutate(across(where(is.list), ~ sapply(., function(x) x[1]))) |> 
+  na.omit() 
+
+```
+
+## PCA Function {auto-animate="true"}
+
 ## Function
 
 ``` {.r style="font-size: 0.7em"}
@@ -139,100 +164,6 @@ volcano_augment <- function(df, later_cell, earlier_cell, n_later, n_earlier){
 ![](images/hsc_cmp_volcano_plot-02.png)
 :::
 
-## PCA Function
-
-```{.r style="font-size: 0.7em"}
-# Set the bitmap type to 'cairo' to avoid PNG issue
-options(bitmapType = 'cairo')
-
-#Input data tois wide format, excluding columns with missing data.
-
-
-# The new data-frame for df_no_na_wide is called : df_feature_wide.
-# For creating a column sample as a guiding column use:
-# mutate
-
-df_feature_wide |> 
-  mutate(sample = str_c(cell_type, replicate_n, sep = "_"))
-
-
-df_input <- df_no_na_wide |> select(-c('sample','cell_type')) |> 
-  mutate(across(where(is.list), ~ sapply(., function(x) x[1]))) |> 
-  na.omit() 
-
-
-
-```
-
-## PCA Function {auto-animate="true"}
-
-```{.r style="font-size: 0.7em"}
-# Set the bitmap type to 'cairo' to avoid PNG issue
-options(bitmapType = 'cairo')
-
-#Input data tois wide format, excluding columns with missing data.
-
-
-# The new data-frame for df_no_na_wide is called : df_feature_wide.
-# For creating a column sample as a guiding column use:
-# mutate
-
-df_feature_wide |> 
-  mutate(sample = str_c(cell_type, replicate_n, sep = "_"))
-
-
-df_input <- df_no_na_wide |> select(-c('sample','cell_type')) |> 
-  mutate(across(where(is.list), ~ sapply(., function(x) x[1]))) |> 
-  na.omit() 
-
-colourby <- df_no_na_wide$cell_type
-  
-
-```
-
-```{.r style="font-size: 0.7em"}
-# Set the bitmap type to 'cairo' to avoid PNG issue
-options(bitmapType = 'cairo')
-
-#Input data tois wide format, excluding columns with missing data.
-
-
-# The new data-frame for df_no_na_wide is called : df_feature_wide.
-# For creating a column sample as a guiding column use:
-# mutate
-
-df_feature_wide |> 
-  mutate(sample = str_c(cell_type, replicate_n, sep = "_"))
-
-
-df_input <- df_no_na_wide |> select(-c('sample','cell_type')) |> 
-  mutate(across(where(is.list), ~ sapply(., function(x) x[1]))) |> 
-  na.omit() 
-
-colourby <- df_no_na_wide$cell_type
-  
-#Projecting data unto principal components (pc)
-pc <- prcomp(df_input, center = FALSE, scale = FALSE)
-
-#Gives overview of variability of PC
-#print(pc)
-
-#Gives an overview, you should be able to tell the variance already here even without the plot
-summary(pc)
-
-#Takes the principal component values (pc$x)  
-pc$x |> as.data.frame() |>
-  ggplot(aes(x = PC1, y = PC2, color = colourby)) +
-  geom_point(size = 2.5)
-```
-
-```{.r style="font-size: 0.7em"}
-
-```
-
-```{.r style="font-size: 0.7em"}
-
-``` 
 ## Discussion
 
 ::: nonincremental

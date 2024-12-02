@@ -1,44 +1,36 @@
-## Make PCA plot
-
-```{r}
+```{r 01_libraries_and_options}
 library(tidyr)
 library(graphics)
 
 # Set the bitmap type to 'cairo' to avoid PNG issue
 options(bitmapType = 'cairo')
+```
 
-#Input data tois wide format, excluding columns with missing data.
+## Make PCA plot
 
-# The new data-frame for df_no_na_wide is called : df_feature_wide.
-# For creating a column sample as a guiding column use:
-# mutate
-
+```{r 01_principal_components}
 df_feature_wide |> 
   mutate(sample = str_c(cell_type, replicate_n, sep = "_"))
 
-
-df_input <- df_no_na_wide |> select(-c('sample','cell_type')) |> 
-  mutate(across(where(is.list), ~ sapply(., function(x) x[1]))) |> 
-  na.omit() 
-
-colourby <- df_no_na_wide$cell_type
+colourby <- df_feature_wide$cell_type
   
 #Projecting data unto principal components (pc)
 pc <- prcomp(df_input, center = FALSE, scale = FALSE)
 
-#Gives overview of variability of PC
-#print(pc)
-
 #Gives an overview, you should be able to tell the variance already here even without the plot
 summary(pc)
 
+
+```
+
+```{r 03_pca_plot}
 #Plots the principal component values (pc$x)  
 pc$x |> as.data.frame() |>
   ggplot(aes(x = PC1, y = PC2, color = colourby)) +
   geom_point(size = 2.5)
 ```
 
-```{r}
+```{r 04_pc_variance_plot}
 pc |>
   tidy(matrix = "eigenvalues") |>
   filter(PC <= 5) |>
@@ -53,6 +45,6 @@ pc |>
 
 ## Save plot
 
-```{r}
+```{r 05_save_plots}
 ggsave(plot = biplot, filename = "PCA_on_proteingroups_original.png", width = 20, height = 10, units = "cm", path = here("results"))
 ```

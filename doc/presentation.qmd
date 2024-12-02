@@ -37,18 +37,44 @@ raw data consists of LS/MS DIA intensity values of identified protein groups (PG
 -   name of the cell type and number of the replica are now merged, but we want to have them in 2 different colomns
 :::
 
-## Augmenting the data
+## Augmenting the data <br>
+
+::: columns
+::: {.column width="40%"}
+-   log2 transformation<br><br><br>
+
+-   Normalization<br><br><br>
+
+-   Missing value imputation<br><br><br>
+:::
+
+::: {.column width="60%"}
+![](images/plot_before_normalization,.png){width="600"}
+
+![](images/plot_after_normalization,.png){width="600"}<br><br><br>
+:::
+:::
+
+## Uniprot lookup <br>
 
 ::: nonincremental
--   log2 transformation of the values (common for mass spectrometry proteomics data)
+``` {.r style="font-size: 0.7em"}
+uniprot_lookup <- function(gene_id, dataframe, id_column, keyword_column){
+  # does lookup in uniprot df and returns Keywords
+  return(Keywords)
+}
 
--   individual protein intensities are normalised to the median of each sample
+df_type <- df_norm_intensities |> 
+  filter(!is.na(genes) & genes != "") |> 
+  mutate(description_column = map_chr(
+     .x = genes,
+     .f = ~uniprot_lookup(gene_id=.x, 
+                          dataframe=df_uniprot_mouse, 
+                          id_column=`Gene Names`, keyword_column=Keywords)
+   ))
+```
 
--   intensities across the different cell types are normalized (due different to cell count)
-
--   missing values (detection limit of the mass spectrometer) replacing sample-wise and feature-wise
-
--   which plots to showcase??????
+![](images/plot_uniprot-02.png)
 :::
 
 ## Issuses during tidyig and augmenting
@@ -168,21 +194,132 @@ volcano_augment <- function(df, later_cell, earlier_cell, n_later, n_earlier){
 ![](images/hsc_cmp_volcano_plot-02.png)
 :::
 
-## Discussion
 
-::: nonincremental
--   5 dataframes are merged into 1
--   data is cleaned and pivoted longer in order to separate cell type and number of measurment
--   data is log2 transformed and normalised
--   data is pivoted wider again in order to do the calculations between cell groups
--   results are showcased with 4 volcano plots
--   PCA shows us simmilarity between different cell types, and potentialy pathway of stem cell development
+## PCA Function
+
+``` {.r style="font-size: 0.7em"}
+# Set the bitmap type to 'cairo' to avoid PNG issue
+options(bitmapType = 'cairo')
+
+#Input data tois wide format, excluding columns with missing data.
+
+
+# The new data-frame for df_no_na_wide is called : df_feature_wide.
+# For creating a column sample as a guiding column use:
+# mutate
+
+df_feature_wide |> 
+  mutate(sample = str_c(cell_type, replicate_n, sep = "_"))
+
+
+df_input <- df_no_na_wide |> select(-c('sample','cell_type')) |> 
+  mutate(across(where(is.list), ~ sapply(., function(x) x[1]))) |> 
+  na.omit() 
+```
+
+## PCA Function {auto-animate="true"}
+
+``` {.r style="font-size: 0.7em"}
+# Set the bitmap type to 'cairo' to avoid PNG issue
+options(bitmapType = 'cairo')
+
+#Input data tois wide format, excluding columns with missing data.
+
+
+# The new data-frame for df_no_na_wide is called : df_feature_wide.
+# For creating a column sample as a guiding column use:
+# mutate
+
+df_feature_wide |> 
+  mutate(sample = str_c(cell_type, replicate_n, sep = "_"))
+
+
+df_input <- df_no_na_wide |> select(-c('sample','cell_type')) |> 
+  mutate(across(where(is.list), ~ sapply(., function(x) x[1]))) |> 
+  na.omit() 
+
+colourby <- df_no_na_wide$cell_type
+  
+```
+
+``` {.r style="font-size: 0.7em"}
+# Set the bitmap type to 'cairo' to avoid PNG issue
+options(bitmapType = 'cairo')
+
+#Input data tois wide format, excluding columns with missing data.
+
+
+# The new data-frame for df_no_na_wide is called : df_feature_wide.
+# For creating a column sample as a guiding column use:
+# mutate
+
+df_feature_wide |> 
+  mutate(sample = str_c(cell_type, replicate_n, sep = "_"))
+
+
+df_input <- df_no_na_wide |> select(-c('sample','cell_type')) |> 
+  mutate(across(where(is.list), ~ sapply(., function(x) x[1]))) |> 
+  na.omit() 
+
+colourby <- df_no_na_wide$cell_type
+  
+#Projecting data unto principal components (pc)
+pc <- prcomp(df_input, center = FALSE, scale = FALSE)
+
+#Gives overview of variability of PC
+#print(pc)
+
+#Gives an overview, you should be able to tell the variance already here even without the plot
+summary(pc)
+
+#Takes the principal component values (pc$x)  
+pc$x |> as.data.frame() |>
+  ggplot(aes(x = PC1, y = PC2, color = colourby)) +
+  geom_point(size = 2.5)
+```
+
+``` {.r style="font-size: 0.7em"}
+```
+
+``` {.r style="font-size: 0.7em"}
+```
+
+::: incremental
+## Discussion {.smaller}
+
+Data may take many shapes and forms
+
+-   TidyverseR is nice and structured, but can also be restricting.
+
+-   Some functions necessary like the t.test is for BaseR and not TidyR
+
+Principal Component Analysis
+
+-   The PCA in this case can be used to identify the cell differentiation pattern
+
+-   This is in line with what was presented in literature for this data.
+
+Volcano plot and lookup
+
+-   Through the volcano plots we can filter and identify the truly overexpressed proteins, which can then be looked up and studied for biological significance.
+
+-   While we don't concldue any high level biological understanding, we showcase the possibility of using TidyverseR to extrapolate biological information
+```
+
+``` {.r style="font-size: 0.7em"}
+
+```
+
 :::
 
-## Discussion
+## Conclusion {.smaller}
+While we have been going through many internal frustrations, we have been able to...
 
-Another Discussion slide
+- We have created code that is able to clean, tidy and transform data containing 3700 observations accross 5 cell types into "almost" meaningful information.
 
-## Take away messages / Conclusion
+- Create 2 functions that can create dataframes for volcanoplots, and 1 lookk up function to annotate keywords for protein groups.
 
-Write some conclusion here
+- With the project scope in mind - we were unable to extract deeper biological meaning.
+
+- For future projects/studies, a higher number of observations and cell-types could be included to increase the resolution, and downstream experiments could be performed to increase the biological meaning.
+
